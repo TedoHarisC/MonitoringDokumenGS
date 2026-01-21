@@ -1,7 +1,13 @@
+using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Services.Documents;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// DI registrations
+builder.Services.AddSingleton<IDocumentService, DocumentService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
