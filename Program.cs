@@ -1,17 +1,61 @@
+using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Interfaces;
-using MonitoringDokumenGS.Services.Documents;
+using MonitoringDokumenGS.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", builder =>
+    {
+        builder.Window = TimeSpan.FromMinutes(1);
+        builder.PermitLimit = 5;
+        builder.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        builder.QueueLimit = 2;
+    });
+});
 
-// DI registrations
-builder.Services.AddSingleton<IDocumentService, DocumentService>();
+// DI registrations (Service Layer)
+builder.Services.AddScoped<IAuth, AuthService>();
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddDbContext<ApplicationDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IDbConnection>(sp =>
+    new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var key = builder.Configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException("Configuration 'Jwt:Key' is missing. Please set 'Jwt:Key' in appsettings.json or as an environment variable (Jwt__Key).");
+
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(key))
+        };
+    });
 
 var app = builder.Build();
 
@@ -32,6 +76,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -40,5 +85,8 @@ app.MapControllerRoute(
 
 // Route API
 app.MapControllers();
+
+// Using Rate Limiter
+app.UseRateLimiter();
 
 app.Run();
