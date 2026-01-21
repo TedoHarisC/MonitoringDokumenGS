@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "zHE9w7rEBmY=",
+  "dgSpecHash": "heP7aniNFY0=",
   "success": true,
   "projectFilePath": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/MonitoringDokumenGS.csproj",
   "expectedPackageFiles": [
@@ -41,10 +41,7 @@
     "/Users/itsiteabb/.nuget/packages/system.security.cryptography.pkcs/8.0.1/system.security.cryptography.pkcs.8.0.1.nupkg.sha512",
     "/Users/itsiteabb/.nuget/packages/system.security.cryptography.protecteddata/8.0.0/system.security.cryptography.protecteddata.8.0.0.nupkg.sha512",
     "/Users/itsiteabb/.nuget/packages/system.text.json/8.0.5/system.text.json.8.0.5.nupkg.sha512",
-    "/Users/itsiteabb/.nuget/packages/system.valuetuple/4.5.0/system.valuetuple.4.5.0.nupkg.sha512",
-    "/Users/itsiteabb/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.19/microsoft.aspnetcore.app.ref.8.0.19.nupkg.sha512",
-    "/Users/itsiteabb/.nuget/packages/microsoft.netcore.app.host.osx-arm64/8.0.19/microsoft.netcore.app.host.osx-arm64.8.0.19.nupkg.sha512",
-    "/Users/itsiteabb/.nuget/packages/microsoft.netcore.app.ref/8.0.19/microsoft.netcore.app.ref.8.0.19.nupkg.sha512"
+    "/Users/itsiteabb/.nuget/packages/system.valuetuple/4.5.0/system.valuetuple.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }
