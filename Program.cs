@@ -25,6 +25,8 @@ builder.Services.AddRateLimiter(options =>
 
 // DI registrations (Service Layer)
 builder.Services.AddScoped<IAuth, AuthService>();
+builder.Services.AddScoped<IFile, FileService>();
+
 
 builder.Services.AddAuthorization();
 
@@ -56,6 +58,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 System.Text.Encoding.UTF8.GetBytes(key))
         };
     });
+
+// File Storage Options
+builder.Services.Configure<FileStorageOptions>(
+    builder.Configuration.GetSection("FileStorage"));
 
 var app = builder.Build();
 
