@@ -20,20 +20,20 @@
                 <h4 class="fs-13 fw-bold mb-2">Manage all your Duralux crm</h4>
                 <p class="fs-12 fw-medium text-muted">Let's get you all setup, so you can verify your personal account
                     and begine setting up your profile.</p>
-                <form action="index.html" class="w-100 mt-4 pt-2">
+                <form id="registerForm" class="w-100 mt-4 pt-2">
+                    <div id="registerAlertPlaceholder"></div>
                     <div class="mb-4">
-                        <input type="text" class="form-control" placeholder="Full Name" required>
+                        <input id="inputEmail" name="email" type="email" class="form-control" placeholder="Email"
+                            required>
                     </div>
                     <div class="mb-4">
-                        <input type="email" class="form-control" placeholder="Email" required>
-                    </div>
-                    <div class="mb-4">
-                        <input type="tel" class="form-control" placeholder="Username" required>
+                        <input id="inputUsername" name="username" type="text" class="form-control"
+                            placeholder="Username" required>
                     </div>
                     <div class="mb-4 generate-pass">
                         <div class="input-group field">
-                            <input type="password" class="form-control password" id="newPassword"
-                                placeholder="Password Confirm">
+                            <input id="inputPassword" name="password" type="password" class="form-control password"
+                                placeholder="Password">
                             <div class="input-group-text c-pointer gen-pass" data-bs-toggle="tooltip"
                                 title="Generate Password"><i class="feather-hash"></i></div>
                             <div class="input-group-text border-start bg-gray-2 c-pointer show-pass"
@@ -45,15 +45,17 @@
                             <div></div>
                             <div></div>
                         </div>
+                        <small id="passwordStrengthText" class="form-text text-muted mt-1" aria-live="polite"></small>
                     </div>
                     <div class="mb-4">
-                        <input type="password" class="form-control" placeholder="Password again" required>
+                        <input id="inputPasswordConfirm" name="passwordConfirm" type="password" class="form-control"
+                            placeholder="Password again" required>
                     </div>
                     <div class="mt-4">
                         <div class="custom-control custom-checkbox mb-2">
                             <input type="checkbox" class="custom-control-input" id="receiveMial" required>
                             <label class="custom-control-label c-pointer text-muted" for="receiveMial"
-                                style="font-weight: 400 !important">Yes, I wnat to receive Duralux community
+                                style="font-weight: 400 !important">Yes, I want to receive Duralux community
                                 emails</label>
                         </div>
                         <div class="custom-control custom-checkbox">
@@ -64,14 +66,19 @@
                         </div>
                     </div>
                     <div class="mt-5">
-                        <button type="submit" class="btn btn-lg btn-primary w-100">Create Account</button>
+                        <button id="btnRegister" type="submit" class="btn btn-lg btn-primary w-100">Create
+                            Account</button>
                     </div>
                 </form>
                 <div class="mt-5 text-muted">
                     <span>Already have an account?</span>
-                    <a href="auth-login-cover.html" class="fw-bold">Login</a>
+                    <a href="@Url.Action("Index", "Auth")" class="fw-bold">Login</a>
                 </div>
             </div>
         </div>
     </div>
 </main>
+
+@section Scripts {
+    <script src="~/js/auth-register.js?v=@DateTime.Now.Ticks"></script>
+}

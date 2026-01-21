@@ -79,12 +79,13 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
 // Route API
 app.MapControllers();
+
+// Route default (non-area, optional)
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Auth}/{action=Index}/{id?}");
 
 // Using Rate Limiter
 app.UseRateLimiter();

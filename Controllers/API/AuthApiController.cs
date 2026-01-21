@@ -7,13 +7,13 @@ using Dtos.Register;
 namespace MonitoringDokumenGS.Controllers.API
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
-    public class AuthController : ControllerBase
+    [Route("api/auth")]
+    public class AuthApiController : ControllerBase
     {
         private readonly IAuth _auth;
-        private readonly ILogger<AuthController> _logger;
+        private readonly ILogger<AuthApiController> _logger;
 
-        public AuthController(IAuth auth, ILogger<AuthController> logger)
+        public AuthApiController(IAuth auth, ILogger<AuthApiController> logger)
         {
             _auth = auth;
             _logger = logger;

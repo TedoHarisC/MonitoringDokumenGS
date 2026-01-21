@@ -13,6 +13,14 @@
       "PackagePath": "staticwebassets/favicon.ico"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-login.js",
+      "PackagePath": "staticwebassets/js/auth-login.js"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-register.js",
+      "PackagePath": "staticwebassets/js/auth-register.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/site.js",
       "PackagePath": "staticwebassets/js/site.js"
     },
