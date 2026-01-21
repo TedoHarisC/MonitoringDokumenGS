@@ -1,12 +1,14 @@
 using System.Data;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
+using MonitoringDokumenGS.Services.Infrastructure;
+using MonitoringDokumenGS.Services.Master;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +28,13 @@ builder.Services.AddRateLimiter(options =>
 // DI registrations (Service Layer)
 builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IFile, FileService>();
-
+builder.Services.AddSingleton<IAuditLog, AuditLogService>();
+builder.Services.AddSingleton<IApprovalStatus, ApprovalStatusService>();
+builder.Services.AddSingleton<IAttachmentTypes, AttachmentTypeService>();
+builder.Services.AddSingleton<IContractStatus, ContractStatusService>();
+builder.Services.AddSingleton<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
+builder.Services.AddSingleton<IVendorCategory, VendorCategoryService>();
+builder.Services.AddSingleton<IVendor, VendorService>();
 
 builder.Services.AddAuthorization();
 
