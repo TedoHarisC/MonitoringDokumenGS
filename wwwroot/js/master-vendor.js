@@ -64,6 +64,101 @@
         }
     }
 
+    function pad2(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function buildTimestampForFilename() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = pad2(d.getMonth() + 1);
+        const dd = pad2(d.getDate());
+        const hh = pad2(d.getHours());
+        const mi = pad2(d.getMinutes());
+        return `${yyyy}${mm}${dd}_${hh}${mi}`;
+    }
+
+    function downloadBlob(filename, mimeType, content) {
+        const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function csvEscape(value) {
+        if (value === null || value === undefined) return '';
+        const s = String(value);
+        const needsQuote = /[\r\n",]/.test(s);
+        const escaped = s.replace(/"/g, '""');
+        return needsQuote ? `"${escaped}"` : escaped;
+    }
+
+    function htmlEscape(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function getFilteredRows(dataTable) {
+        if (!dataTable) return [];
+        try {
+            return dataTable.rows({ search: 'applied' }).data().toArray();
+        } catch {
+            return [];
+        }
+    }
+
+    function exportToCsv(dataTable, columns, filenameBase) {
+        const rows = getFilteredRows(dataTable);
+        const headers = columns.map(c => csvEscape(c.header)).join(',');
+        const lines = rows.map(r => columns.map(c => csvEscape(c.value(r))).join(','));
+        const csv = '\ufeff' + [headers, ...lines].join('\r\n');
+        const filename = `${filenameBase}_${buildTimestampForFilename()}.csv`;
+        downloadBlob(filename, 'text/csv;charset=utf-8', csv);
+    }
+
+    function exportToExcelHtml(dataTable, columns, filenameBase) {
+        const rows = getFilteredRows(dataTable);
+        const head = `<tr>${columns.map(c => `<th>${htmlEscape(c.header)}</th>`).join('')}</tr>`;
+        const body = rows
+            .map(r => `<tr>${columns.map(c => `<td>${htmlEscape(c.value(r))}</td>`).join('')}</tr>`)
+            .join('');
+        const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table>${head}${body}</table></body></html>`;
+        const filename = `${filenameBase}_${buildTimestampForFilename()}.xls`;
+        downloadBlob(filename, 'application/vnd.ms-excel;charset=utf-8', html);
+    }
+
+    async function exportVendors(kind) {
+        await ensureVendorCategoriesLoaded();
+        const columns = [
+            { header: 'Vendor Code', value: r => r.vendorCode ?? '' },
+            { header: 'Vendor Name', value: r => r.vendorName ?? '' },
+            { header: 'Short Name', value: r => r.shortName ?? '' },
+            {
+                header: 'Category',
+                value: r => {
+                    const name = getCategoryNameById(r.vendorCategoryId);
+                    return name ?? r.vendorCategoryId ?? '';
+                }
+            },
+            { header: 'Owner', value: r => r.ownerName ?? '' },
+            { header: 'Company Email', value: r => r.companyEmail ?? '' },
+            { header: 'NPWP', value: r => r.npwp ?? '' }
+        ];
+
+        if (kind === 'csv') return exportToCsv(table, columns, 'Vendors');
+        if (kind === 'excel') return exportToExcelHtml(table, columns, 'Vendors');
+    }
+
     function initTable() {
         table = $('#vendorsTable').DataTable({
             dom:
@@ -290,6 +385,22 @@
             const id = $(this).data('id');
             deleteVendor(id);
         });
+
+        const btnExportCsv = document.getElementById('btnExportVendorsCsv');
+        if (btnExportCsv) {
+            btnExportCsv.addEventListener('click', async function (e) {
+                e.preventDefault();
+                await exportVendors('csv');
+            });
+        }
+
+        const btnExportExcel = document.getElementById('btnExportVendorsExcel');
+        if (btnExportExcel) {
+            btnExportExcel.addEventListener('click', async function (e) {
+                e.preventDefault();
+                await exportVendors('excel');
+            });
+        }
 
         $('#vendorForm').on('submit', saveVendor);
     });
