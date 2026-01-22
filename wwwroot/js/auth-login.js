@@ -39,45 +39,21 @@
             const $btn = $('#btnLogin').attr('disabled', 'disabled').text('Signing in...');
 
             $.ajax({
-                url: '/api/v1/Auth/login',
+                url: '/Auth/Login',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ username: username, password: password }),
                 dataType: 'json'
             })
                 .done(function (resp) {
-                    // resp structure: { success, message, data } or direct { token, refreshToken }
-                    let token = '';
-                    let refresh = '';
-
-                    if (resp) {
-                        if (resp.data && resp.data.token) {
-                            token = resp.data.token;
-                            refresh = resp.data.refreshToken || resp.data.refresh || '';
-                        } else if (resp.token) {
-                            token = resp.token;
-                            refresh = resp.refreshToken || resp.refresh || '';
-                        }
-                    }
-
-                    if (!token) {
-                        // try showing message from API
-                        const message = (resp && (resp.message || (resp.errors && resp.errors.join(', ')))) || 'Invalid credentials';
-                        Swal.fire({ icon: 'error', title: 'Login failed', text: message });
+                    if (!resp || resp.success !== true) {
+                        Swal.fire({ icon: 'error', title: 'Login failed', text: resp?.message || 'Invalid credentials' });
                         return;
                     }
 
-                    // store tokens
-                    try {
-                        localStorage.setItem('access_token', token);
-                        if (refresh) localStorage.setItem('refresh_token', refresh);
-                    } catch (ex) {
-                        console.warn('Unable to store tokens in localStorage', ex);
-                    }
-
-                    Swal.fire({ icon: 'success', title: 'Success', text: 'Login successful', timer: 900, showConfirmButton: false }).then(() => {
-                        // Redirect to dashboard or home
-                        window.location.href = '/';
+                    Swal.fire({ icon: 'success', title: 'Success', text: 'Login successful', timer: 900, showConfirmButton: false })
+                    .then(() => {
+                        window.location.href = '/Home/Index';
                     });
                 })
                 .fail(function (jqXHR, textStatus, errorThrown) {

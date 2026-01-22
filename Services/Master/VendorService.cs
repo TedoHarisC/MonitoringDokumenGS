@@ -1,124 +1,169 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Services.Master
 {
     public class VendorService : IVendor
     {
-        private readonly List<VendorDto> _data = new();
-        private readonly object _lock = new();
+        private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
 
-        public VendorService(IAuditLog auditLog)
+        public VendorService(ApplicationDBContext context, IAuditLog auditLog)
         {
+            _context = context;
             _auditLog = auditLog;
         }
 
-        public Task<IEnumerable<VendorDto>> GetAllAsync()
+        // ========================= GET ALL =========================
+        public async Task<IEnumerable<VendorDto>> GetAllAsync()
         {
-            lock (_lock)
-            {
-                return Task.FromResult<IEnumerable<VendorDto>>(_data.ToList());
-            }
+            return await _context.Vendors
+                .Where(x => !x.IsDeleted)
+                .Select(ToDtoExpr)
+                .ToListAsync();
         }
 
-        public Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize)
+        // ========================= PAGING =========================
+        public async Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.ToPagedResponse(page, pageSize));
-            }
+            return await _context.Vendors
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.VendorName)
+                .Select(ToDtoExpr)
+                .ToPagedResponseAsync(page, pageSize);
         }
 
-        public Task<VendorDto?> GetByIdAsync(Guid id)
+        // ========================= GET BY ID =========================
+        public async Task<VendorDto?> GetByIdAsync(Guid id)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.FirstOrDefault(x => x.VendorId == id));
-            }
+            return await _context.Vendors
+                .Where(x => x.VendorId == id && !x.IsDeleted)
+                .Select(ToDtoExpr)
+                .FirstOrDefaultAsync();
         }
 
+        // ========================= CREATE =========================
         public async Task<VendorDto> CreateAsync(VendorDto dto)
         {
-            lock (_lock)
+            var entity = new Vendor
             {
-                dto.VendorId = dto.VendorId == Guid.Empty ? Guid.NewGuid() : dto.VendorId;
-                dto.CreatedAt = dto.CreatedAt == default ? DateTime.UtcNow : dto.CreatedAt;
-                dto.UpdatedAt = dto.UpdatedAt == default ? dto.CreatedAt : dto.UpdatedAt;
-                _data.Add(dto);
-            }
-            await _auditLog.LogAsync("Vendor", "Create", null, dto, dto.VendorId.ToString());
-            return dto;
+                VendorId = Guid.NewGuid(),
+                VendorCode = dto.VendorCode,
+                VendorName = dto.VendorName,
+                ShortName = dto.ShortName,
+                VendorCategoryId = dto.VendorCategoryId,
+                OwnerName = dto.OwnerName,
+                OwnerPhone = dto.OwnerPhone,
+                CompanyEmail = dto.CompanyEmail,
+                NPWP = dto.NPWP,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.CreatedBy,
+                IsDeleted = false
+            };
+
+            _context.Vendors.Add(entity);
+            await _context.SaveChangesAsync();
+
+            var result = ToDto(entity);
+
+            await _auditLog.LogAsync("Vendor", "Create", null, result, entity.VendorId.ToString());
+            return result;
         }
 
+        // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(VendorDto dto)
         {
-            VendorDto? existing;
-            VendorDto? old = null;
-            lock (_lock)
-            {
-                existing = _data.FirstOrDefault(x => x.VendorId == dto.VendorId);
-                if (existing == null)
-                    return false;
-                old = Clone(existing);
-                existing.VendorCode = dto.VendorCode;
-                existing.VendorName = dto.VendorName;
-                existing.ShortName = dto.ShortName;
-                existing.VendorCategoryId = dto.VendorCategoryId;
-                existing.OwnerName = dto.OwnerName;
-                existing.OwnerPhone = dto.OwnerPhone;
-                existing.CompanyEmail = dto.CompanyEmail;
-                existing.NPWP = dto.NPWP;
-                existing.UpdatedAt = DateTime.UtcNow;
-                existing.UpdatedBy = dto.UpdatedBy;
-                existing.IsDeleted = dto.IsDeleted;
-            }
+            var entity = await _context.Vendors
+                .FirstOrDefaultAsync(x => x.VendorId == dto.VendorId);
 
-            if (existing != null && old != null)
-                await _auditLog.LogAsync("Vendor", "Update", old, existing, existing.VendorId.ToString());
+            if (entity == null)
+                return false;
 
+            var old = ToDto(entity);
+
+            entity.VendorCode = dto.VendorCode;
+            entity.VendorName = dto.VendorName;
+            entity.ShortName = dto.ShortName;
+            entity.VendorCategoryId = dto.VendorCategoryId;
+            entity.OwnerName = dto.OwnerName;
+            entity.OwnerPhone = dto.OwnerPhone;
+            entity.CompanyEmail = dto.CompanyEmail;
+            entity.NPWP = dto.NPWP;
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedBy = dto.UpdatedBy;
+            entity.IsDeleted = dto.IsDeleted;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync("Vendor", "Update", old, ToDto(entity), entity.VendorId.ToString());
             return true;
         }
 
+        // ========================= DELETE (SOFT) =========================
         public async Task<bool> DeleteAsync(Guid id)
         {
-            VendorDto? removed;
-            lock (_lock)
-            {
-                removed = _data.FirstOrDefault(x => x.VendorId == id);
-                if (removed == null)
-                    return false;
-                _data.Remove(removed);
-            }
+            var entity = await _context.Vendors
+                .FirstOrDefaultAsync(x => x.VendorId == id);
 
-            await _auditLog.LogAsync("Vendor", "Delete", removed, null, id.ToString());
+            if (entity == null)
+                return false;
+
+            var old = ToDto(entity);
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync("Vendor", "Delete", old, null, id.ToString());
             return true;
         }
 
-        private static VendorDto Clone(VendorDto source)
+        // ========================= MAPPER EF =========================
+        private static readonly Expression<Func<Vendor, VendorDto>> ToDtoExpr =
+            x => new VendorDto
+            {
+                VendorId = x.VendorId,
+                VendorCode = x.VendorCode,
+                VendorName = x.VendorName,
+                ShortName = x.ShortName,
+                VendorCategoryId = x.VendorCategoryId,
+                OwnerName = x.OwnerName,
+                OwnerPhone = x.OwnerPhone,
+                CompanyEmail = x.CompanyEmail,
+                NPWP = x.NPWP,
+                CreatedAt = x.CreatedAt,
+                CreatedBy = x.CreatedBy,
+                UpdatedAt = x.UpdatedAt,
+                UpdatedBy = x.UpdatedBy,
+                IsDeleted = x.IsDeleted
+            };
+
+        // ========================= MAPPER MEMORY =========================
+        private static VendorDto ToDto(Vendor x)
         {
             return new VendorDto
             {
-                VendorId = source.VendorId,
-                VendorCode = source.VendorCode,
-                VendorName = source.VendorName,
-                ShortName = source.ShortName,
-                VendorCategoryId = source.VendorCategoryId,
-                OwnerName = source.OwnerName,
-                OwnerPhone = source.OwnerPhone,
-                CompanyEmail = source.CompanyEmail,
-                NPWP = source.NPWP,
-                CreatedAt = source.CreatedAt,
-                CreatedBy = source.CreatedBy,
-                UpdatedAt = source.UpdatedAt,
-                UpdatedBy = source.UpdatedBy,
-                IsDeleted = source.IsDeleted
+                VendorId = x.VendorId,
+                VendorCode = x.VendorCode,
+                VendorName = x.VendorName,
+                ShortName = x.ShortName,
+                VendorCategoryId = x.VendorCategoryId,
+                OwnerName = x.OwnerName,
+                OwnerPhone = x.OwnerPhone,
+                CompanyEmail = x.CompanyEmail,
+                NPWP = x.NPWP,
+                CreatedAt = x.CreatedAt,
+                CreatedBy = x.CreatedBy,
+                UpdatedAt = x.UpdatedAt,
+                UpdatedBy = x.UpdatedBy,
+                IsDeleted = x.IsDeleted
             };
         }
     }

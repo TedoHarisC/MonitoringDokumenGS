@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "HrFANKwsdX5QcQUPhy6ENVcNVqxs7fuctespx/diWbs=",
+  "Hash": "M4aNhby5fC7IzTjRIPg/xzuvyEQVrU57QUhE+mAIs9o=",
   "Source": "MonitoringDokumenGS",
   "BasePath": "_content/MonitoringDokumenGS",
   "Mode": "Default",
@@ -129,6 +129,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/js/auth-register.js"
+    },
+    {
+      "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",
+      "SourceId": "MonitoringDokumenGS",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/",
+      "BasePath": "_content/MonitoringDokumenGS",
+      "RelativePath": "js/layout-logout.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/layout-logout.js"
     },
     {
       "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/site.js",

@@ -21,6 +21,10 @@
       "PackagePath": "staticwebassets/js/auth-register.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",
+      "PackagePath": "staticwebassets/js/layout-logout.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/site.js",
       "PackagePath": "staticwebassets/js/site.js"
     },

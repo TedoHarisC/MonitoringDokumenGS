@@ -38,7 +38,8 @@ namespace MonitoringDokumenGS.Controllers.API
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while registering user {Username}", request?.Username);
-                return this.ErrorResponse("An unexpected error occurred", 500);
+                var errors = ExceptionExtensions.GetAllMessages(ex);
+                return this.ErrorResponse(ex.Message, 500, errors);
             }
         }
 
@@ -61,7 +62,8 @@ namespace MonitoringDokumenGS.Controllers.API
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Login error for {Username}", request?.Username);
-                return this.ErrorResponse("An unexpected error occurred", 500);
+                var errors = ExceptionExtensions.GetAllMessages(ex);
+                return this.ErrorResponse("An unexpected error occurred", 500, errors);
             }
         }
 

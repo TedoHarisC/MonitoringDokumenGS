@@ -16,8 +16,8 @@ namespace MonitoringDokumenGS.Models
         public string NPWP { get; set; } = default!;
         public DateTime CreatedAt { get; set; }
         public Guid CreatedBy { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public Guid UpdatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
 
         // Navigation properties

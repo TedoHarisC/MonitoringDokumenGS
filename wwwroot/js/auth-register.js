@@ -19,6 +19,34 @@
 
     $(function () {
         const $form = $('#registerForm');
+        const $vendorSelect = $('#inputVendor');
+        const $vendorLoadingText = $('#vendorLoadingText');
+
+        // Load vendors on page init
+        function loadVendors() {
+            $.ajax({
+                url: '/api/v1/vendors?page=1&pageSize=100',
+                method: 'GET',
+                dataType: 'json'
+            })
+                .done(function (resp) {
+                    const vendors = (resp && resp.items) || [];
+                    $vendorSelect.empty();
+                    $vendorSelect.append('<option value="">-- Select Vendor --</option>');
+                    $.each(vendors, function (idx, vendor) {
+                        $vendorSelect.append(
+                            `<option value="${vendor.vendorId}">${vendor.vendorName}</option>`
+                        );
+                    });
+                    $vendorLoadingText.hide();
+                })
+                .fail(function () {
+                    $vendorLoadingText.text('Failed to load vendors').css('color', '#e74c3c');
+                });
+        }
+
+        // Load vendors on init
+        loadVendors();
 
         // Password strength UI elements
         const $password = $('#inputPassword');
@@ -127,12 +155,13 @@
             e.preventDefault();
             clearInlineAlert();
 
+            const vendorId = $('#inputVendor').val()?.toString().trim() ?? '';
             const email = $('#inputEmail').val()?.toString().trim() ?? '';
             const username = $('#inputUsername').val()?.toString().trim() ?? '';
             const password = $('#inputPassword').val()?.toString() ?? '';
             const passwordConfirm = $('#inputPasswordConfirm').val()?.toString() ?? '';
 
-            if (!email || !username || !password || !passwordConfirm) {
+            if (!vendorId || !email || !username || !password || !passwordConfirm) {
                 showInlineAlert('Please fill all required fields.', 'warning');
                 return;
             }
@@ -148,11 +177,11 @@
                 username: username,
                 password: password,
                 email: email,
-                // vendorId optional, omitted unless needed
+                vendorId: vendorId
             };
 
             $.ajax({
-                url: '/api/v1/Auth/register',
+                url: '/api/auth/register',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(payload),

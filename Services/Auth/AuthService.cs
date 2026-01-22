@@ -32,15 +32,26 @@ namespace MonitoringDokumenGS.Services
 
             var exists = await _context.Users.AnyAsync(u => u.Username == registerDto.Username || u.Email == registerDto.Email);
             if (exists)
-                return false;
+                throw new InvalidOperationException("Username or email already exists");
+
+            // VALIDASI FK
+            var vendorExists = await _context.Vendors
+                .AnyAsync(v => v.VendorId == registerDto.VendorId);
+
+            if (!vendorExists)
+                throw new Exception("Vendor not found");
+
+            // Create Id
+            var newUserId = Guid.NewGuid();
 
             var user = new UserModel
             {
-                UserId = Guid.NewGuid(),
+                UserId = newUserId,
                 VendorId = registerDto.VendorId ?? Guid.Empty,
                 Username = registerDto.Username,
                 PasswordHash = BCryptNet.HashPassword(registerDto.Password),
                 Email = registerDto.Email,
+                CreatedBy = newUserId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 isActive = true,
@@ -59,13 +70,13 @@ namespace MonitoringDokumenGS.Services
             if (user == null)
             {
                 _logger.LogWarning("Login failed for unknown user {Username}", loginDto.Username);
-                return (string.Empty, string.Empty);
+                throw new UnauthorizedAccessException("Invalid credentials");
             }
 
             if (!BCryptNet.Verify(loginDto.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Invalid password for user {Username}", loginDto.Username);
-                return (string.Empty, string.Empty);
+                throw new UnauthorizedAccessException("Invalid credentials");
             }
 
             var jwt = GenerateJwtToken(user);

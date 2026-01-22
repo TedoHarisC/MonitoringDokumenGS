@@ -15,8 +15,8 @@ namespace MonitoringDokumenGS.Dtos.Master
         public string NPWP { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public Guid CreatedBy { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public Guid UpdatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

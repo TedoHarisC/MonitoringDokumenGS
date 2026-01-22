@@ -1,6 +1,8 @@
 using System.Data;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -28,13 +30,13 @@ builder.Services.AddRateLimiter(options =>
 // DI registrations (Service Layer)
 builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IFile, FileService>();
-builder.Services.AddSingleton<IAuditLog, AuditLogService>();
-builder.Services.AddSingleton<IApprovalStatus, ApprovalStatusService>();
-builder.Services.AddSingleton<IAttachmentTypes, AttachmentTypeService>();
-builder.Services.AddSingleton<IContractStatus, ContractStatusService>();
-builder.Services.AddSingleton<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
-builder.Services.AddSingleton<IVendorCategory, VendorCategoryService>();
-builder.Services.AddSingleton<IVendor, VendorService>();
+builder.Services.AddScoped<IAuditLog, AuditLogService>();
+builder.Services.AddScoped<IApprovalStatus, ApprovalStatusService>();
+builder.Services.AddScoped<IAttachmentTypes, AttachmentTypeService>();
+builder.Services.AddScoped<IContractStatus, ContractStatusService>();
+builder.Services.AddScoped<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
+builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
+builder.Services.AddScoped<IVendor, VendorService>();
 
 builder.Services.AddAuthorization();
 
@@ -47,7 +49,24 @@ builder.Services.AddScoped<IDbConnection>(sp =>
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+    {
+        // Default to cookie authentication for the web UI. API controllers can explicitly require JWT.
+        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Index";
+        options.AccessDeniedPath = "/Auth/Index";
+        options.Cookie.Name = "mdgs_auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    })
     .AddJwtBearer(options =>
     {
         var key = builder.Configuration["Jwt:Key"];

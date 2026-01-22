@@ -30,6 +30,14 @@
                         <input id="inputUsername" name="username" type="text" class="form-control"
                             placeholder="Username" required>
                     </div>
+                    <div class="mb-4">
+                        <label for="inputVendor" class="form-label">Vendor</label>
+                        <select id="inputVendor" name="vendorId" class="form-select" placeholder="Select Vendor"
+                            required>
+                            <option value="">-- Select Vendor --</option>
+                        </select>
+                        <small id="vendorLoadingText" class="form-text text-muted mt-1">Loading vendors...</small>
+                    </div>
                     <div class="mb-4 generate-pass">
                         <div class="input-group field">
                             <input id="inputPassword" name="password" type="password" class="form-control password"
