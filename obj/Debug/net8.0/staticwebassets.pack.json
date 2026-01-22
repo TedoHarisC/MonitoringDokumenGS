@@ -33,6 +33,10 @@
       "PackagePath": "staticwebassets/js/layout-logout.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-index.js",
+      "PackagePath": "staticwebassets/js/master-index.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-vendor.js",
       "PackagePath": "staticwebassets/js/master-vendor.js"
     },

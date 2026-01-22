@@ -25,7 +25,7 @@
         // Load vendors on page init
         function loadVendors() {
             $.ajax({
-                url: '/api/v1/vendors?page=1&pageSize=100',
+                url: '/api/vendors?page=1&pageSize=100',
                 method: 'GET',
                 dataType: 'json'
             })
