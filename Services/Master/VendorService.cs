@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Mappings.Master;
 using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Services.Master
@@ -25,7 +25,7 @@ namespace MonitoringDokumenGS.Services.Master
         {
             return await _context.Vendors
                 .Where(x => !x.IsDeleted)
-                .Select(ToDtoExpr)
+                .Select(VendorMappings.ToDtoExpr)
                 .ToListAsync();
         }
 
@@ -35,7 +35,7 @@ namespace MonitoringDokumenGS.Services.Master
             return await _context.Vendors
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.VendorName)
-                .Select(ToDtoExpr)
+                .Select(VendorMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);
         }
 
@@ -44,7 +44,7 @@ namespace MonitoringDokumenGS.Services.Master
         {
             return await _context.Vendors
                 .Where(x => x.VendorId == id && !x.IsDeleted)
-                .Select(ToDtoExpr)
+                .Select(VendorMappings.ToDtoExpr)
                 .FirstOrDefaultAsync();
         }
 
@@ -70,7 +70,7 @@ namespace MonitoringDokumenGS.Services.Master
             _context.Vendors.Add(entity);
             await _context.SaveChangesAsync();
 
-            var result = ToDto(entity);
+            var result = entity.ToDto();
 
             await _auditLog.LogAsync("Vendor", "Create", null, result, entity.VendorId.ToString());
             return result;
@@ -85,7 +85,7 @@ namespace MonitoringDokumenGS.Services.Master
             if (entity == null)
                 return false;
 
-            var old = ToDto(entity);
+            var old = entity.ToDto();
 
             entity.VendorCode = dto.VendorCode;
             entity.VendorName = dto.VendorName;
@@ -101,7 +101,7 @@ namespace MonitoringDokumenGS.Services.Master
 
             await _context.SaveChangesAsync();
 
-            await _auditLog.LogAsync("Vendor", "Update", old, ToDto(entity), entity.VendorId.ToString());
+            await _auditLog.LogAsync("Vendor", "Update", old, entity.ToDto(), entity.VendorId.ToString());
             return true;
         }
 
@@ -114,7 +114,7 @@ namespace MonitoringDokumenGS.Services.Master
             if (entity == null)
                 return false;
 
-            var old = ToDto(entity);
+            var old = entity.ToDto();
 
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
@@ -123,48 +123,6 @@ namespace MonitoringDokumenGS.Services.Master
 
             await _auditLog.LogAsync("Vendor", "Delete", old, null, id.ToString());
             return true;
-        }
-
-        // ========================= MAPPER EF =========================
-        private static readonly Expression<Func<Vendor, VendorDto>> ToDtoExpr =
-            x => new VendorDto
-            {
-                VendorId = x.VendorId,
-                VendorCode = x.VendorCode,
-                VendorName = x.VendorName,
-                ShortName = x.ShortName,
-                VendorCategoryId = x.VendorCategoryId,
-                OwnerName = x.OwnerName,
-                OwnerPhone = x.OwnerPhone,
-                CompanyEmail = x.CompanyEmail,
-                NPWP = x.NPWP,
-                CreatedAt = x.CreatedAt,
-                CreatedBy = x.CreatedBy,
-                UpdatedAt = x.UpdatedAt,
-                UpdatedBy = x.UpdatedBy,
-                IsDeleted = x.IsDeleted
-            };
-
-        // ========================= MAPPER MEMORY =========================
-        private static VendorDto ToDto(Vendor x)
-        {
-            return new VendorDto
-            {
-                VendorId = x.VendorId,
-                VendorCode = x.VendorCode,
-                VendorName = x.VendorName,
-                ShortName = x.ShortName,
-                VendorCategoryId = x.VendorCategoryId,
-                OwnerName = x.OwnerName,
-                OwnerPhone = x.OwnerPhone,
-                CompanyEmail = x.CompanyEmail,
-                NPWP = x.NPWP,
-                CreatedAt = x.CreatedAt,
-                CreatedBy = x.CreatedBy,
-                UpdatedAt = x.UpdatedAt,
-                UpdatedBy = x.UpdatedBy,
-                IsDeleted = x.IsDeleted
-            };
         }
     }
 }

@@ -1,96 +1,138 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Mappings.Master;
+using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Services.Master
 {
     public class ContractStatusService : IContractStatus
     {
-        private readonly List<ContractStatusDto> _data = new();
-        private readonly object _lock = new();
+        private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
 
-        public ContractStatusService(IAuditLog auditLog)
+        public ContractStatusService(ApplicationDBContext context, IAuditLog auditLog)
         {
+            _context = context;
             _auditLog = auditLog;
         }
 
-        public Task<IEnumerable<ContractStatusDto>> GetAllAsync()
+        // ========================= GET ALL =========================
+        public async Task<IEnumerable<ContractStatusDto>> GetAllAsync()
         {
-            lock (_lock)
-            {
-                return Task.FromResult<IEnumerable<ContractStatusDto>>(_data.ToList());
-            }
+            return await _context.ContractStatuses
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(ContractStatusMappings.ToDtoExpr)
+                .ToListAsync();
         }
 
-        public Task<PagedResponse<ContractStatusDto>> GetPagedAsync(int page, int pageSize)
+        // ========================= PAGING =========================
+        public async Task<PagedResponse<ContractStatusDto>> GetPagedAsync(int page, int pageSize)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.ToPagedResponse(page, pageSize));
-            }
+            return await _context.ContractStatuses
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(ContractStatusMappings.ToDtoExpr)
+                .ToPagedResponseAsync(page, pageSize);
         }
 
-        public Task<ContractStatusDto?> GetByIdAsync(int id)
+        // ========================= GET BY ID =========================
+        public async Task<ContractStatusDto?> GetByIdAsync(int id)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.FirstOrDefault(x => x.ContractStatusId == id));
-            }
+            return await _context.ContractStatuses
+                .AsNoTracking()
+                .Where(x => x.ContractStatusId == id)
+                .Select(ContractStatusMappings.ToDtoExpr)
+                .FirstOrDefaultAsync();
         }
 
+        // ========================= CREATE =========================
         public async Task<ContractStatusDto> CreateAsync(ContractStatusDto dto)
         {
-            lock (_lock)
+            var entity = new ContractStatus
             {
-                dto.ContractStatusId = _data.Count == 0 ? 1 : _data.Max(x => x.ContractStatusId) + 1;
-                _data.Add(dto);
-            }
-            await _auditLog.LogAsync("ContractStatus", "Create", null, dto, dto.ContractStatusId.ToString());
-            return dto;
+                Code = dto.Code,
+                Name = dto.Name,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.CreatedBy,
+                IsDeleted = false
+            };
+
+            _context.ContractStatuses.Add(entity);
+            await _context.SaveChangesAsync();
+
+            var result = entity.ToDto();
+
+            await _auditLog.LogAsync(
+                "ContractStatus",
+                "Create",
+                null,
+                result,
+                entity.ContractStatusId.ToString()
+            );
+
+            return result;
         }
 
+        // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(ContractStatusDto dto)
         {
-            ContractStatusDto? existing;
-            ContractStatusDto? old = null;
-            lock (_lock)
-            {
-                existing = _data.FirstOrDefault(x => x.ContractStatusId == dto.ContractStatusId);
-                if (existing == null)
-                    return false;
-                old = new ContractStatusDto
-                {
-                    ContractStatusId = existing.ContractStatusId,
-                    Code = existing.Code,
-                    Name = existing.Name
-                };
-                existing.Code = dto.Code;
-                existing.Name = dto.Name;
-            }
+            var entity = await _context.ContractStatuses
+                .FirstOrDefaultAsync(x => x.ContractStatusId == dto.ContractStatusId);
 
-            if (existing != null && old != null)
-                await _auditLog.LogAsync("ContractStatus", "Update", old, existing, existing.ContractStatusId.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.Code = dto.Code;
+            entity.Name = dto.Name;
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedBy = dto.UpdatedBy;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "ContractStatus",
+                "Update",
+                old,
+                entity.ToDto(),
+                entity.ContractStatusId.ToString()
+            );
 
             return true;
         }
 
+        // ========================= DELETE (SOFT) =========================
         public async Task<bool> DeleteAsync(int id)
         {
-            ContractStatusDto? removed;
-            lock (_lock)
-            {
-                removed = _data.FirstOrDefault(x => x.ContractStatusId == id);
-                if (removed == null)
-                    return false;
-                _data.Remove(removed);
-            }
+            var entity = await _context.ContractStatuses
+                .FirstOrDefaultAsync(x => x.ContractStatusId == id);
 
-            await _auditLog.LogAsync("ContractStatus", "Delete", removed, null, id.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "ContractStatus",
+                "Delete",
+                old,
+                null,
+                id.ToString()
+            );
+
             return true;
         }
     }

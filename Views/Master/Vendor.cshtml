@@ -1,0 +1,244 @@
+@{
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* Keep DataTables controls aligned with template spacing */
+        div.dataTables_wrapper div.dataTables_filter label,
+        div.dataTables_wrapper div.dataTables_length label {
+            margin-bottom: 0;
+        }
+
+        div.dataTables_wrapper div.dataTables_filter input {
+            width: 240px;
+        }
+
+        table.dataTable>thead>tr>th {
+            white-space: nowrap;
+        }
+
+        /* Prevent action buttons from being visually clipped in scrollable DataTables wrappers */
+        .dataTables_scrollBody {
+            padding-bottom: .5rem;
+        }
+
+        td.dt-actions {
+            padding-top: .6rem !important;
+            padding-bottom: .6rem !important;
+            overflow: visible !important;
+        }
+
+        /* Ensure modal is always above template overlays/backdrop */
+        .modal {
+            z-index: 2000;
+        }
+
+        .modal-backdrop {
+            z-index: 1990;
+        }
+    </style>
+}
+
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Vendors</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="index.html">Master</a></li>
+            <li class="breadcrumb-item">Vendors</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <div class="dropdown">
+                    <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10"
+                        data-bs-auto-close="outside">
+                        <i class="feather-filter"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-eye me-3"></i>
+                            <span>All</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-users me-3"></i>
+                            <span>Group</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-flag me-3"></i>
+                            <span>Country</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-dollar-sign me-3"></i>
+                            <span>Invoice</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-briefcase me-3"></i>
+                            <span>Project</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-user-check me-3"></i>
+                            <span>Active</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="feather-user-minus me-3"></i>
+                            <span>Inactive</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10"
+                        data-bs-auto-close="outside">
+                        <i class="feather-paperclip"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-filetype-pdf me-3"></i>
+                            <span>PDF</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-filetype-csv me-3"></i>
+                            <span>CSV</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-filetype-xml me-3"></i>
+                            <span>XML</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-filetype-txt me-3"></i>
+                            <span>Text</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-filetype-exe me-3"></i>
+                            <span>Excel</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <i class="bi bi-printer me-3"></i>
+                            <span>Print</span>
+                        </a>
+                    </div>
+                </div>
+                <button id="btnCreate" type="button" class="btn btn-primary">
+                    <i class="feather-plus me-2"></i>
+                    <span>Create Vendor</span>
+                </button>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="mb-0">Vendor List</h6>
+                            <small class="text-muted">Manage vendor master data</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="vendorsTable"
+                            class="table table-striped table-bordered table-hover align-middle w-100">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Code</th>
+                                    <th>Vendor Name</th>
+                                    <th>Short Name</th>
+                                    <th>Category</th>
+                                    <th>Owner</th>
+                                    <th>Company Email</th>
+                                    <th>NPWP</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<!-- Edit/Create Modal -->
+<div class="modal fade" id="vendorModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="vendorForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vendorModalLabel">Create Vendor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vendorId" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nomer Vendor (SAP)</label>
+                            <input id="vendorCode" name="vendorCode" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vendor Name</label>
+                            <input id="vendorName" name="vendorName" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Short Name</label>
+                            <input id="shortName" name="shortName" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <select id="vendorCategoryId" name="vendorCategoryId" class="form-select">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">NPWP</label>
+                            <input id="npwp" name="npwp" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Owner Name</label>
+                            <input id="ownerName" name="ownerName" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Owner Phone</label>
+                            <input id="ownerPhone" name="ownerPhone" class="form-control" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Company Email</label>
+                            <input id="companyEmail" name="companyEmail" type="email" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="btnSaveVendor" type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="/js/master-vendor.js?v=@DateTime.Now.Ticks"></script>
+}

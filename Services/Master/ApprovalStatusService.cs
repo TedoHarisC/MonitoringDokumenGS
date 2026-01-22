@@ -1,96 +1,136 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Mappings.Master;
+using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Services.Master
 {
     public class ApprovalStatusService : IApprovalStatus
     {
-        private readonly List<ApprovalStatusDto> _data = new();
-        private readonly object _lock = new();
+        private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
-
-        public ApprovalStatusService(IAuditLog auditLog)
+        public ApprovalStatusService(ApplicationDBContext context, IAuditLog auditLog)
         {
+            _context = context;
             _auditLog = auditLog;
         }
 
-        public Task<IEnumerable<ApprovalStatusDto>> GetAllAsync()
+        // ========================= GET ALL =========================
+        public async Task<IEnumerable<ApprovalStatusDto>> GetAllAsync()
         {
-            lock (_lock)
-            {
-                return Task.FromResult<IEnumerable<ApprovalStatusDto>>(_data.ToList());
-            }
+            return await _context.ApprovalStatuses
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(ApprovalStatusMappings.ToDtoExpr)
+                .ToListAsync();
         }
 
-        public Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize)
+        // ========================= PAGING =========================
+        public async Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.ToPagedResponse(page, pageSize));
-            }
+            return await _context.ApprovalStatuses
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(ApprovalStatusMappings.ToDtoExpr)
+                .ToPagedResponseAsync(page, pageSize);
         }
 
-        public Task<ApprovalStatusDto?> GetByIdAsync(int id)
+        // ========================= GET BY ID =========================
+        public async Task<ApprovalStatusDto?> GetByIdAsync(int id)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.FirstOrDefault(x => x.ApprovalStatusId == id));
-            }
+            return await _context.ApprovalStatuses
+                .AsNoTracking()
+                .Where(x => x.ApprovalStatusId == id && !x.IsDeleted)
+                .Select(ApprovalStatusMappings.ToDtoExpr)
+                .FirstOrDefaultAsync();
         }
 
+        // ========================= CREATE =========================
         public async Task<ApprovalStatusDto> CreateAsync(ApprovalStatusDto dto)
         {
-            lock (_lock)
+            var entity = new ApprovalStatus
             {
-                dto.ApprovalStatusId = _data.Count == 0 ? 1 : _data.Max(x => x.ApprovalStatusId) + 1;
-                _data.Add(dto);
-            }
-            await _auditLog.LogAsync("ApprovalStatus", "Create", null, dto, dto.ApprovalStatusId.ToString());
-            return dto;
+                Code = dto.Code,
+                Name = dto.Name,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.CreatedBy,
+                IsDeleted = false
+            };
+
+            _context.ApprovalStatuses.Add(entity);
+            await _context.SaveChangesAsync();
+
+            var result = entity.ToDto();
+
+            await _auditLog.LogAsync(
+                "ApprovalStatus",
+                "Create",
+                null,
+                result,
+                entity.ApprovalStatusId.ToString()
+            );
+
+            return result;
         }
 
+        // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(ApprovalStatusDto dto)
         {
-            ApprovalStatusDto? existing;
-            ApprovalStatusDto? old = null;
-            lock (_lock)
-            {
-                existing = _data.FirstOrDefault(x => x.ApprovalStatusId == dto.ApprovalStatusId);
-                if (existing == null)
-                    return false;
-                old = new ApprovalStatusDto
-                {
-                    ApprovalStatusId = existing.ApprovalStatusId,
-                    Code = existing.Code,
-                    Name = existing.Name
-                };
-                existing.Code = dto.Code;
-                existing.Name = dto.Name;
-            }
+            var entity = await _context.ApprovalStatuses
+                .FirstOrDefaultAsync(x => x.ApprovalStatusId == dto.ApprovalStatusId);
 
-            if (existing != null && old != null)
-                await _auditLog.LogAsync("ApprovalStatus", "Update", old, existing, existing.ApprovalStatusId.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.Code = dto.Code;
+            entity.Name = dto.Name;
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedBy = dto.UpdatedBy;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "ApprovalStatus",
+                "Update",
+                old,
+                entity.ToDto(),
+                entity.ApprovalStatusId.ToString()
+            );
 
             return true;
         }
 
+        // ========================= DELETE (SOFT) =========================
         public async Task<bool> DeleteAsync(int id)
         {
-            ApprovalStatusDto? removed;
-            lock (_lock)
-            {
-                removed = _data.FirstOrDefault(x => x.ApprovalStatusId == id);
-                if (removed == null)
-                    return false;
-                _data.Remove(removed);
-            }
+            var entity = await _context.ApprovalStatuses
+                .FirstOrDefaultAsync(x => x.ApprovalStatusId == id);
 
-            await _auditLog.LogAsync("ApprovalStatus", "Delete", removed, null, id.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "ApprovalStatus",
+                "Delete",
+                old,
+                null,
+                id.ToString()
+            );
+
             return true;
         }
     }

@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 namespace MonitoringDokumenGS.Controllers.API
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/vendor-categories")]
     public class VendorCategoriesController : ControllerBase
     {
         private readonly IVendorCategory _service;

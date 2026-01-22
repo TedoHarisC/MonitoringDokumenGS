@@ -10,5 +10,9 @@ namespace MonitoringDokumenGS.Dtos.Master
         public bool IsActive { get; set; }
         public string AppliesTo { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public Guid? CreatedBy { get; set; } = Guid.Empty;
+        public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedBy { get; set; } = Guid.Empty;
+        public bool IsDeleted { get; set; }
     }
 }

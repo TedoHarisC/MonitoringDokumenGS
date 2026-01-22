@@ -13,6 +13,14 @@
       "PackagePath": "staticwebassets/favicon.ico"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/images/logo_full.png",
+      "PackagePath": "staticwebassets/images/logo_full.png"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/images/logo_small.webp",
+      "PackagePath": "staticwebassets/images/logo_small.webp"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-login.js",
       "PackagePath": "staticwebassets/js/auth-login.js"
     },
@@ -23,6 +31,10 @@
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",
       "PackagePath": "staticwebassets/js/layout-logout.js"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-vendor.js",
+      "PackagePath": "staticwebassets/js/master-vendor.js"
     },
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/site.js",

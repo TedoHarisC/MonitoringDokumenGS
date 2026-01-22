@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 namespace MonitoringDokumenGS.Controllers.API
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/contract-statuses")]
     public class ContractStatusController : ControllerBase
     {
         private readonly IContractStatus _service;

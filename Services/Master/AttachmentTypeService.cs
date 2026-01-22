@@ -1,102 +1,140 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Mappings.Master;
+using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Services.Master
 {
     public class AttachmentTypeService : IAttachmentTypes
     {
-        private readonly List<AttachmentTypeDto> _data = new();
-        private readonly object _lock = new();
+        private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
 
-        public AttachmentTypeService(IAuditLog auditLog)
+        public AttachmentTypeService(ApplicationDBContext context, IAuditLog auditLog)
         {
+            _context = context;
             _auditLog = auditLog;
         }
 
-        public Task<IEnumerable<AttachmentTypeDto>> GetAllAsync()
+        // ========================= GET ALL =========================
+        public async Task<IEnumerable<AttachmentTypeDto>> GetAllAsync()
         {
-            lock (_lock)
-            {
-                return Task.FromResult<IEnumerable<AttachmentTypeDto>>(_data.ToList());
-            }
+            return await _context.AttachmentTypes
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(AttachmentTypeMappings.ToDtoExpr)
+                .ToListAsync();
         }
 
-        public Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize)
+        // ========================= PAGING =========================
+        public async Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.ToPagedResponse(page, pageSize));
-            }
+            return await _context.AttachmentTypes
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.Name)
+                .Select(AttachmentTypeMappings.ToDtoExpr)
+                .ToPagedResponseAsync(page, pageSize);
         }
 
-        public Task<AttachmentTypeDto?> GetByIdAsync(int id)
+        // ========================= GET BY ID =========================
+        public async Task<AttachmentTypeDto?> GetByIdAsync(int id)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_data.FirstOrDefault(x => x.AttachmentTypeId == id));
-            }
+            return await _context.AttachmentTypes
+                .Where(x => x.AttachmentTypeId == id && !x.IsDeleted)
+                .Select(AttachmentTypeMappings.ToDtoExpr)
+                .FirstOrDefaultAsync();
         }
 
+        // ========================= CREATE =========================
         public async Task<AttachmentTypeDto> CreateAsync(AttachmentTypeDto dto)
         {
-            lock (_lock)
+            var entity = new AttachmentTypes
             {
-                dto.AttachmentTypeId = _data.Count == 0 ? 1 : _data.Max(x => x.AttachmentTypeId) + 1;
-                dto.CreatedAt = dto.CreatedAt == default ? System.DateTime.UtcNow : dto.CreatedAt;
-                _data.Add(dto);
-            }
-            await _auditLog.LogAsync("AttachmentType", "Create", null, dto, dto.AttachmentTypeId.ToString());
-            return dto;
+                Code = dto.Code,
+                Name = dto.Name,
+                IsActive = dto.IsActive,
+                AppliesTo = dto.AppliesTo,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.CreatedBy,
+                IsDeleted = false
+            };
+
+            _context.AttachmentTypes.Add(entity);
+            await _context.SaveChangesAsync();
+
+            var result = entity.ToDto();
+
+            await _auditLog.LogAsync(
+                "AttachmentType",
+                "Create",
+                null,
+                result,
+                entity.AttachmentTypeId.ToString()
+            );
+
+            return result;
         }
 
+        // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(AttachmentTypeDto dto)
         {
-            AttachmentTypeDto? existing;
-            AttachmentTypeDto? old = null;
-            lock (_lock)
-            {
-                existing = _data.FirstOrDefault(x => x.AttachmentTypeId == dto.AttachmentTypeId);
-                if (existing == null)
-                    return false;
-                old = new AttachmentTypeDto
-                {
-                    AttachmentTypeId = existing.AttachmentTypeId,
-                    Code = existing.Code,
-                    Name = existing.Name,
-                    IsActive = existing.IsActive,
-                    AppliesTo = existing.AppliesTo,
-                    CreatedAt = existing.CreatedAt
-                };
-                existing.Code = dto.Code;
-                existing.Name = dto.Name;
-                existing.IsActive = dto.IsActive;
-                existing.AppliesTo = dto.AppliesTo;
-            }
+            var entity = await _context.AttachmentTypes
+                .FirstOrDefaultAsync(x => x.AttachmentTypeId == dto.AttachmentTypeId);
 
-            if (existing != null && old != null)
-                await _auditLog.LogAsync("AttachmentType", "Update", old, existing, existing.AttachmentTypeId.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.Code = dto.Code;
+            entity.Name = dto.Name;
+            entity.IsActive = dto.IsActive;
+            entity.AppliesTo = dto.AppliesTo;
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedBy = dto.UpdatedBy;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "AttachmentType",
+                "Update",
+                old,
+                entity.ToDto(),
+                entity.AttachmentTypeId.ToString()
+            );
 
             return true;
         }
 
+        // ========================= DELETE (SOFT) =========================
         public async Task<bool> DeleteAsync(int id)
         {
-            AttachmentTypeDto? removed;
-            lock (_lock)
-            {
-                removed = _data.FirstOrDefault(x => x.AttachmentTypeId == id);
-                if (removed == null)
-                    return false;
-                _data.Remove(removed);
-            }
+            var entity = await _context.AttachmentTypes
+                .FirstOrDefaultAsync(x => x.AttachmentTypeId == id);
 
-            await _auditLog.LogAsync("AttachmentType", "Delete", removed, null, id.ToString());
+            if (entity == null)
+                return false;
+
+            var old = entity.ToDto();
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditLog.LogAsync(
+                "AttachmentType",
+                "Delete",
+                old,
+                null,
+                id.ToString()
+            );
+
             return true;
         }
     }

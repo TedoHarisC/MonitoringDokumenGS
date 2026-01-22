@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 namespace MonitoringDokumenGS.Controllers.API
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/approval-statuses")]
     public class ApprovalStatusController : ControllerBase
     {
         private readonly IApprovalStatus _service;

@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 namespace MonitoringDokumenGS.Controllers.API
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/attachment-types")]
     public class AttachmentTypesController : ControllerBase
     {
         private readonly IAttachmentTypes _service;
