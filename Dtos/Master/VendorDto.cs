@@ -2,7 +2,7 @@ using System;
 
 namespace MonitoringDokumenGS.Dtos.Master
 {
-    public class VendorDto
+    public class VendorDto : SoftDeletableEntity
     {
         public Guid VendorId { get; set; }
         public string VendorCode { get; set; } = string.Empty;
@@ -13,10 +13,5 @@ namespace MonitoringDokumenGS.Dtos.Master
         public string OwnerPhone { get; set; } = string.Empty;
         public string CompanyEmail { get; set; } = string.Empty;
         public string NPWP { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public Guid CreatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }
