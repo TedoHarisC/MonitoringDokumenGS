@@ -29,6 +29,7 @@ builder.Services.AddRateLimiter(options =>
 
 // DI registrations (Service Layer)
 builder.Services.AddScoped<IAuth, AuthService>();
+builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddScoped<IFile, FileService>();
 builder.Services.AddScoped<IAuditLog, AuditLogService>();
 builder.Services.AddScoped<IApprovalStatus, ApprovalStatusService>();

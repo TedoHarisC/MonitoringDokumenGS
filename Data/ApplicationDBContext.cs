@@ -26,7 +26,16 @@ namespace MonitoringDokumenGS.Data
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<ApprovalStatus> ApprovalStatuses { get; set; }
         public DbSet<ContractStatus> ContractStatuses { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRoles> UserRoles { get; set; }
 
         // Define other DbSets for your entities here
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UserRoles>()
+                .HasKey(ur => new { ur.UserId, ur.RoleId });
+        }
+
     }
 }

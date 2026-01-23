@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MonitoringDokumenGS.Interfaces;
 using Dtos.Login;
@@ -14,11 +13,16 @@ public class AuthController : Controller
 {
     private readonly ILogger<AuthController> _logger;
     private readonly IAuth _auth;
+    private readonly IRoleService _roleService;
+    private readonly IUser _userService;
 
-    public AuthController(ILogger<AuthController> logger, IAuth auth)
+
+    public AuthController(ILogger<AuthController> logger, IAuth auth, IUser userService, IRoleService roleService)
     {
         _logger = logger;
         _auth = auth;
+        _roleService = roleService;
+        _userService = userService;
     }
 
     // GET: /Auth/Index (Login)
@@ -41,11 +45,19 @@ public class AuthController : Controller
         {
             var (token, refresh) = await _auth.LoginAsync(request);
 
+            var user = await _userService.GetByUsernameAsync(request.Username);
+            var roles = await _roleService.GetUserRolesAsync(user!.UserId);
+
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, request.Username),
-            new Claim("userId", request.Username)
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, request.Username),
+                new Claim("userId", request.Username)
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.Code));
+            }
 
             var identity = new ClaimsIdentity(
                 claims,
