@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
+    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
     [ApiController]
     [Route("api/approval-statuses")]
     public class ApprovalStatusController : ControllerBase

@@ -7,7 +7,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize]
+    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
     [ApiController]
     [Route("api/vendors")]
     public class VendorsController : ControllerBase

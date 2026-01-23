@@ -5,7 +5,7 @@ using MonitoringDokumenGS.Data;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize(Roles = "SUPER_ADMIN")]
+    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
     [ApiController]
     [Route("api/audit-logs")]
     public class AuditLogsController : ControllerBase

@@ -7,7 +7,7 @@ using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Models;
 using BCryptNet = BCrypt.Net.BCrypt;
 
-[Authorize]
+[Authorize(Roles = "SUPER_ADMIN")]
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase
