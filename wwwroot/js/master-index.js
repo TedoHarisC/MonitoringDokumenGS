@@ -315,9 +315,9 @@
                 { data: 'code' },
                 { data: 'name' },
                 {
-                    data: 'isActive',
+                    data: 'isRequired',
                     render: function (data) {
-                        return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>';
+                        return data ? '<span class="badge bg-success">Wajib</span>' : '<span class="badge bg-secondary">Tidak Wajib</span>';
                     }
                 },
                 { data: 'appliesTo' },
@@ -347,7 +347,7 @@
             $('#attachmentCode').val('');
             $('#attachmentName').val('');
             $('#attachmentAppliesTo').val('');
-            $('#attachmentIsActive').prop('checked', true);
+            $('#attachmentIsRequired').prop('checked', true);
             $('#attachmentModalLabel').text('Create Attachment Type');
             showModal('attachmentModal');
         });
@@ -362,7 +362,7 @@
                     $('#attachmentCode').val(data.code);
                     $('#attachmentName').val(data.name);
                     $('#attachmentAppliesTo').val(data.appliesTo);
-                    $('#attachmentIsActive').prop('checked', !!data.isActive);
+                    $('#attachmentIsRequired').prop('checked', !!data.isRequired);
                     showModal('attachmentModal');
                 })
                 .catch(() => swalError('Error', { message: 'Unable to load attachment type.' }));
@@ -393,7 +393,7 @@
                 code: $('#attachmentCode').val(),
                 name: $('#attachmentName').val(),
                 appliesTo: $('#attachmentAppliesTo').val(),
-                isActive: !!$('#attachmentIsActive').is(':checked')
+                isRequired: !!$('#attachmentIsRequired').is(':checked')
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.attachment}/${id}` : apis.attachment;
@@ -417,7 +417,7 @@
         const cols = [
             { header: 'Code', value: r => r.code },
             { header: 'Name', value: r => r.name },
-            { header: 'Active', value: r => (r.isActive ? 'Active' : 'Inactive') },
+            { header: 'Required', value: r => (r.isRequired ? 'Wajib' : 'Tidak Wajib') },
             { header: 'Applies To', value: r => r.appliesTo }
         ];
 

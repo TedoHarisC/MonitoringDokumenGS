@@ -114,8 +114,8 @@ namespace MonitoringDokumenGS.Services.Master
 
             var old = entity.ToDto();
 
-            // entity.IsDeleted = true;
-            // entity.UpdatedAt = DateTime.UtcNow;
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

@@ -7,8 +7,5 @@ namespace MonitoringDokumenGS.Models
         [Key]
         public int VendorCategoryId { get; set; }
         public string Name { get; set; } = default!;
-
-        // Navigation properties
-        public UserModel Users { get; set; } = default!;
     }
 }

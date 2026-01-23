@@ -57,6 +57,7 @@ namespace MonitoringDokumenGS.Services.Master
             {
                 Code = dto.Code,
                 Name = dto.Name,
+                IsRequired = dto.IsRequired,
                 AppliesTo = dto.AppliesTo,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = dto.CreatedBy,
@@ -92,6 +93,7 @@ namespace MonitoringDokumenGS.Services.Master
 
             entity.Code = dto.Code;
             entity.Name = dto.Name;
+            entity.IsRequired = dto.IsRequired;
             entity.AppliesTo = dto.AppliesTo;
             entity.UpdatedAt = DateTime.UtcNow;
             entity.UpdatedBy = dto.UpdatedBy;
