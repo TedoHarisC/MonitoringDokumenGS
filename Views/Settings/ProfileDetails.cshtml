@@ -1,0 +1,171 @@
+@using System
+@using System.Linq
+@model MonitoringDokumenGS.ViewModels.Settings.ProfileDetailsViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+
+    var initials = string.IsNullOrWhiteSpace(Model?.Username)
+    ? "U"
+    : new string(Model.Username
+    .Trim()
+    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+    .Select(p => char.ToUpperInvariant(p[0]))
+    .Take(2)
+    .ToArray());
+
+    var rolesText = (Model?.Roles != null && Model.Roles.Any())
+    ? string.Join(", ", Model.Roles)
+    : "-";
+}
+
+<!-- [ page-header ] start -->
+<div class="page-header mb-4">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Profile</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item">Settings</li>
+            <li class="breadcrumb-item">Profile</li>
+        </ul>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+
+<div class="row mx-2">
+    <div class="col-xxl-4 col-xl-5">
+        <div class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="mb-4 text-center">
+                    <div class="wd-150 ht-150 mx-auto mb-3 position-relative">
+                        <div
+                            class="avatar-text wd-150 ht-150 border border-5 border-gray-3 d-flex align-items-center justify-content-center fs-1 fw-bold">
+                            @initials
+                        </div>
+                        <div class="wd-10 ht-10 text-success rounded-circle position-absolute translate-middle"
+                            style="top: 76%; right: 10px">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="mb-1">
+                        <span class="fs-14 fw-bold d-block text-truncate">@Model?.Username</span>
+                        <span class="fs-12 fw-normal text-muted d-block text-truncate">@Model?.Email</span>
+                        @if (!string.IsNullOrWhiteSpace(Model?.VendorName))
+                        {
+                            <span class="fs-12 fw-normal text-muted d-block text-truncate">@Model?.VendorName</span>
+                        }
+                    </div>
+                </div>
+
+                <ul class="list-unstyled mb-0">
+                    <li class="hstack justify-content-between mb-3">
+                        <span class="text-muted fw-medium hstack gap-3"><i class="feather-user"></i>Username</span>
+                        <span class="fw-semibold text-truncate ms-3">@Model?.Username</span>
+                    </li>
+                    <li class="hstack justify-content-between mb-3">
+                        <span class="text-muted fw-medium hstack gap-3"><i class="feather-mail"></i>Email</span>
+                        <span class="fw-semibold text-truncate ms-3">@Model?.Email</span>
+                    </li>
+                    <li class="hstack justify-content-between mb-3">
+                        <span class="text-muted fw-medium hstack gap-3"><i class="feather-briefcase"></i>Vendor</span>
+                        <span class="fw-semibold text-truncate ms-3">@(Model?.VendorName ?? "-")</span>
+                    </li>
+                    <li class="hstack justify-content-between mb-0">
+                        <span class="text-muted fw-medium hstack gap-3"><i class="feather-clock"></i>Last Login</span>
+                        <span class="fw-semibold text-truncate ms-3">@(Model?.LastLoginAt?.ToLocalTime().ToString("dd                   MMM yyyy HH:mm") ?? "-")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xxl-8 col-xl-7">
+        @if (TempData["SuccessMessage"] is string successMessage && !string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="alert alert-dismissible mb-4 p-4 d-flex alert-soft-success-message" role="alert">
+                <div class="me-4 d-none d-md-block">
+                    <i class="feather feather-check-circle fs-1"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <p class="fw-bold mb-0 text-truncate-1-line">@successMessage</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Profile Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-0 mb-3">
+                    <div class="col-sm-4 text-muted">User ID:</div>
+                    <div class="col-sm-8 fw-semibold">@Model?.UserId</div>
+                </div>
+                <div class="row g-0 mb-3">
+                    <div class="col-sm-4 text-muted">Username:</div>
+                    <div class="col-sm-8 fw-semibold">@Model?.Username</div>
+                </div>
+                <div class="row g-0 mb-3">
+                    <div class="col-sm-4 text-muted">Email:</div>
+                    <div class="col-sm-8 fw-semibold">@Model?.Email</div>
+                </div>
+                <div class="row g-0 mb-3">
+                    <div class="col-sm-4 text-muted">Vendor:</div>
+                    <div class="col-sm-8 fw-semibold">@(Model?.VendorName ?? "-")</div>
+                </div>
+                <div class="row g-0 mb-0">
+                    <div class="col-sm-4 text-muted">Roles:</div>
+                    <div class="col-sm-8 fw-semibold">@rolesText</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Change Password</h5>
+            </div>
+            <div class="card-body">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-soft-danger-message p-3 mb-4" role="alert">
+                        <div class="fw-semibold mb-1">Please fix the errors below.</div>
+                        <div class="text-danger fs-12">@Html.ValidationSummary(excludePropertyErrors: true)</div>
+                    </div>
+                }
+
+                <form asp-controller="Settings" asp-action="ChangePassword" method="post" autocomplete="off">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Current Password</label>
+                            <input name="CurrentPassword" type="password" class="form-control" />
+                            <span class="text-danger fs-12">@Html.ValidationMessage("CurrentPassword")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">New Password</label>
+                            <input name="NewPassword" type="password" class="form-control" />
+                            <span class="text-danger fs-12">@Html.ValidationMessage("NewPassword")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm New Password</label>
+                            <input name="ConfirmNewPassword" type="password" class="form-control" />
+                            <span class="text-danger fs-12">@Html.ValidationMessage("ConfirmNewPassword")</span>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="feather-save me-2"></i>
+                                Update Password
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-light">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

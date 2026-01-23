@@ -56,5 +56,34 @@
 </main>
 
 @section Scripts {
+    @if (TempData["AuthInfoMessage"] is string infoMessage && !string.IsNullOrWhiteSpace(infoMessage))
+    {
+        var title = TempData["AuthInfoTitle"] as string ?? "Info";
+        var icon = TempData["AuthInfoIcon"] as string ?? "info";
+        <script>
+            (function () {
+                try {
+                    const title = @System.Text.Json.JsonSerializer.Serialize(title);
+                    const text = @System.Text.Json.JsonSerializer.Serialize(infoMessage);
+                    const icon = @System.Text.Json.JsonSerializer.Serialize(icon);
+                    Swal.fire({
+                        icon: icon,
+                        title: title,
+                        text: text,
+                        timer: 1800,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                } catch (e) {
+                    // ignore
+                }
+            })();
+        </script>
+    }
     <script src="~/js/auth-login.js?v=@DateTime.Now.Ticks"></script>
 }
