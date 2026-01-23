@@ -13,5 +13,6 @@ namespace MonitoringDokumenGS.Dtos.Auth
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public string? VendorName { get; set; }
     }
 }

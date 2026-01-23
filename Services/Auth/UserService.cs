@@ -22,6 +22,7 @@ namespace MonitoringDokumenGS.Services
         {
             return await _context.Users
                 .AsNoTracking()
+                .Include(u => u.Vendor)
                 .Where(u => !u.isDeleted)
                 .OrderBy(u => u.Username)
                 .Select(u => new UserDto
@@ -34,7 +35,8 @@ namespace MonitoringDokumenGS.Services
                     CreatedAt = u.CreatedAt,
                     UpdatedAt = u.UpdatedAt,
                     IsDeleted = u.isDeleted,
-                    LastLoginAt = u.LastLoginAt
+                    LastLoginAt = u.LastLoginAt,
+                    VendorName = u.Vendor != null ? u.Vendor.VendorName : null
                 })
                 .ToListAsync();
         }
@@ -43,6 +45,7 @@ namespace MonitoringDokumenGS.Services
         {
             return await _context.Users
                 .AsNoTracking()
+                .Include(u => u.Vendor)
                 .Where(u => u.UserId == id && !u.isDeleted)
                 .Select(u => new UserDto
                 {
@@ -54,7 +57,8 @@ namespace MonitoringDokumenGS.Services
                     CreatedAt = u.CreatedAt,
                     UpdatedAt = u.UpdatedAt,
                     IsDeleted = u.isDeleted,
-                    LastLoginAt = u.LastLoginAt
+                    LastLoginAt = u.LastLoginAt,
+                    VendorName = u.Vendor != null ? u.Vendor.VendorName : null
                 })
                 .FirstOrDefaultAsync();
         }
@@ -74,7 +78,8 @@ namespace MonitoringDokumenGS.Services
                     CreatedAt = u.CreatedAt,
                     UpdatedAt = u.UpdatedAt,
                     IsDeleted = u.isDeleted,
-                    LastLoginAt = u.LastLoginAt
+                    LastLoginAt = u.LastLoginAt,
+                    VendorName = u.Vendor != null ? u.Vendor.VendorName : null
                 })
                 .FirstOrDefaultAsync();
         }

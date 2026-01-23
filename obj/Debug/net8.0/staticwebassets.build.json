@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "BIGA1UXpAhbU3XIK3ZWTwDKdht+CLIy45j1qvmkFri4=",
+  "Hash": "pa/wGKcGG6jaaNTeZ01/RCUVpdjGwIJpmgzfqsAObjg=",
   "Source": "MonitoringDokumenGS",
   "BasePath": "_content/MonitoringDokumenGS",
   "Mode": "Default",
@@ -224,6 +224,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/js/master-vendor.js"
+    },
+    {
+      "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/settings-admin-users.js",
+      "SourceId": "MonitoringDokumenGS",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/",
+      "BasePath": "_content/MonitoringDokumenGS",
+      "RelativePath": "js/settings-admin-users.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/settings-admin-users.js"
     },
     {
       "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/site.js",

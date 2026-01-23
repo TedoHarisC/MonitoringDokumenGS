@@ -17,6 +17,7 @@ namespace MonitoringDokumenGS.Models
         public bool isDeleted { get; set; } = false;
         public DateTime? LastLoginAt { get; set; }
         public Guid SecurityStamp { get; set; } = Guid.NewGuid();
-        // Other user properties...
+        // Navigation Properties
+        public virtual Vendor? Vendor { get; set; }
     }
 }
