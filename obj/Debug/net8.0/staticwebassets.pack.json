@@ -37,6 +37,10 @@
       "PackagePath": "staticwebassets/js/master-index.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-users.js",
+      "PackagePath": "staticwebassets/js/master-users.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-vendor.js",
       "PackagePath": "staticwebassets/js/master-vendor.js"
     },

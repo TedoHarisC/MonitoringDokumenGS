@@ -1,6 +1,5 @@
-
-
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonitoringDokumenGS.Models;
 
 namespace MonitoringDokumenGS.Data
@@ -33,8 +32,30 @@ namespace MonitoringDokumenGS.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            // Fix InvalidCastException: some databases store this flag as BIGINT (0/1).
+            // Apply narrowly so we don't break entities whose columns are normal SQL Server BIT.
+            var boolToLongConverter = new ValueConverter<bool, long>(v => v ? 1L : 0L, v => v == 1L);
+
+            modelBuilder.Entity<UserRoles>()
+                .Property(x => x.IsDeleted)
+                .HasConversion(boolToLongConverter);
+
             modelBuilder.Entity<UserRoles>()
                 .HasKey(ur => new { ur.UserId, ur.RoleId });
+
+            modelBuilder.Entity<UserRoles>()
+                .HasOne<UserModel>()
+                .WithMany()
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserRoles>()
+                .HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

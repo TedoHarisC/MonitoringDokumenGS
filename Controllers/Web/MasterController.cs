@@ -17,5 +17,11 @@ namespace MonitoringDokumenGS.Controllers.Web
         {
             return View();
         }
+
+        // GET: /Master/Users
+        public IActionResult Users()
+        {
+            return View();
+        }
     }
 }
