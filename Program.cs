@@ -27,6 +27,9 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// Register IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
 // DI registrations (Service Layer)
 builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IUser, UserService>();

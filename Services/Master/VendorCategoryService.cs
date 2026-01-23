@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Common;
@@ -58,6 +59,7 @@ namespace MonitoringDokumenGS.Services.Master
             var entity = new VendorCategory
             {
                 Name = dto.Name,
+                CreatedBy = dto.CreatedBy,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -119,12 +121,13 @@ namespace MonitoringDokumenGS.Services.Master
 
             await _context.SaveChangesAsync();
 
+            // Audit Log
             await _auditLog.LogAsync(
                 "VendorCategory",
                 "Delete",
                 old,
                 null,
-                id.ToString()
+                entity.VendorCategoryId.ToString()
             );
 
             return true;

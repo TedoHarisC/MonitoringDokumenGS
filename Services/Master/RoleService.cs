@@ -37,7 +37,7 @@ public class RoleService : IRoleService
         var entity = new Role
         {
             Code = role.Code.Trim(),
-            Name = (role.Name ?? string.Empty).Trim()
+            Name = (role.Name ?? string.Empty).Trim(),
         };
 
         _context.Roles.Add(entity);

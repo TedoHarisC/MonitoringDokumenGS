@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
+    [Authorize]
     [ApiController]
     [Route("api/vendors")]
     public class VendorsController : ControllerBase

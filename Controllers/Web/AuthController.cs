@@ -46,12 +46,18 @@ public class AuthController : Controller
             var (token, refresh) = await _auth.LoginAsync(request);
 
             var user = await _userService.GetByUsernameAsync(request.Username);
+            if (user == null)
+                return Unauthorized(new { success = false, message = "Invalid username or password" });
+
             var roles = await _roleService.GetUserRolesAsync(user!.UserId);
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, request.Username),
-                new Claim("userId", request.Username)
+                // IMPORTANT: AuditLogService expects NameIdentifier to be a Guid user id.
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username ?? request.Username),
+                new Claim("userId", user.UserId.ToString()),
+                new Claim("username", user.Username ?? request.Username)
             };
 
             foreach (var role in roles)

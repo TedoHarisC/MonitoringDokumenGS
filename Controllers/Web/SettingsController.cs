@@ -11,5 +11,11 @@ namespace MonitoringDokumenGS.Controllers.Web
         {
             return View();
         }
+
+        // GET : /Settings/AuditLog
+        public IActionResult AuditLog()
+        {
+            return View();
+        }
     }
 }
