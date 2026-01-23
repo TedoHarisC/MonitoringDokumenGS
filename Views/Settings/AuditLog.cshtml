@@ -33,6 +33,14 @@
             margin: 0;
             font-size: .85rem;
         }
+
+        .modal {
+            z-index: 2000;
+        }
+
+        .modal-backdrop {
+            z-index: 1990;
+        }
     </style>
 }
 
@@ -95,14 +103,14 @@
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-12 col-lg-6">
-                        <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
                             <h6 class="mb-2">Old Data</h6>
                             <button type="button" class="btn btn-sm btn-light" id="btnCopyOld">Copy</button>
                         </div>
                         <pre class="audit-json" id="auditOld"></pre>
                     </div>
                     <div class="col-12 col-lg-6">
-                        <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
                             <h6 class="mb-2">New Data</h6>
                             <button type="button" class="btn btn-sm btn-light" id="btnCopyNew">Copy</button>
                         </div>

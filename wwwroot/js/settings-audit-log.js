@@ -51,6 +51,13 @@
     function showModal(modalId) {
         const el = document.getElementById(modalId)
         if (!el) return
+
+        // Some admin templates apply transforms/filters to content wrappers.
+        // If the modal lives inside those wrappers, it can render behind the backdrop or look "covered".
+        // Moving it under <body> avoids stacking-context issues.
+        if (el.parentElement !== document.body) {
+            document.body.appendChild(el)
+        }
         const modal = new bootstrap.Modal(el)
         modal.show()
     }
