@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "CovrfZrrSKOA75V4s+sbZ1QvmuIBAILqcPSvpMdjfZ8=",
+  "Hash": "5w87ek15YVeTgZKiSWc1oL+r86QyEX5LtaDOw0AB+lc=",
   "Source": "MonitoringDokumenGS",
   "BasePath": "_content/MonitoringDokumenGS",
   "Mode": "Default",
@@ -131,6 +131,25 @@
       "OriginalItemSpec": "wwwroot/images/logo_small.webp"
     },
     {
+      "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-forgot-password.js",
+      "SourceId": "MonitoringDokumenGS",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/",
+      "BasePath": "_content/MonitoringDokumenGS",
+      "RelativePath": "js/auth-forgot-password.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/auth-forgot-password.js"
+    },
+    {
       "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-login.js",
       "SourceId": "MonitoringDokumenGS",
       "SourceType": "Discovered",
@@ -167,6 +186,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/js/auth-register.js"
+    },
+    {
+      "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-reset-password.js",
+      "SourceId": "MonitoringDokumenGS",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/",
+      "BasePath": "_content/MonitoringDokumenGS",
+      "RelativePath": "js/auth-reset-password.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/auth-reset-password.js"
     },
     {
       "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",

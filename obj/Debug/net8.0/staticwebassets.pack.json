@@ -21,12 +21,20 @@
       "PackagePath": "staticwebassets/images/logo_small.webp"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-forgot-password.js",
+      "PackagePath": "staticwebassets/js/auth-forgot-password.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-login.js",
       "PackagePath": "staticwebassets/js/auth-login.js"
     },
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-register.js",
       "PackagePath": "staticwebassets/js/auth-register.js"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/auth-reset-password.js",
+      "PackagePath": "staticwebassets/js/auth-reset-password.js"
     },
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",

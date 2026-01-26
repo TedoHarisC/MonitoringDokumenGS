@@ -37,6 +37,25 @@ public class AuthController : Controller
         return View();
     }
 
+    // GET: /Auth/ForgotPassword
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    // GET: /Auth/ResetPassword
+    public IActionResult ResetPassword(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            TempData["AuthInfoMessage"] = "Invalid or missing reset token. Please request a new password reset.";
+            TempData["AuthInfoTitle"] = "Invalid Token";
+            TempData["AuthInfoIcon"] = "error";
+            return RedirectToAction("ForgotPassword");
+        }
+        return View();
+    }
+
     // POST: /Auth/Login (Login)
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)

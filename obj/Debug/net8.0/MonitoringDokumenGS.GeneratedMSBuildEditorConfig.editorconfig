@@ -18,12 +18,20 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS
 build_property._RazorSourceGeneratorDebug = 
 
+[/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/Views/Auth/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9Gb3Jnb3RQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/Views/Auth/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/Views/Auth/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9SZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/Views/Auth/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9SZXNldFBhc3N3b3JkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/Views/Contract/Index.cshtml]

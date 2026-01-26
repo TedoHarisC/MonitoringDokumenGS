@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Models;
+using MonitoringDokumenGS.Services.Infrastructure;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace MonitoringDokumenGS.Services
@@ -18,12 +19,18 @@ namespace MonitoringDokumenGS.Services
         private readonly ApplicationDBContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
+        private readonly IEmailService _emailService;
 
-        public AuthService(ApplicationDBContext context, IConfiguration configuration, ILogger<AuthService> logger)
+        public AuthService(
+            ApplicationDBContext context,
+            IConfiguration configuration,
+            ILogger<AuthService> logger,
+            IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<bool> RegisterAsync(RegisterRequestDto registerDto)
@@ -163,6 +170,31 @@ namespace MonitoringDokumenGS.Services
 
             _context.UserRefreshTokens.Add(record);
             await _context.SaveChangesAsync();
+
+            // Send password reset email
+            try
+            {
+                var resetLink = $"{_configuration["AppUrl"] ?? "http://localhost:5170"}/Auth/ResetPassword?token={resetToken}";
+                var htmlBody = EmailTemplateHelper.GetPasswordResetEmail(
+                    userName: user.Username ?? "User",
+                    resetLink: resetLink,
+                    expirationTime: "1 hour"
+                );
+
+                await _emailService.SendAsync(
+                    to: user.Email ?? email,
+                    subject: "Password Reset Request - ABB Monitoring System",
+                    htmlBody: htmlBody
+                );
+
+                _logger.LogInformation("Password reset email sent to {Email}", user.Email ?? email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email ?? email);
+                // Don't fail the request if email fails, token is still valid
+            }
+
             return resetToken;
         }
 
