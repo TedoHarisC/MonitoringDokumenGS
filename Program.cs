@@ -36,6 +36,7 @@ builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddScoped<IFile, FileService>();
 builder.Services.AddScoped<IAuditLog, AuditLogService>();
+builder.Services.AddScoped<INotifications, NotificationService>();
 builder.Services.AddScoped<IApprovalStatus, ApprovalStatusService>();
 builder.Services.AddScoped<IAttachmentTypes, AttachmentTypeService>();
 builder.Services.AddScoped<IContractStatus, ContractStatusService>();
