@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Approval Required</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px; background-color: #ffc107; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: bold; color: #000000; font-family: Arial, Helvetica, sans-serif;">
+                                ABB Monitoring System
+                            </h1>
+                            <p style="margin: 5px 0 0; font-size: 14px; color: #664d03; font-family: Arial, Helvetica, sans-serif;">
+                                Approval Request
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- Icon -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 20px;">
+                                        <div style="width: 70px; height: 70px; background-color: #ffc107; border-radius: 50%; display: inline-block; line-height: 70px; text-align: center;">
+                                            <span style="font-size: 36px; color: #000000;">⚠️</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Title -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <h2 style="margin: 0 0 10px; font-size: 26px; font-weight: bold; color: #212529; font-family: Arial, Helvetica, sans-serif;">
+                                            Approval Required
+                                        </h2>
+                                        <p style="margin: 0; font-size: 16px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                            Your review and approval is needed for the following item
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Message -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="padding: 25px 0 20px;">
+                                        <p style="margin: 0; font-size: 15px; line-height: 24px; color: #495057; font-family: Arial, Helvetica, sans-serif;">
+                                            Hello <strong>{{ApproverName}}</strong>,
+                                        </p>
+                                        <p style="margin: 15px 0 0; font-size: 15px; line-height: 24px; color: #495057; font-family: Arial, Helvetica, sans-serif;">
+                                            {{ItemType}} <strong>{{ItemNumber}}</strong> has been submitted and is awaiting your approval.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Item Details -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0; border: 2px solid #ffc107; border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #fffbf0;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif;">
+                                                    <strong style="color: #212529;">Item Number:</strong>
+                                                    <span style="color: #495057; float: right;">{{ItemNumber}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif; border-top: 1px solid #ffe69c;">
+                                                    <strong style="color: #212529;">Type:</strong>
+                                                    <span style="color: #495057; float: right;">{{ItemType}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif; border-top: 1px solid #ffe69c;">
+                                                    <strong style="color: #212529;">Amount/Value:</strong>
+                                                    <span style="color: #ffc107; font-weight: bold; float: right;">{{Amount}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif; border-top: 1px solid #ffe69c;">
+                                                    <strong style="color: #212529;">Submitted By:</strong>
+                                                    <span style="color: #495057; float: right;">{{SubmittedBy}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif; border-top: 1px solid #ffe69c;">
+                                                    <strong style="color: #212529;">Submitted Date:</strong>
+                                                    <span style="color: #495057; float: right;">{{SubmittedDate}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 15px; font-family: Arial, Helvetica, sans-serif; border-top: 1px solid #ffe69c;">
+                                                    <strong style="color: #212529;">Priority:</strong>
+                                                    <span style="background-color: #dc3545; color: #ffffff; padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; float: right;">{{Priority}}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Description -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border-radius: 6px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 5px; font-size: 14px; font-weight: bold; color: #212529; font-family: Arial, Helvetica, sans-serif;">
+                                            Notes/Comments:
+                                        </p>
+                                        <p style="margin: 0; font-size: 14px; line-height: 22px; color: #495057; font-family: Arial, Helvetica, sans-serif;">
+                                            {{Notes}}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Action Buttons -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 30px 0 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="center" style="padding-right: 10px;">
+                                                    <table border="0" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td align="center" style="border-radius: 6px; background-color: #198754;">
+                                                                <a href="{{ApproveLink}}" target="_blank" style="font-size: 16px; font-family: Arial, Helvetica, sans-serif; color: #ffffff; text-decoration: none; padding: 14px 35px; border: 1px solid #198754; border-radius: 6px; display: inline-block; font-weight: bold;">
+                                                                    ✓ Approve
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td align="center" style="padding-left: 10px;">
+                                                    <table border="0" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td align="center" style="border-radius: 6px; background-color: #dc3545;">
+                                                                <a href="{{RejectLink}}" target="_blank" style="font-size: 16px; font-family: Arial, Helvetica, sans-serif; color: #ffffff; text-decoration: none; padding: 14px 35px; border: 1px solid #dc3545; border-radius: 6px; display: inline-block; font-weight: bold;">
+                                                                    ✗ Reject
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Or View Details -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0 0 10px; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                            or
+                                        </p>
+                                        <a href="{{ViewDetailsLink}}" target="_blank" style="font-size: 15px; color: #0d6efd; text-decoration: underline; font-family: Arial, Helvetica, sans-serif;">
+                                            View Full Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Important Notice -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin: 25px 0 0;">
+                                <tr>
+                                    <td style="padding: 15px;">
+                                        <p style="margin: 0; font-size: 13px; color: #856404; font-family: Arial, Helvetica, sans-serif;">
+                                            <strong>⏰ Action Required:</strong> Please review and take action on this approval request as soon as possible. Delayed approvals may impact project timelines.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px; background-color: #f8f9fa; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0 0 10px; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                © 2026 ABB Monitoring System. All rights reserved.
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #adb5bd; font-family: Arial, Helvetica, sans-serif;">
+                                This is an automated approval notification from Monitoring Dokumen GS
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

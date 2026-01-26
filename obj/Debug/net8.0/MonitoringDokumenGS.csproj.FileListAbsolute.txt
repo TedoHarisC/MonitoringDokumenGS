@@ -3,6 +3,13 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/global.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/libman.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/MonitoringDokumenGS.staticwebassets.runtime.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/ApprovalRequired.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/BaseLayout.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/ContractCreated.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/InvoiceCreated.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/Notification.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/PasswordReset.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/EmailTemplates/Welcome.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/MonitoringDokumenGS
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/MonitoringDokumenGS.deps.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Debug/net8.0/MonitoringDokumenGS.runtimeconfig.json

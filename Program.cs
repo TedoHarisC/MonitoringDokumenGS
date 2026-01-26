@@ -47,6 +47,7 @@ builder.Services.AddScoped<IAttachment, AttachmentService>();
 builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 builder.Services.AddAuthorization();
 
@@ -99,6 +100,10 @@ builder.Services.AddAuthentication(options =>
 // File Storage Options
 builder.Services.Configure<FileStorageOptions>(
     builder.Configuration.GetSection("FileStorage"));
+
+// Email Options
+builder.Services.Configure<EmailOptions>(
+    builder.Configuration.GetSection("Email"));
 
 var app = builder.Build();
 
