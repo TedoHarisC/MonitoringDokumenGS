@@ -2,13 +2,12 @@ namespace MonitoringDokumenGS.Interfaces
 {
     public interface IFile
     {
-        Task<string> SaveAsync(
+        Task<FileUploadResult> SaveAsync(
             IFormFile file,
-            Guid vendorId,
-            string module,
-            Guid referenceId
+            string module,        // "Invoices", "Contracts"
+            string category,      // "BAST", "FAKTUR", dll
+            Guid referenceId,     // InvoiceId / ContractId
+            Guid userId
         );
-
-        FileStream Get(string filePath);
     }
 }
