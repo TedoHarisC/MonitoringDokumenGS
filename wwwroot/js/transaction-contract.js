@@ -5,13 +5,15 @@
         contracts: '/api/contracts',
         vendors: '/api/vendors?page=1&pageSize=2000',
         contractStatuses: '/api/contract-statuses?page=1&pageSize=2000',
-        approvalStatuses: '/api/approval-statuses?page=1&pageSize=2000'
+        approvalStatuses: '/api/approval-statuses?page=1&pageSize=2000',
+        attachments: '/api/attachments'
     }
 
     let table
     let cachedVendors = []
     let cachedContractStatuses = []
     let cachedApprovalStatuses = []
+    let pendingFiles = []
 
     function normalizeToArray(json) {
         if (!json) return []
@@ -297,6 +299,9 @@
         clearForm()
         $('#contractModalLabel').text('Create Contract')
         populateFormSelects()
+        $('#attachmentsSection').show()
+        $('#attachmentsList').html('<div class="alert alert-info small">Files will be uploaded after saving the contract</div>')
+        pendingFiles = []
         showModal('contractModal')
     }
 
@@ -313,6 +318,8 @@
         $('#endDate').val(formatDate(data.endDate))
         $('#contractStatusId').val(String(data.contractStatusId || ''))
         $('#approvalStatusId').val(String(data.approvalStatusId || ''))
+        $('#attachmentsSection').show()
+        await loadAttachments(data.contractId)
         showModal('contractModal')
     }
 
@@ -359,11 +366,16 @@
         const url = id ? `${apis.contracts}/${id}` : apis.contracts
 
         try {
-            await fetchJson(url, {
+            const result = await fetchJson(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
+
+            // If creating new contract and have pending files, upload them
+            if (!id && pendingFiles.length > 0 && result.contractId) {
+                await uploadPendingFiles(result.contractId)
+            }
 
             hideModal('contractModal')
             if (table) table.ajax.reload(null, false)
@@ -371,6 +383,118 @@
         } catch (err) {
             const message = (err && (err.message || err.title)) || 'Unable to save contract.'
             Swal.fire('Error', message, 'error')
+        }
+    }
+
+    async function loadAttachments(contractId) {
+        try {
+            const attachments = await fetchJson(`${apis.attachments}/by-reference/${contractId}`)
+            const $list = $('#attachmentsList')
+            $list.empty()
+
+            if (!attachments || attachments.length === 0) {
+                $list.append('<div class="text-muted small">No attachments yet</div>')
+                return
+            }
+
+            attachments.forEach(att => {
+                const sizeKb = (att.fileSize / 1024).toFixed(2)
+                $list.append(`
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${att.fileName}</strong>
+                            <span class="text-muted small ms-2">(${sizeKb} KB)</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger btn-delete-attachment" data-id="${att.attachmentId}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `)
+            })
+        } catch (err) {
+            console.error('Failed to load attachments:', err)
+        }
+    }
+
+    async function uploadFile(file, contractId) {
+        // If no contractId yet (create mode), add to pending list
+        if (!contractId) {
+            pendingFiles.push(file)
+            updatePendingFilesList()
+            $('#fileUpload').val('') // Clear input for next file
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('module', 'Contracts')
+        formData.append('attachmentTypeId', '1')
+        formData.append('referenceId', contractId)
+
+        try {
+            await fetch(`${apis.attachments}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+
+            await loadAttachments(contractId)
+            $('#fileUpload').val('') // Clear input for next file
+        } catch (err) {
+            Swal.fire('Error', 'Failed to upload file', 'error')
+        }
+    }
+
+    function updatePendingFilesList() {
+        const $list = $('#attachmentsList')
+        $list.empty()
+        
+        if (pendingFiles.length === 0) {
+            $list.html('<div class="alert alert-info small">Files will be uploaded after saving the contract</div>')
+            return
+        }
+
+        $list.append('<div class="alert alert-info small mb-2">Files to upload after save:</div>')
+        pendingFiles.forEach((file, index) => {
+            const sizeKb = (file.size / 1024).toFixed(2)
+            $list.append(`
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${file.name}</strong>
+                        <span class="text-muted small ms-2">(${sizeKb} KB)</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-pending" data-index="${index}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `)
+        })
+    }
+
+    async function uploadPendingFiles(contractId) {
+        if (pendingFiles.length === 0) return
+
+        for (const file of pendingFiles) {
+            await uploadFile(file, contractId)
+        }
+        pendingFiles = []
+    }
+
+    async function deleteAttachment(attachmentId, contractId) {
+        const res = await Swal.fire({
+            title: 'Delete attachment?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete'
+        })
+
+        if (!res.isConfirmed) return
+
+        try {
+            await fetch(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
+            Swal.fire('Deleted', 'Attachment deleted', 'success')
+            await loadAttachments(contractId)
+        } catch (err) {
+            Swal.fire('Error', 'Failed to delete attachment', 'error')
         }
     }
 
@@ -417,6 +541,26 @@
         $('#contractsTable').on('click', '.btn-delete', function () {
             const id = $(this).data('id')
             deleteContract(id)
+        })
+
+        $('#fileUpload').on('change', function () {
+            const file = this.files[0]
+            if (file) {
+                const contractId = $('#contractId').val()
+                uploadFile(file, contractId)
+            }
+        })
+
+        $(document).on('click', '.btn-delete-attachment', function () {
+            const attachmentId = $(this).data('id')
+            const contractId = $('#contractId').val()
+            deleteAttachment(attachmentId, contractId)
+        })
+
+        $(document).on('click', '.btn-remove-pending', function () {
+            const index = $(this).data('index')
+            pendingFiles.splice(index, 1)
+            updatePendingFilesList()
         })
 
         $('#contractForm').on('submit', saveContract)

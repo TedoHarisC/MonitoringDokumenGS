@@ -42,6 +42,7 @@ builder.Services.AddScoped<IContractStatus, ContractStatusService>();
 builder.Services.AddScoped<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
 builder.Services.AddScoped<IInvoice, InvoiceService>();
 builder.Services.AddScoped<IContract, ContractService>();
+builder.Services.AddScoped<IAttachment, AttachmentService>();
 builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();

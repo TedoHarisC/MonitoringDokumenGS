@@ -137,6 +137,19 @@
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">Amounts use decimal, e.g. 10000.00</small>
+
+                    <!-- Attachments Section (only for Edit mode) -->
+                    <div id="attachmentsSection" style="display: none;" class="mt-4">
+                        <hr />
+                        <h6 class="mb-3">Attachments</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Upload File</label>
+                            <input type="file" id="fileUpload" class="form-control"
+                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                            <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                        </div>
+                        <div id="attachmentsList" class="list-group"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

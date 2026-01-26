@@ -12,12 +12,14 @@
     const apis = {
         invoices: '/api/invoices',
         vendors: '/api/vendors?page=1&pageSize=2000',
-        progressStatuses: '/api/invoice-progress-statuses?page=1&pageSize=2000'
+        progressStatuses: '/api/invoice-progress-statuses?page=1&pageSize=2000',
+        attachments: '/api/attachments'
     }
 
     let table
     let cachedVendors = []
     let cachedStatuses = []
+    let pendingFiles = []
 
     function normalizeToArray(json) {
         if (!json) return []
@@ -269,6 +271,9 @@
         portalModalToBody('invoiceModal')
         clearForm()
         $('#invoiceModalLabel').text('Create Invoice')
+        $('#attachmentsSection').show()
+        $('#attachmentsList').html('<div class="alert alert-info small">Files will be uploaded after saving the invoice</div>')
+        pendingFiles = []
         populateFormSelects()
         showModal('invoiceModal')
     }
@@ -283,6 +288,11 @@
         $('#progressStatusId').val(String(data.progressStatusId || ''))
         $('#invoiceNumber').val(data.invoiceNumber || '')
         $('#invoiceAmount').val(data.invoiceAmount ?? '')
+        
+        // Show attachments section and load files
+        $('#attachmentsSection').show()
+        await loadAttachments(data.invoiceId)
+        
         $('#taxAmount').val(data.taxAmount ?? '')
         showModal('invoiceModal')
     }
@@ -319,11 +329,16 @@
         const url = id ? `${apis.invoices}/${id}` : apis.invoices
 
         try {
-            await fetchJson(url, {
+            const result = await fetchJson(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
+
+            // If creating new invoice and have pending files, upload them
+            if (!id && pendingFiles.length > 0 && result.invoiceId) {
+                await uploadPendingFiles(result.invoiceId)
+            }
 
             hideModal('invoiceModal')
             if (table) table.ajax.reload(null, false)
@@ -356,6 +371,130 @@
         }
     }
 
+    async function loadAttachments(invoiceId) {
+        try {
+            const attachments = await fetchJson(`${apis.attachments}/by-reference/${invoiceId}`)
+            const list = $('#attachmentsList')
+            list.empty()
+
+            if (!attachments || attachments.length === 0) {
+                list.html('<div class="text-muted text-center py-3">No attachments yet</div>')
+                return
+            }
+
+            attachments.forEach(att => {
+                const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1)
+                const item = $(`
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="feather-file me-2"></i>
+                            <span>${escapeHtml(att.fileName)}</span>
+                            <small class="text-muted ms-2">(${sizeKB} KB)</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-light-danger btn-delete-attachment" data-id="${att.attachmentId}">
+                            <i class="feather-trash-2"></i>
+                        </button>
+                    </div>
+                `)
+                list.append(item)
+            })
+        } catch (err) {
+            console.error('Failed to load attachments:', err)
+        }
+    }
+
+    async function uploadFile(file, invoiceId) {
+        // If no invoiceId yet (create mode), add to pending list
+        if (!invoiceId) {
+            pendingFiles.push(file)
+            updatePendingFilesList()
+            $('#fileUpload').val('') // Clear input for next file
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('module', 'Invoices')
+        formData.append('attachmentTypeId', '1') // Default type, adjust as needed
+        formData.append('referenceId', invoiceId)
+
+        try {
+            const res = await fetch(`${apis.attachments}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'Upload failed' }))
+                throw err
+            }
+
+            const result = await res.json()
+            await loadAttachments(invoiceId)
+            $('#fileUpload').val('') // Clear input for next file
+        } catch (err) {
+            const message = (err && (err.message || err.title)) || 'Upload failed.'
+            Swal.fire('Error', message, 'error')
+        }
+    }
+
+    function updatePendingFilesList() {
+        const $list = $('#attachmentsList')
+        $list.empty()
+        
+        if (pendingFiles.length === 0) {
+            $list.html('<div class="alert alert-info small">Files will be uploaded after saving the invoice</div>')
+            return
+        }
+
+        $list.append('<div class="alert alert-info small mb-2">Files to upload after save:</div>')
+        pendingFiles.forEach((file, index) => {
+            const sizeKb = (file.size / 1024).toFixed(2)
+            $list.append(`
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${file.name}</strong>
+                        <span class="text-muted small ms-2">(${sizeKb} KB)</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-pending" data-index="${index}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `)
+        })
+    }
+
+    async function uploadPendingFiles(invoiceId) {
+        if (pendingFiles.length === 0) return
+
+        for (const file of pendingFiles) {
+            await uploadFile(file, invoiceId)
+        }
+        pendingFiles = []
+    }
+
+    async function deleteAttachment(attachmentId, invoiceId) {
+        const res = await Swal.fire({
+            title: 'Delete attachment?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
+        })
+
+        if (!res.isConfirmed) return
+
+        try {
+            await fetchJson(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
+            await loadAttachments(invoiceId)
+            Swal.fire('Deleted', 'Attachment deleted', 'success')
+        } catch (err) {
+            const message = (err && (err.message || err.title)) || 'Delete failed.'
+            Swal.fire('Error', message, 'error')
+        }
+    }
+
     $(async function () {
         portalModalToBody('invoiceModal')
 
@@ -380,5 +519,28 @@
         })
 
         $('#invoiceForm').on('submit', saveInvoice)
+
+        // File upload handler
+        $('#fileUpload').on('change', function (e) {
+            const file = e.target.files[0]
+            if (!file) return
+
+            const invoiceId = $('#invoiceId').val()
+            uploadFile(file, invoiceId)
+        })
+
+        // Delete attachment handler
+        $(document).on('click', '.btn-delete-attachment', function () {
+            const attachmentId = $(this).data('id')
+            const invoiceId = $('#invoiceId').val()
+            deleteAttachment(attachmentId, invoiceId)
+        })
+
+        // Remove pending file handler
+        $(document).on('click', '.btn-remove-pending', function () {
+            const index = $(this).data('index')
+            pendingFiles.splice(index, 1)
+            updatePendingFilesList()
+        })
     })
 })(jQuery)

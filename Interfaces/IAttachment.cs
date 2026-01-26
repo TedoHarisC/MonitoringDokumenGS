@@ -9,6 +9,7 @@ namespace MonitoringDokumenGS.Interfaces
     {
         Task<IEnumerable<AttachmentDto>> GetAllAsync();
         Task<AttachmentDto?> GetByIdAsync(Guid id);
+        Task<IEnumerable<AttachmentDto>> GetByReferenceIdAsync(Guid referenceId);
         Task<AttachmentDto> CreateAsync(AttachmentDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
