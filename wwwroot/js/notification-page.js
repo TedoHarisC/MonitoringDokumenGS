@@ -371,3 +371,164 @@ function showWarning(message) {
         confirmButtonColor: '#ffc107'
     });
 }
+
+// ========================================
+// EMAIL SMTP TESTING FUNCTIONS
+// ========================================
+
+$(document).ready(function () {
+    // Send test email
+    $('#emailTestForm').on('submit', function (e) {
+        e.preventDefault();
+        sendTestEmail();
+    });
+
+    // Check SMTP configuration
+    $('#btnCheckConfig').on('click', function () {
+        checkSmtpConfig();
+    });
+});
+
+// Send test email
+function sendTestEmail() {
+    const emailAddress = $('#testEmailAddress').val();
+    const template = $('#testEmailTemplate').val();
+
+    if (!emailAddress) {
+        showError('Please enter an email address');
+        return;
+    }
+
+    // Disable button and show loading
+    const btnSendTest = $('#btnSendTest');
+    const originalText = btnSendTest.html();
+    btnSendTest.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Sending...');
+
+    // Hide previous result
+    $('#emailTestResult').addClass('d-none');
+
+    let endpoint = '/api/test/email/send';
+    let requestData = { email: emailAddress };
+
+    // Change endpoint based on template
+    if (template === 'invoice') {
+        endpoint = '/api/test/email/send-invoice';
+        requestData = { recipientEmail: emailAddress };
+    } else if (template === 'contract') {
+        endpoint = '/api/test/email/send-contract';
+        requestData = { recipientEmail: emailAddress };
+    } else if (template === 'welcome') {
+        endpoint = '/api/test/email/send-welcome';
+        requestData = {
+            email: emailAddress,
+            name: "Test User"
+        };
+    }
+
+    $.ajax({
+        url: endpoint,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(requestData),
+        success: function (response) {
+            console.log('Test email response:', response);
+            showTestResult(true, 'Success!', response.message || 'Test email sent successfully. Please check your inbox.');
+            
+            // Reset form
+            $('#testEmailAddress').val('');
+        },
+        error: function (xhr, status, error) {
+            console.error('Error sending test email:', error);
+            let errorMessage = 'Failed to send test email. Please check your SMTP configuration.';
+            
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            } else if (xhr.responseText) {
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    // Keep default error message
+                }
+            }
+            
+            showTestResult(false, 'Failed', errorMessage);
+        },
+        complete: function () {
+            // Re-enable button
+            btnSendTest.prop('disabled', false).html(originalText);
+        }
+    });
+}
+
+// Show test result
+function showTestResult(success, title, message) {
+    const resultDiv = $('#emailTestResult');
+    const alertDiv = $('#testResultAlert');
+    const iconElement = $('#testResultIcon');
+    const titleElement = $('#testResultTitle');
+    const messageElement = $('#testResultMessage');
+
+    // Set alert class
+    alertDiv.removeClass('alert-success alert-danger');
+    alertDiv.addClass(success ? 'alert-success' : 'alert-danger');
+
+    // Set icon
+    iconElement.removeClass();
+    iconElement.addClass('feather me-2');
+    iconElement.addClass(success ? 'feather-check-circle' : 'feather-alert-circle');
+
+    // Set content
+    titleElement.text(title);
+    messageElement.text(message);
+
+    // Show result
+    resultDiv.removeClass('d-none');
+
+    // Scroll to result
+    resultDiv[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Check SMTP configuration
+function checkSmtpConfig() {
+    const btnCheckConfig = $('#btnCheckConfig');
+    const originalText = btnCheckConfig.html();
+    btnCheckConfig.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Checking...');
+
+    // Hide previous result
+    $('#emailTestResult').addClass('d-none');
+
+    $.ajax({
+        url: '/api/test/email/config',
+        type: 'GET',
+        success: function (response) {
+            console.log('SMTP config:', response);
+            if (response.success && response.data) {
+                displaySmtpConfig(response.data);
+                showTestResult(true, 'Configuration Retrieved', 'SMTP configuration loaded successfully.');
+            } else {
+                showTestResult(false, 'Failed', 'Could not retrieve SMTP configuration.');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error checking SMTP config:', error);
+            showTestResult(false, 'Error', 'Failed to check SMTP configuration. Endpoint might not be available.');
+        },
+        complete: function () {
+            btnCheckConfig.prop('disabled', false).html(originalText);
+        }
+    });
+}
+
+// Display SMTP configuration
+function displaySmtpConfig(config) {
+    $('#smtpProvider').text(config.provider || '-');
+    $('#smtpHost').text(config.host || '-');
+    $('#smtpPort').text(config.port || '-');
+    $('#smtpFromEmail').text(config.fromEmail || '-');
+    $('#smtpFromName').text(config.fromName || '-');
+    $('#smtpUseSsl').text(config.useSsl ? 'Yes' : 'No');
+
+    $('#smtpConfigInfo').removeClass('d-none');
+    $('#smtpConfigInfo')[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Models;
 using MonitoringDokumenGS.Services.Infrastructure;
 using System;
 using System.Threading.Tasks;
@@ -15,11 +17,16 @@ namespace MonitoringDokumenGS.Controllers.API
     {
         private readonly IEmailService _emailService;
         private readonly ILogger<EmailTestController> _logger;
+        private readonly EmailOptions _emailOptions;
 
-        public EmailTestController(IEmailService emailService, ILogger<EmailTestController> logger)
+        public EmailTestController(
+            IEmailService emailService,
+            ILogger<EmailTestController> logger,
+            IOptions<EmailOptions> emailOptions)
         {
             _emailService = emailService;
             _logger = logger;
+            _emailOptions = emailOptions.Value;
         }
 
         /// <summary>
@@ -227,6 +234,45 @@ namespace MonitoringDokumenGS.Controllers.API
                 {
                     success = false,
                     message = "Failed to send welcome email",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get SMTP configuration (without sensitive data)
+        /// GET api/test/email/config
+        /// </summary>
+        [HttpGet("config")]
+        public IActionResult GetSmtpConfiguration()
+        {
+            try
+            {
+                var config = new
+                {
+                    provider = _emailOptions.Provider ?? "Not Set",
+                    fromName = _emailOptions.FromName ?? "Not Set",
+                    fromEmail = _emailOptions.FromEmail ?? "Not Set",
+                    host = _emailOptions.Smtp?.Host ?? "Not Set",
+                    port = _emailOptions.Smtp?.Port ?? 0,
+                    useSsl = _emailOptions.Smtp?.UseSsl ?? false,
+                    isConfigured = !string.IsNullOrEmpty(_emailOptions.Smtp?.Host)
+                };
+
+                return Ok(new
+                {
+                    success = true,
+                    data = config,
+                    message = "SMTP configuration retrieved successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get SMTP configuration");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Failed to retrieve SMTP configuration",
                     error = ex.Message
                 });
             }
