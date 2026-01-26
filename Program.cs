@@ -1,8 +1,6 @@
 using System.Data;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +10,7 @@ using MonitoringDokumenGS.Services;
 using MonitoringDokumenGS.Services.Infrastructure;
 using MonitoringDokumenGS.Services.Master;
 using MonitoringDokumenGS.Services.Transaction;
+using MonitoringDokumenGS.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +46,10 @@ builder.Services.AddScoped<IAttachment, AttachmentService>();
 builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+
+// Configure Email Options from appsettings.json
+builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
+    builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 builder.Services.AddAuthorization();
