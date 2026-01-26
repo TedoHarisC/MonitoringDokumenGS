@@ -37,7 +37,9 @@ namespace MonitoringDokumenGS.Services
         {
             if (registerDto is null) throw new ArgumentNullException(nameof(registerDto));
 
-            var exists = await _context.Users.AnyAsync(u => u.Username == registerDto.Username || u.Email == registerDto.Email);
+            // Check if username or email already exists (excluding soft-deleted users)
+            var exists = await _context.Users
+                .AnyAsync(u => (u.Username == registerDto.Username || u.Email == registerDto.Email) && !u.isDeleted);
             if (exists)
                 throw new InvalidOperationException("Username or email already exists");
 

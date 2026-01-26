@@ -92,8 +92,9 @@ namespace MonitoringDokumenGS.Services
             if (string.IsNullOrWhiteSpace(dto.Email))
                 throw new ArgumentException("Email is required.", nameof(dto));
 
+            // Check if username or email already exists (excluding soft-deleted users)
             var exists = await _context.Users
-                .AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email);
+                .AnyAsync(u => (u.Username == dto.Username || u.Email == dto.Email) && !u.isDeleted);
 
             if (exists)
                 throw new InvalidOperationException("Username or email already exists");
@@ -222,6 +223,8 @@ namespace MonitoringDokumenGS.Services
                 LastLoginAt = entity.LastLoginAt
             };
 
+            entity.Username = $"[DELETED_{entity.UserId}]_{entity.Username}"; //Digunakan untuk menghindari duplicate username di masa depan
+            entity.Email = $"[DELETED_{entity.UserId}]_{entity.Email}";       //Digunakan untuk menghindari duplicate email di masa depan
             entity.isDeleted = true;
             entity.UpdatedAt = DateTime.UtcNow;
 

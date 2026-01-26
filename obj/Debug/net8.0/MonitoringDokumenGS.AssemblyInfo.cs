@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+822a7ebf7b1d6372327478d750d9b86fa7893d2a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f1aa9cfb8260a7bb96e9ad07b2dd25572c99587c")]
 [assembly: System.Reflection.AssemblyProductAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

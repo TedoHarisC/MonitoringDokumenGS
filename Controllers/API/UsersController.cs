@@ -105,7 +105,8 @@ public class UsersController : ControllerBase
         if (request.RoleId <= 0)
             return BadRequest(new { message = "Role is required" });
 
-        var exists = await _context.Users.AnyAsync(u => u.Username == request.Username || u.Email == request.Email);
+        // Ditambahkan isDeleted check untuk menghindari pembuatan user duplikat jika user sebelumnya dihapus secara soft delete
+        var exists = await _context.Users.AnyAsync(u => (u.Username == request.Username || u.Email == request.Email) && !u.isDeleted);
         if (exists)
             return Conflict(new { message = "Username or email already exists" });
 
@@ -181,7 +182,7 @@ public class UsersController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         if (user == null) return NotFound();
 
-        var dup = await _context.Users.AnyAsync(u => u.UserId != id && (u.Username == request.Username || u.Email == request.Email));
+        var dup = await _context.Users.AnyAsync(u => u.UserId != id && (u.Username == request.Username || u.Email == request.Email) && !u.isDeleted);
         if (dup)
             return Conflict(new { message = "Username or email already exists" });
 
