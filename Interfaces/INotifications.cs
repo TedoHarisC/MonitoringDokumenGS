@@ -11,5 +11,6 @@ namespace MonitoringDokumenGS.Interfaces
         Task<NotificationDto?> GetByIdAsync(Guid id);
         Task<NotificationDto> CreateAsync(NotificationDto dto);
         Task<bool> MarkAsReadAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -167,5 +167,45 @@ namespace MonitoringDokumenGS.Controllers.API
                 return StatusCode(500, new { success = false, message = $"Error creating notification: {ex.Message}" });
             }
         }
+
+        /// <summary>
+        /// Delete notification by ID
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                {
+                    return Unauthorized(new { success = false, message = "User not authenticated" });
+                }
+
+                // Verify notification belongs to current user
+                var notification = await _notificationService.GetByIdAsync(id);
+                if (notification == null)
+                {
+                    return NotFound(new { success = false, message = "Notification not found" });
+                }
+
+                if (notification.UserId != userId)
+                {
+                    return Forbid();
+                }
+
+                var success = await _notificationService.DeleteAsync(id);
+                if (!success)
+                {
+                    return NotFound(new { success = false, message = "Notification not found or already deleted" });
+                }
+
+                return Ok(new { success = true, message = "Notification deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error deleting notification: {ex.Message}" });
+            }
+        }
     }
 }

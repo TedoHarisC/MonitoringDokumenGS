@@ -91,5 +91,19 @@ namespace MonitoringDokumenGS.Services.Infrastructure
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.NotificationId == id);
+
+            if (notification == null)
+                return false;
+
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

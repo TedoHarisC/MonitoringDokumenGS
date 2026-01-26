@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "My Notifications";
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+}
+
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">My Notifications</h5>
+                    <div class="card-header-action">
+                        <button type="button" class="btn btn-sm btn-success" id="btnMarkAllRead">
+                            <i class="feather-check me-1"></i>Mark All as Read
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" id="btnDeleteAll">
+                            <i class="feather-trash-2 me-1"></i>Delete All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body custom-card-action p-0">
+                    <!-- Filter Tabs -->
+                    <ul class="nav nav-tabs border-bottom" id="notificationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all"
+                                type="button" role="tab" aria-controls="all" aria-selected="true">
+                                <i class="feather-list me-1"></i>All
+                                <span class="badge bg-primary ms-1" id="badgeAll">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="unread-tab" data-bs-toggle="tab" data-bs-target="#unread"
+                                type="button" role="tab" aria-controls="unread" aria-selected="false">
+                                <i class="feather-bell me-1"></i>Unread
+                                <span class="badge bg-danger ms-1" id="badgeUnread">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="read-tab" data-bs-toggle="tab" data-bs-target="#read"
+                                type="button" role="tab" aria-controls="read" aria-selected="false">
+                                <i class="feather-check-circle me-1"></i>Read
+                                <span class="badge bg-success ms-1" id="badgeRead">0</span>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content p-3" id="notificationTabContent">
+                        <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                            <div class="list-group list-group-flush" id="allNotifications">
+                                <!-- Notifications will be loaded here -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-2">Loading notifications...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="unread" role="tabpanel" aria-labelledby="unread-tab">
+                            <div class="list-group list-group-flush" id="unreadNotifications">
+                                <!-- Unread notifications will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="read" role="tabpanel" aria-labelledby="read-tab">
+                            <div class="list-group list-group-flush" id="readNotifications">
+                                <!-- Read notifications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="text-center py-5 d-none" id="emptyState">
+                        <i class="feather-bell text-muted" style="font-size: 64px;"></i>
+                        <h5 class="mt-3 text-muted">No Notifications</h5>
+                        <p class="text-muted">You don't have any notifications yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+@section Styles {
+    <style>
+        .notification-item {
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+            border-left-color: #0d6efd;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 18px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .notification-message {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .notification-actions .btn {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #666;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/notification-page.js?v=@DateTime.Now.Ticks"></script>
+}

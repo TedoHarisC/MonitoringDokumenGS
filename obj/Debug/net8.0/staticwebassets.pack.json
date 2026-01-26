@@ -49,6 +49,10 @@
       "PackagePath": "staticwebassets/js/master-vendor.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/notification-page.js",
+      "PackagePath": "staticwebassets/js/notification-page.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/settings-admin-users.js",
       "PackagePath": "staticwebassets/js/settings-admin-users.js"
     },

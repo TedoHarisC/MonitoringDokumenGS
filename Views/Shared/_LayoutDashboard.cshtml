@@ -172,7 +172,8 @@
                                     class="feather-chevron-right"></i></span>
                         </a>
                         <ul class="nxl-submenu">
-                            <li class="nxl-item"><a class="nxl-link" href="#">Notification</a></li>
+                            <li class="nxl-item"><a class="nxl-link"
+                                    href="@Url.Action("Index", "Notification")">Notification</a></li>
                             @if (User != null && User.IsInRole("SUPER_ADMIN"))
                             {
                                 <li class="nxl-item"><a class="nxl-link" href="@Url.Action("AuditLog", "Settings")">Audit
@@ -673,7 +674,7 @@
                                 <i class="feather-user"></i>
                                 <span>Profile Details</span>
                             </a>
-                            <a href="javascript:void(0);" class="dropdown-item">
+                            <a href="@Url.Action("Index", "Notification")" class="dropdown-item">
                                 <i class="feather-bell"></i>
                                 <span>Notifications</span>
                             </a>
