@@ -56,8 +56,10 @@ public class AuthController : Controller
                 // IMPORTANT: AuditLogService expects NameIdentifier to be a Guid user id.
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.Username ?? request.Username),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
                 new Claim("userId", user.UserId.ToString()),
-                new Claim("username", user.Username ?? request.Username)
+                new Claim("username", user.Username ?? request.Username),
+                new Claim("email", user.Email ?? "")
             };
 
             foreach (var role in roles)

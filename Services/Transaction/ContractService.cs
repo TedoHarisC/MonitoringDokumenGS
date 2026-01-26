@@ -11,11 +11,16 @@ namespace MonitoringDokumenGS.Services.Transaction
     {
         private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
+        private readonly INotifications _notificationService;
 
-        public ContractService(ApplicationDBContext context, IAuditLog auditLog)
+        public ContractService(
+            ApplicationDBContext context,
+            IAuditLog auditLog,
+            INotifications notificationService)
         {
             _context = context;
             _auditLog = auditLog;
+            _notificationService = notificationService;
         }
 
         // ========================= GET ALL =========================
@@ -74,6 +79,25 @@ namespace MonitoringDokumenGS.Services.Transaction
                 result,
                 entity.ContractId.ToString()
             );
+
+            // Create notification for contract creator
+            if (entity.CreatedByUserId != Guid.Empty)
+            {
+                try
+                {
+                    await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
+                    {
+                        UserId = entity.CreatedByUserId,
+                        Title = "Contract Created",
+                        Message = $"Contract {entity.ContractNumber} has been successfully created from {entity.StartDate:yyyy-MM-dd} to {entity.EndDate:yyyy-MM-dd}"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Log notification error but don't fail the contract creation
+                    Console.WriteLine($"Failed to create notification: {ex.Message}");
+                }
+            }
 
             return result;
         }

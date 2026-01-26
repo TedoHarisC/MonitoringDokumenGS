@@ -11,11 +11,16 @@ namespace MonitoringDokumenGS.Services.Transaction
     {
         private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
+        private readonly INotifications _notificationService;
 
-        public InvoiceService(ApplicationDBContext context, IAuditLog auditLog)
+        public InvoiceService(
+            ApplicationDBContext context,
+            IAuditLog auditLog,
+            INotifications notificationService)
         {
             _context = context;
             _auditLog = auditLog;
+            _notificationService = notificationService;
         }
 
         // ========================= GET ALL =========================
@@ -72,6 +77,25 @@ namespace MonitoringDokumenGS.Services.Transaction
                 result,
                 entity.InvoiceId.ToString()
             );
+
+            // Create notification for invoice creator
+            if (entity.CreatedByUserId != Guid.Empty)
+            {
+                try
+                {
+                    await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
+                    {
+                        UserId = entity.CreatedByUserId,
+                        Title = "Invoice Created",
+                        Message = $"Invoice {entity.InvoiceNumber} has been successfully created with amount {entity.InvoiceAmount:N2}"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Log notification error but don't fail the invoice creation
+                    Console.WriteLine($"Failed to create notification: {ex.Message}");
+                }
+            }
 
             return result;
         }

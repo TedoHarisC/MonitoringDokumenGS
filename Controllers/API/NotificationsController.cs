@@ -2,10 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Dtos.Infrastructure;
 using MonitoringDokumenGS.Interfaces;
-using System;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
