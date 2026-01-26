@@ -11,6 +11,7 @@ using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Services;
 using MonitoringDokumenGS.Services.Infrastructure;
 using MonitoringDokumenGS.Services.Master;
+using MonitoringDokumenGS.Services.Transaction;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ builder.Services.AddScoped<IApprovalStatus, ApprovalStatusService>();
 builder.Services.AddScoped<IAttachmentTypes, AttachmentTypeService>();
 builder.Services.AddScoped<IContractStatus, ContractStatusService>();
 builder.Services.AddScoped<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
+builder.Services.AddScoped<IInvoice, InvoiceService>();
 builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
