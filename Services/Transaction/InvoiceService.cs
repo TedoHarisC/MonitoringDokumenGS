@@ -34,6 +34,17 @@ namespace MonitoringDokumenGS.Services.Transaction
                 .ToListAsync();
         }
 
+        // ========================= GET ALL BY VENDOR =========================
+        public async Task<IEnumerable<InvoiceDto>> GetAllByVendorAsync(Guid vendorId)
+        {
+            return await _context.Invoices
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.VendorId == vendorId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(InvoiceMappings.ToDtoExpr)
+                .ToListAsync();
+        }
+
         // ========================= GET BY ID =========================
         public async Task<InvoiceDto?> GetByIdAsync(Guid id)
         {
