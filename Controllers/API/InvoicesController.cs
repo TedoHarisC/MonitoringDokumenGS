@@ -220,5 +220,63 @@ namespace MonitoringDokumenGS.Controllers.API
                 return StatusCode(500, new { message = "An error occurred while deleting invoice" });
             }
         }
+
+        /// <summary>
+        /// Update Invoice Progress Status - Admin/Super Admin Only
+        /// PATCH /api/invoices/{id}/status
+        /// </summary>
+        [HttpPatch("{id:guid}/status")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+        public async Task<IActionResult> UpdateInvoiceStatus(Guid id, [FromBody] UpdateStatusRequest request)
+        {
+            try
+            {
+                if (request == null || request.StatusId <= 0)
+                {
+                    return BadRequest(new { message = "Valid status ID is required" });
+                }
+
+                var invoice = await _service.GetByIdAsync(id);
+                if (invoice == null)
+                {
+                    return NotFound(new { message = "Invoice not found" });
+                }
+
+                // Create DTO with updated status
+                var dto = new InvoiceDto
+                {
+                    InvoiceId = invoice.InvoiceId,
+                    VendorId = invoice.VendorId,
+                    CreatedByUserId = invoice.CreatedByUserId,
+                    InvoiceNumber = invoice.InvoiceNumber,
+                    ProgressStatusId = request.StatusId, // Update status
+                    InvoiceAmount = invoice.InvoiceAmount,
+                    TaxAmount = invoice.TaxAmount,
+                    CreatedBy = invoice.CreatedBy
+                };
+
+                var success = await _service.UpdateAsync(dto);
+                if (!success)
+                {
+                    return NotFound(new { message = "Failed to update invoice status" });
+                }
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation("Invoice {InvoiceId} status updated to {StatusId} by admin {UserId}",
+                    id, request.StatusId, userIdClaim);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Invoice status updated successfully",
+                    statusId = request.StatusId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating invoice status for {InvoiceId}", id);
+                return StatusCode(500, new { message = "An error occurred while updating invoice status" });
+            }
+        }
     }
 }

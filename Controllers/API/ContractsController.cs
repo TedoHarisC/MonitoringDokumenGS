@@ -220,5 +220,132 @@ namespace MonitoringDokumenGS.Controllers.API
                 return StatusCode(500, new { message = "An error occurred while deleting contract" });
             }
         }
+
+        /// <summary>
+        /// Update Contract Approval Status - Admin/Super Admin Only
+        /// PATCH /api/contracts/{id}/approval-status
+        /// </summary>
+        [HttpPatch("{id:guid}/approval-status")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+        public async Task<IActionResult> UpdateApprovalStatus(Guid id, [FromBody] UpdateStatusRequest request)
+        {
+            try
+            {
+                if (request == null || request.StatusId <= 0)
+                {
+                    return BadRequest(new { message = "Valid status ID is required" });
+                }
+
+                var contract = await _service.GetByIdAsync(id);
+                if (contract == null)
+                {
+                    return NotFound(new { message = "Contract not found" });
+                }
+
+                // Create DTO with updated approval status
+                var dto = new ContractDto
+                {
+                    ContractId = contract.ContractId,
+                    VendorId = contract.VendorId,
+                    CreatedByUserId = contract.CreatedByUserId,
+                    ContractNumber = contract.ContractNumber,
+                    ContractDescription = contract.ContractDescription,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    ApprovalStatusId = request.StatusId, // Update approval status
+                    ContractStatusId = contract.ContractStatusId,
+                    CreatedBy = contract.CreatedBy
+                };
+
+                var success = await _service.UpdateAsync(dto);
+                if (!success)
+                {
+                    return NotFound(new { message = "Failed to update contract approval status" });
+                }
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation("Contract {ContractId} approval status updated to {StatusId} by admin {UserId}",
+                    id, request.StatusId, userIdClaim);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Contract approval status updated successfully",
+                    statusId = request.StatusId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating contract approval status for {ContractId}", id);
+                return StatusCode(500, new { message = "An error occurred while updating contract approval status" });
+            }
+        }
+
+        /// <summary>
+        /// Update Contract Status - Admin/Super Admin Only
+        /// PATCH /api/contracts/{id}/contract-status
+        /// </summary>
+        [HttpPatch("{id:guid}/contract-status")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+        public async Task<IActionResult> UpdateContractStatus(Guid id, [FromBody] UpdateStatusRequest request)
+        {
+            try
+            {
+                if (request == null || request.StatusId <= 0)
+                {
+                    return BadRequest(new { message = "Valid status ID is required" });
+                }
+
+                var contract = await _service.GetByIdAsync(id);
+                if (contract == null)
+                {
+                    return NotFound(new { message = "Contract not found" });
+                }
+
+                // Create DTO with updated contract status
+                var dto = new ContractDto
+                {
+                    ContractId = contract.ContractId,
+                    VendorId = contract.VendorId,
+                    CreatedByUserId = contract.CreatedByUserId,
+                    ContractNumber = contract.ContractNumber,
+                    ContractDescription = contract.ContractDescription,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    ApprovalStatusId = contract.ApprovalStatusId,
+                    ContractStatusId = request.StatusId, // Update contract status
+                    CreatedBy = contract.CreatedBy
+                };
+
+                var success = await _service.UpdateAsync(dto);
+                if (!success)
+                {
+                    return NotFound(new { message = "Failed to update contract status" });
+                }
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _logger.LogInformation("Contract {ContractId} status updated to {StatusId} by admin {UserId}",
+                    id, request.StatusId, userIdClaim);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Contract status updated successfully",
+                    statusId = request.StatusId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating contract status for {ContractId}", id);
+                return StatusCode(500, new { message = "An error occurred while updating contract status" });
+            }
+        }
+    }
+
+    // Request models
+    public class UpdateStatusRequest
+    {
+        public int StatusId { get; set; }
+        public string? Notes { get; set; }
     }
 }

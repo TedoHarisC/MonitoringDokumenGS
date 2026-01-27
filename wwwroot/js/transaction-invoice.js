@@ -148,7 +148,7 @@
 
         const statusOptions = cachedStatuses.map(s => {
             const id = String(s.progressStatusId || s.ProgressStatusId || '')
-            const label = `${String(s.code || s.Code || '')} — ${String(s.name || s.Name || '')}`.trim()
+            const label = `${String(s.name || s.Name || '')}`.trim()
             return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`
         })
 

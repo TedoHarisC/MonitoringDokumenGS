@@ -161,13 +161,13 @@
 
         const contractStatusOptions = cachedContractStatuses.map(s => {
             const id = String(s.contractStatusId || s.ContractStatusId || '')
-            const label = `${String(s.code || s.Code || '')} — ${String(s.name || s.Name || '')}`.trim()
+            const label = `${String(s.name || s.Name || '')}`.trim()
             return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`
         })
 
         const approvalStatusOptions = cachedApprovalStatuses.map(s => {
             const id = String(s.approvalStatusId || s.ApprovalStatusId || '')
-            const label = `${String(s.code || s.Code || '')} — ${String(s.name || s.Name || '')}`.trim()
+            const label = `${String(s.name || s.Name || '')}`.trim()
             return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`
         })
 
