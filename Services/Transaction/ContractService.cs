@@ -91,23 +91,42 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.ContractId.ToString()
             );
 
-            // Create notification for contract creator
-            if (entity.CreatedByUserId != Guid.Empty)
+            // Send notification to all admins when user creates contract
+            try
             {
-                try
+                // Get all admin and super admin user IDs
+                var adminRoleIds = await _context.Roles
+                    .Where(r => r.Code == "ADMIN" || r.Code == "SUPER_ADMIN")
+                    .Select(r => r.RoleId)
+                    .ToListAsync();
+
+                var adminUserIds = await _context.UserRoles
+                    .Where(ur => adminRoleIds.Contains(ur.RoleId) && !ur.IsDeleted)
+                    .Select(ur => ur.UserId)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Get creator username for better notification message
+                var creatorUsername = await _context.Users
+                    .Where(u => u.UserId == entity.CreatedByUserId)
+                    .Select(u => u.Username)
+                    .FirstOrDefaultAsync() ?? "Unknown User";
+
+                // Send notification to each admin
+                foreach (var adminUserId in adminUserIds)
                 {
                     await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
                     {
-                        UserId = entity.CreatedByUserId,
-                        Title = "Contract Created",
-                        Message = $"Contract {entity.ContractNumber} has been successfully created from {entity.StartDate:yyyy-MM-dd} to {entity.EndDate:yyyy-MM-dd}"
+                        UserId = adminUserId,
+                        Title = "New Contract Submitted",
+                        Message = $"User {creatorUsername} has submitted contract {entity.ContractNumber} (Period: {entity.StartDate:yyyy-MM-dd} to {entity.EndDate:yyyy-MM-dd}) for review."
                     });
                 }
-                catch (Exception ex)
-                {
-                    // Log notification error but don't fail the contract creation
-                    Console.WriteLine($"Failed to create notification: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                // Log notification error but don't fail the contract creation
+                Console.WriteLine($"Failed to create admin notifications: {ex.Message}");
             }
 
             return result;
@@ -125,6 +144,10 @@ namespace MonitoringDokumenGS.Services.Transaction
                 return false;
 
             var old = entity.ToDto();
+
+            // Check if approval status is changed
+            bool approvalStatusChanged = entity.ApprovalStatusId != dto.ApprovalStatusId;
+            int oldApprovalStatusId = entity.ApprovalStatusId;
 
             entity.VendorId = dto.VendorId;
             entity.CreatedByUserId = dto.CreatedByUserId;
@@ -147,6 +170,47 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.ToDto(),
                 entity.ContractId.ToString()
             );
+
+            // Send notification if approval status changed and updated by admin (different from creator)
+            if (approvalStatusChanged && entity.CreatedByUserId != Guid.Empty)
+            {
+                // Get updater ID from UpdatedBy (assuming it's a GUID string)
+                Guid updaterId = Guid.Empty;
+                if (!string.IsNullOrEmpty(dto.UpdatedBy.ToString()) && Guid.TryParse(dto.UpdatedBy.ToString(), out var parsedId))
+                {
+                    updaterId = parsedId;
+                }
+
+                // Only send notification if updater is different from creator (admin updating user's contract)
+                if (updaterId != entity.CreatedByUserId)
+                {
+                    try
+                    {
+                        // Get status names
+                        var oldStatus = await _context.ApprovalStatuses
+                            .Where(s => s.ApprovalStatusId == oldApprovalStatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefaultAsync() ?? "Unknown";
+
+                        var newStatus = await _context.ApprovalStatuses
+                            .Where(s => s.ApprovalStatusId == entity.ApprovalStatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefaultAsync() ?? "Unknown";
+
+                        await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
+                        {
+                            UserId = entity.CreatedByUserId,
+                            Title = "Contract Approval Status Updated",
+                            Message = $"Your contract {entity.ContractNumber} approval status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log notification error but don't fail the update
+                        Console.WriteLine($"Failed to create notification: {ex.Message}");
+                    }
+                }
+            }
 
             return true;
         }

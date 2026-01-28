@@ -89,23 +89,42 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.InvoiceId.ToString()
             );
 
-            // Create notification for invoice creator
-            if (entity.CreatedByUserId != Guid.Empty)
+            // Send notification to all admins when user creates invoice
+            try
             {
-                try
+                // Get all admin and super admin user IDs
+                var adminRoleIds = await _context.Roles
+                    .Where(r => r.Code == "ADMIN" || r.Code == "SUPER_ADMIN")
+                    .Select(r => r.RoleId)
+                    .ToListAsync();
+
+                var adminUserIds = await _context.UserRoles
+                    .Where(ur => adminRoleIds.Contains(ur.RoleId) && !ur.IsDeleted)
+                    .Select(ur => ur.UserId)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Get creator username for better notification message
+                var creatorUsername = await _context.Users
+                    .Where(u => u.UserId == entity.CreatedByUserId)
+                    .Select(u => u.Username)
+                    .FirstOrDefaultAsync() ?? "Unknown User";
+
+                // Send notification to each admin
+                foreach (var adminUserId in adminUserIds)
                 {
                     await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
                     {
-                        UserId = entity.CreatedByUserId,
-                        Title = "Invoice Created",
-                        Message = $"Invoice {entity.InvoiceNumber} has been successfully created with amount {entity.InvoiceAmount:N2}"
+                        UserId = adminUserId,
+                        Title = "New Invoice Submitted",
+                        Message = $"User {creatorUsername} has submitted invoice {entity.InvoiceNumber} with amount {entity.InvoiceAmount:N2} for review."
                     });
                 }
-                catch (Exception ex)
-                {
-                    // Log notification error but don't fail the invoice creation
-                    Console.WriteLine($"Failed to create notification: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                // Log notification error but don't fail the invoice creation
+                Console.WriteLine($"Failed to create admin notifications: {ex.Message}");
             }
 
             return result;
