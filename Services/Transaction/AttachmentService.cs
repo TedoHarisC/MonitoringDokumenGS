@@ -10,10 +10,12 @@ namespace MonitoringDokumenGS.Services.Transaction
     public class AttachmentService : IAttachment
     {
         private readonly ApplicationDBContext _context;
+        private readonly ILogger<AttachmentService> _logger;
 
-        public AttachmentService(ApplicationDBContext context)
+        public AttachmentService(ApplicationDBContext context, ILogger<AttachmentService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<AttachmentDto>> GetAllAsync()
@@ -48,6 +50,9 @@ namespace MonitoringDokumenGS.Services.Transaction
         {
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
+            _logger.LogInformation("Creating attachment - FileName: {FileName}, ReferenceId: {ReferenceId}, AttachmentTypeId: {AttachmentTypeId}",
+                dto.FileName, dto.ReferenceId, dto.AttachmentTypeId);
+
             var entity = new Attachment
             {
                 AttachmentId = dto.AttachmentId == Guid.Empty ? Guid.NewGuid() : dto.AttachmentId,
@@ -60,8 +65,13 @@ namespace MonitoringDokumenGS.Services.Transaction
                 CreatedBy = dto.CreatedBy
             };
 
+            _logger.LogInformation("Adding attachment entity to context - AttachmentId: {AttachmentId}", entity.AttachmentId);
             _context.Attachments.Add(entity);
+
+            _logger.LogInformation("Saving changes to database...");
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Attachment saved successfully - AttachmentId: {AttachmentId}", entity.AttachmentId);
 
             return entity.ToDto();
         }

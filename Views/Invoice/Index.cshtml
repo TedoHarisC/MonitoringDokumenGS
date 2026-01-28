@@ -114,14 +114,12 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="invoiceId" />
+                    <input type="hidden" id="vendorId" />
+                    <input type="hidden" id="progressStatusId" value="2" />
                     <div class="row g-3">
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label class="form-label">Vendor</label>
-                            <select id="vendorId" class="form-select" required></select>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Progress Status</label>
-                            <select id="progressStatusId" class="form-select" required></select>
+                            <input id="vendorName" class="form-control" disabled />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label">Invoice Number</label>

@@ -56,6 +56,34 @@ namespace MonitoringDokumenGS.Data
                 .WithMany()
                 .HasForeignKey(ur => ur.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Invoice entity to map CreatedByUserId property correctly
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Creator)
+                .WithMany()
+                .HasForeignKey(i => i.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Contract entity to map CreatedByUserId property correctly
+            modelBuilder.Entity<Contract>()
+                .HasOne(c => c.Creator)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Attachment entity to map CreatedBy property correctly
+            modelBuilder.Entity<Attachment>()
+                .HasOne(a => a.Creator)
+                .WithMany()
+                .HasForeignKey(a => a.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Attachment relationship with AttachmentType
+            modelBuilder.Entity<Attachment>()
+                .HasOne(a => a.AttachmentType)
+                .WithMany()
+                .HasForeignKey(a => a.AttachmentTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

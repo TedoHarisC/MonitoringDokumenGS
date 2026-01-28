@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Extensions;
 using MonitoringDokumenGS.Interfaces;
 using Dtos.Login;
 using Dtos.Register;
+using System.Security.Claims;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
@@ -11,11 +13,13 @@ namespace MonitoringDokumenGS.Controllers.API
     public class AuthApiController : ControllerBase
     {
         private readonly IAuth _auth;
+        private readonly IUser _userService;
         private readonly ILogger<AuthApiController> _logger;
 
-        public AuthApiController(IAuth auth, ILogger<AuthApiController> logger)
+        public AuthApiController(IAuth auth, IUser userService, ILogger<AuthApiController> logger)
         {
             _auth = auth;
+            _userService = userService;
             _logger = logger;
         }
 
@@ -161,6 +165,43 @@ namespace MonitoringDokumenGS.Controllers.API
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Reset password error");
+                return this.ErrorResponse("An unexpected error occurred", 500);
+            }
+        }
+
+        /// <summary>
+        /// Get current user information including vendor details.
+        /// </summary>
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { message = "User not authenticated" });
+                }
+
+                var user = await _userService.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
+
+                return Ok(new
+                {
+                    userId = user.UserId,
+                    username = user.Username,
+                    email = user.Email,
+                    vendorId = user.VendorId,
+                    vendorName = user.VendorName
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user");
                 return this.ErrorResponse("An unexpected error occurred", 500);
             }
         }

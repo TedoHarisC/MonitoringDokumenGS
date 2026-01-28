@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Notification</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px; background-color: #0d6efd; border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: bold; color: #ffffff; font-family: Arial, Helvetica, sans-serif;">
+                                ABB Monitoring System
+                            </h1>
+                            <p style="margin: 5px 0 0; font-size: 14px; color: #e3f2fd; font-family: Arial, Helvetica, sans-serif;">
+                                Monitoring Dokumen GS
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <!-- Icon Box -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 20px;">
+                                        <div style="width: 60px; height: 60px; background-color: {{IconBackgroundColor}}; border-radius: 50%; display: inline-block; line-height: 60px; text-align: center;">
+                                            <span style="font-size: 30px; color: #ffffff;">{{Icon}}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Title -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <h2 style="margin: 0 0 10px; font-size: 24px; font-weight: bold; color: #212529; font-family: Arial, Helvetica, sans-serif;">
+                                            {{NotificationTitle}}
+                                        </h2>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Message -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="padding: 20px 0;">
+                                        <p style="margin: 0; font-size: 16px; line-height: 24px; color: #495057; font-family: Arial, Helvetica, sans-serif; text-align: center;">
+                                            {{NotificationMessage}}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Details Box (Optional) -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border-radius: 6px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                                    <strong style="color: #212529;">Reference ID:</strong> {{ReferenceId}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                                    <strong style="color: #212529;">Type:</strong> {{Type}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                                    <strong style="color: #212529;">Date:</strong> {{Date}}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- CTA Button -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <table border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td align="center" style="border-radius: 6px; background-color: #0d6efd;">
+                                                    <a href="{{ActionLink}}" target="_blank" style="font-size: 16px; font-family: Arial, Helvetica, sans-serif; color: #ffffff; text-decoration: none; padding: 14px 40px; border: 1px solid #0d6efd; border-radius: 6px; display: inline-block; font-weight: bold;">
+                                                        {{ActionButtonText}}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Help Text -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-top: 20px;">
+                                        <p style="margin: 0; font-size: 13px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                            If you have any questions, please contact our support team.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px; background-color: #f8f9fa; border-radius: 0 0 8px 8px;">
+                            <p style="margin: 0 0 10px; font-size: 14px; color: #6c757d; font-family: Arial, Helvetica, sans-serif;">
+                                © 2026 ABB Monitoring System. All rights reserved.
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #adb5bd; font-family: Arial, Helvetica, sans-serif;">
+                                This is an automated notification from Monitoring Dokumen GS
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

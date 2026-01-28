@@ -149,7 +149,7 @@ namespace MonitoringDokumenGS.Controllers.API
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating invoice");
-                return StatusCode(500, new { message = "An error occurred while creating invoice" });
+                return StatusCode(500, new { message = $"{ex.InnerException?.Message ?? ex.Message}" });
             }
         }
 
@@ -201,16 +201,45 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "SUPER_ADMIN, ADMIN")] // Only admin can delete
         public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                var ok = await _service.DeleteAsync(id);
-                if (!ok) return NotFound(new { message = "Invoice not found" });
-
+                // Get current user
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                _logger.LogInformation("Invoice {InvoiceId} deleted by user {UserId}", id, userIdClaim);
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { message = "User not authenticated" });
+                }
+
+                var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+                var isSuperAdminOrAdmin = userRoles.Contains("SUPER_ADMIN") || userRoles.Contains("ADMIN");
+
+                // Check if invoice exists first
+                var invoice = await _service.GetByIdAsync(id);
+                if (invoice == null)
+                {
+                    return NotFound(new { message = "Invoice not found" });
+                }
+
+                // Regular user: Can only delete their own vendor's invoices
+                if (!isSuperAdminOrAdmin)
+                {
+                    var user = await _userService.GetByIdAsync(userId);
+                    if (user == null || invoice.VendorId != user.VendorId)
+                    {
+                        _logger.LogWarning("User {UserId} attempted to delete invoice {InvoiceId} from different vendor", userId, id);
+                        return StatusCode(403, new { message = "You can only delete your own invoices" });
+                    }
+                }
+
+                var ok = await _service.DeleteAsync(id);
+                if (!ok)
+                {
+                    return NotFound(new { message = "Invoice not found" });
+                }
+
+                _logger.LogInformation("Invoice {InvoiceId} deleted by user {UserId}", id, userId);
 
                 return NoContent();
             }
