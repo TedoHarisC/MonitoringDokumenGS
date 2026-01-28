@@ -1,7 +1,9 @@
 @using System.Security.Claims
 @{
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
-    var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    string? currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    string? userRole = User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    bool isAdmin = userRole == "SUPER_ADMIN" || userRole == "ADMIN";
 }
 
 @section Styles {
@@ -40,6 +42,7 @@
 }
 
 <input type="hidden" id="currentUserId" value="@currentUserId" />
+<input type="hidden" id="currentUserIsAdmin" value="@isAdmin.ToString().ToLower()" />
 
 <!-- [ page-header ] start -->
 <div class="page-header">
@@ -115,16 +118,31 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="contractId" />
+                    <input type="hidden" id="vendorId" />
+                    <input type="hidden" id="contractStatusId" value="2" />
+                    <input type="hidden" id="approvalStatusId" value="6" />
                     <div class="row g-3">
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label class="form-label">Vendor</label>
-                            <select id="vendorId" class="form-select" required></select>
+                            <input id="vendorName" class="form-control" disabled />
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="contractStatusSection" style="display: none;">
+                            <label class="form-label">Contract Status</label>
+                            <select id="contractStatusSelect" class="form-control">
+                                <option value="">-- Select Contract Status --</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6" id="approvalStatusSection" style="display: none;">
+                            <label class="form-label">Approval Status</label>
+                            <select id="approvalStatusSelect" class="form-control">
+                                <option value="">-- Select Approval Status --</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-12">
                             <label class="form-label">Contract Number</label>
                             <input id="contractNumber" class="form-control" autocomplete="off" required />
                         </div>
-                        <div class="col-12">
+                        <div class="col-12 col-md-12">
                             <label class="form-label">Contract Description</label>
                             <textarea id="contractDescription" class="form-control" rows="3" required></textarea>
                         </div>
@@ -135,14 +153,6 @@
                         <div class="col-12 col-md-6">
                             <label class="form-label">End Date</label>
                             <input id="endDate" type="date" class="form-control" required />
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Contract Status</label>
-                            <select id="contractStatusId" class="form-select" required></select>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Approval Status</label>
-                            <select id="approvalStatusId" class="form-select" required></select>
                         </div>
                     </div>
 

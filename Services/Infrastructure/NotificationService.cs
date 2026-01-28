@@ -41,6 +41,8 @@ namespace MonitoringDokumenGS.Services.Infrastructure
 
         public async Task<NotificationDto> CreateAsync(NotificationDto dto)
         {
+            Console.WriteLine($"[NOTIFICATION SERVICE] CreateAsync called - UserId: {dto.UserId}, Title: {dto.Title}");
+
             var notification = new Notifications
             {
                 NotificationId = Guid.NewGuid(),
@@ -51,8 +53,12 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 IsRead = false
             };
 
+            Console.WriteLine($"[NOTIFICATION SERVICE] Entity created - NotificationId: {notification.NotificationId}");
+
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
+
+            Console.WriteLine($"[NOTIFICATION SERVICE] Notification saved to database successfully");
 
             return notification.ToDto();
         }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
+using MonitoringDokumenGS.Dtos.Infrastructure;
 using MonitoringDokumenGS.Dtos.Transaction;
 using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Mappings.Transaction;
@@ -133,6 +134,8 @@ namespace MonitoringDokumenGS.Services.Transaction
         // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(InvoiceDto dto)
         {
+            Console.WriteLine($"[INVOICE UPDATE START] InvoiceId: {dto.InvoiceId}, UpdatedBy from DTO: {dto.UpdatedBy}");
+
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
             var entity = await _context.Invoices
@@ -167,45 +170,42 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.InvoiceId.ToString()
             );
 
-            // Send notification if progress status changed and updated by admin (different from creator)
             if (progressStatusChanged && entity.CreatedByUserId != Guid.Empty)
             {
-                // Get updater ID from UpdatedBy (assuming it's a GUID string)
-                Guid updaterId = Guid.Empty;
-                if (!string.IsNullOrEmpty(dto.UpdatedBy.ToString()) && Guid.TryParse(dto.UpdatedBy.ToString(), out var parsedId))
+                try
                 {
-                    updaterId = parsedId;
+                    // Get status names
+                    var oldStatus = await _context.InvoiceProgressStatuses
+                        .Where(s => s.ProgressStatusId == oldProgressStatusId)
+                        .Select(s => s.Name)
+                        .FirstOrDefaultAsync() ?? "Unknown";
+
+                    var newStatus = await _context.InvoiceProgressStatuses
+                        .Where(s => s.ProgressStatusId == entity.ProgressStatusId)
+                        .Select(s => s.Name)
+                        .FirstOrDefaultAsync() ?? "Unknown";
+
+                    var notificationDto = new NotificationDto
+                    {
+                        UserId = entity.CreatedBy,
+                        Title = "Invoice Status Updated",
+                        Message = $"Your invoice {entity.InvoiceNumber} status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
+                    };
+
+                    await _notificationService.CreateAsync(notificationDto);
+
                 }
-
-                // Only send notification if updater is different from creator (admin updating user's invoice)
-                if (updaterId != entity.CreatedByUserId)
+                catch (Exception ex)
                 {
-                    try
+                    // Log notification error but don't fail the update
+                    Console.WriteLine($"[INVOICE UPDATE] ✗ Failed to create notification: {ex.Message}");
+                    Console.WriteLine($"[INVOICE UPDATE] Stack trace: {ex.StackTrace}");
+                    if (ex.InnerException != null)
                     {
-                        // Get status names
-                        var oldStatus = await _context.InvoiceProgressStatuses
-                            .Where(s => s.ProgressStatusId == oldProgressStatusId)
-                            .Select(s => s.Name)
-                            .FirstOrDefaultAsync() ?? "Unknown";
-
-                        var newStatus = await _context.InvoiceProgressStatuses
-                            .Where(s => s.ProgressStatusId == entity.ProgressStatusId)
-                            .Select(s => s.Name)
-                            .FirstOrDefaultAsync() ?? "Unknown";
-
-                        await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
-                        {
-                            UserId = entity.CreatedByUserId,
-                            Title = "Invoice Status Updated",
-                            Message = $"Your invoice {entity.InvoiceNumber} status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log notification error but don't fail the update
-                        Console.WriteLine($"Failed to create notification: {ex.Message}");
+                        Console.WriteLine($"[INVOICE UPDATE] Inner exception: {ex.InnerException.Message}");
                     }
                 }
+
             }
 
             return true;

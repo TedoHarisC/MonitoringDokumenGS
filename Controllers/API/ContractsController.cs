@@ -186,6 +186,12 @@ namespace MonitoringDokumenGS.Controllers.API
                     dto.VendorId = existingContract.VendorId;
                 }
 
+                // Ensure UpdatedBy is set to current user
+                if (!dto.UpdatedBy.HasValue || dto.UpdatedBy == Guid.Empty)
+                {
+                    dto.UpdatedBy = userId;
+                }
+
                 dto.ContractId = id;
                 var ok = await _service.UpdateAsync(dto);
                 if (!ok) return NotFound(new { message = "Failed to update contract" });
@@ -242,6 +248,9 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Contract not found" });
                 }
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Guid.TryParse(userIdClaim, out Guid currentUserId);
+
                 // Create DTO with updated approval status
                 var dto = new ContractDto
                 {
@@ -254,7 +263,8 @@ namespace MonitoringDokumenGS.Controllers.API
                     EndDate = contract.EndDate,
                     ApprovalStatusId = request.StatusId, // Update approval status
                     ContractStatusId = contract.ContractStatusId,
-                    CreatedBy = contract.CreatedBy
+                    CreatedBy = contract.CreatedBy,
+                    UpdatedBy = currentUserId
                 };
 
                 var success = await _service.UpdateAsync(dto);
@@ -263,7 +273,6 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Failed to update contract approval status" });
                 }
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 _logger.LogInformation("Contract {ContractId} approval status updated to {StatusId} by admin {UserId}",
                     id, request.StatusId, userIdClaim);
 
@@ -302,6 +311,9 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Contract not found" });
                 }
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Guid.TryParse(userIdClaim, out Guid currentUserId);
+
                 // Create DTO with updated contract status
                 var dto = new ContractDto
                 {
@@ -314,7 +326,8 @@ namespace MonitoringDokumenGS.Controllers.API
                     EndDate = contract.EndDate,
                     ApprovalStatusId = contract.ApprovalStatusId,
                     ContractStatusId = request.StatusId, // Update contract status
-                    CreatedBy = contract.CreatedBy
+                    CreatedBy = contract.CreatedBy,
+                    UpdatedBy = currentUserId
                 };
 
                 var success = await _service.UpdateAsync(dto);
@@ -323,7 +336,6 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Failed to update contract status" });
                 }
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 _logger.LogInformation("Contract {ContractId} status updated to {StatusId} by admin {UserId}",
                     id, request.StatusId, userIdClaim);
 

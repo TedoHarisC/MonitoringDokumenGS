@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Dtos.Transaction;
@@ -186,6 +185,12 @@ namespace MonitoringDokumenGS.Controllers.API
                     dto.VendorId = existingInvoice.VendorId;
                 }
 
+                // Ensure UpdatedBy is set to current user
+                if (!dto.UpdatedBy.HasValue || dto.UpdatedBy == Guid.Empty)
+                {
+                    dto.UpdatedBy = userId;
+                }
+
                 dto.InvoiceId = id;
                 var ok = await _service.UpdateAsync(dto);
                 if (!ok) return NotFound(new { message = "Failed to update invoice" });
@@ -271,6 +276,9 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Invoice not found" });
                 }
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Guid.TryParse(userIdClaim, out Guid currentUserId);
+
                 // Create DTO with updated status
                 var dto = new InvoiceDto
                 {
@@ -281,7 +289,8 @@ namespace MonitoringDokumenGS.Controllers.API
                     ProgressStatusId = request.StatusId, // Update status
                     InvoiceAmount = invoice.InvoiceAmount,
                     TaxAmount = invoice.TaxAmount,
-                    CreatedBy = invoice.CreatedBy
+                    CreatedBy = invoice.CreatedBy,
+                    UpdatedBy = currentUserId
                 };
 
                 var success = await _service.UpdateAsync(dto);
@@ -290,7 +299,6 @@ namespace MonitoringDokumenGS.Controllers.API
                     return NotFound(new { message = "Failed to update invoice status" });
                 }
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 _logger.LogInformation("Invoice {InvoiceId} status updated to {StatusId} by admin {UserId}",
                     id, request.StatusId, userIdClaim);
 

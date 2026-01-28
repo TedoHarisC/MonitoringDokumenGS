@@ -135,6 +135,8 @@ namespace MonitoringDokumenGS.Services.Transaction
         // ========================= UPDATE =========================
         public async Task<bool> UpdateAsync(ContractDto dto)
         {
+            Console.WriteLine($"[CONTRACT UPDATE START] ContractId: {dto.ContractId}, UpdatedBy from DTO: {dto.UpdatedBy}");
+
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
             var entity = await _context.Contracts
@@ -146,7 +148,6 @@ namespace MonitoringDokumenGS.Services.Transaction
             var old = entity.ToDto();
 
             // Check if approval status is changed
-            bool approvalStatusChanged = entity.ApprovalStatusId != dto.ApprovalStatusId;
             int oldApprovalStatusId = entity.ApprovalStatusId;
 
             entity.VendorId = dto.VendorId;
@@ -171,43 +172,48 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.ContractId.ToString()
             );
 
-            // Send notification if approval status changed and updated by admin (different from creator)
+            bool approvalStatusChanged = oldApprovalStatusId != dto.ApprovalStatusId;
+
             if (approvalStatusChanged && entity.CreatedByUserId != Guid.Empty)
             {
-                // Get updater ID from UpdatedBy (assuming it's a GUID string)
-                Guid updaterId = Guid.Empty;
-                if (!string.IsNullOrEmpty(dto.UpdatedBy.ToString()) && Guid.TryParse(dto.UpdatedBy.ToString(), out var parsedId))
+                try
                 {
-                    updaterId = parsedId;
+                    Console.WriteLine($"[CONTRACT UPDATE] Preparing to send notification...");
+
+                    // Get status names
+                    var oldStatus = await _context.ApprovalStatuses
+                        .Where(s => s.ApprovalStatusId == oldApprovalStatusId)
+                        .Select(s => s.Name)
+                        .FirstOrDefaultAsync() ?? "Unknown";
+
+                    var newStatus = await _context.ApprovalStatuses
+                        .Where(s => s.ApprovalStatusId == entity.ApprovalStatusId)
+                        .Select(s => s.Name)
+                        .FirstOrDefaultAsync() ?? "Unknown";
+
+                    Console.WriteLine($"[CONTRACT UPDATE] Status names - Old: {oldStatus}, New: {newStatus}");
+                    Console.WriteLine($"[CONTRACT UPDATE] Sending notification to user {entity.CreatedByUserId}");
+
+                    var notificationDto = new Dtos.Infrastructure.NotificationDto
+                    {
+                        UserId = entity.CreatedBy,
+                        Title = "Contract Approval Status Updated",
+                        Message = $"Your contract {entity.ContractNumber} approval status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
+                    };
+
+                    Console.WriteLine($"[CONTRACT UPDATE] Notification DTO: UserId={notificationDto.UserId}, Title={notificationDto.Title}");
+                    await _notificationService.CreateAsync(notificationDto);
+
+                    Console.WriteLine($"[CONTRACT UPDATE] ✓ Notification sent successfully to user {entity.CreatedByUserId}");
                 }
-
-                // Only send notification if updater is different from creator (admin updating user's contract)
-                if (updaterId != entity.CreatedByUserId)
+                catch (Exception ex)
                 {
-                    try
+                    // Log notification error but don't fail the update
+                    Console.WriteLine($"[CONTRACT UPDATE] ✗ Failed to create notification: {ex.Message}");
+                    Console.WriteLine($"[CONTRACT UPDATE] Stack trace: {ex.StackTrace}");
+                    if (ex.InnerException != null)
                     {
-                        // Get status names
-                        var oldStatus = await _context.ApprovalStatuses
-                            .Where(s => s.ApprovalStatusId == oldApprovalStatusId)
-                            .Select(s => s.Name)
-                            .FirstOrDefaultAsync() ?? "Unknown";
-
-                        var newStatus = await _context.ApprovalStatuses
-                            .Where(s => s.ApprovalStatusId == entity.ApprovalStatusId)
-                            .Select(s => s.Name)
-                            .FirstOrDefaultAsync() ?? "Unknown";
-
-                        await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
-                        {
-                            UserId = entity.CreatedByUserId,
-                            Title = "Contract Approval Status Updated",
-                            Message = $"Your contract {entity.ContractNumber} approval status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log notification error but don't fail the update
-                        Console.WriteLine($"Failed to create notification: {ex.Message}");
+                        Console.WriteLine($"[CONTRACT UPDATE] Inner exception: {ex.InnerException.Message}");
                     }
                 }
             }

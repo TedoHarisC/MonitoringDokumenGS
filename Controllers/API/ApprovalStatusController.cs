@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Dtos.Master;
@@ -6,7 +5,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+    [Authorize] // All authenticated users can access
     [ApiController]
     [Route("api/approval-statuses")]
     public class ApprovalStatusController : ControllerBase
@@ -34,6 +33,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPost]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] ApprovalStatusDto dto)
         {
             var created = await _service.CreateAsync(dto);
@@ -41,6 +41,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Update(int id, [FromBody] ApprovalStatusDto dto)
         {
             dto.ApprovalStatusId = id;
@@ -50,6 +51,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteAsync(id);
