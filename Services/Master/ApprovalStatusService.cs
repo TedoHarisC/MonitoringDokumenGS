@@ -24,7 +24,7 @@ namespace MonitoringDokumenGS.Services.Master
         {
             return await _context.ApprovalStatuses
                 .Where(x => !x.IsDeleted)
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.ApprovalStatusId)
                 .Select(ApprovalStatusMappings.ToDtoExpr)
                 .ToListAsync();
         }
@@ -35,7 +35,7 @@ namespace MonitoringDokumenGS.Services.Master
             return await _context.ApprovalStatuses
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.ApprovalStatusId)
                 .Select(ApprovalStatusMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);
         }

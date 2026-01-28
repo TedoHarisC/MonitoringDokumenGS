@@ -10,6 +10,7 @@
     }
 
     let table
+    let cachedUserVendors = null;
     let cachedVendors = []
     let cachedStatuses = []
     let pendingFiles = []
@@ -101,16 +102,26 @@
     }
 
     function formatDate(value) {
-        if (!value) return ''
-        const d = new Date(value)
-        if (isNaN(d.getTime())) return String(value)
-        return d.toLocaleString()
+        if (!value) return '';
+        const d = new Date(
+            typeof value === 'string' && !value.endsWith('Z')
+            ? value + 'Z'
+            : value
+        );
+        if (isNaN(d.getTime())) return String(value);
+        return d.toLocaleString('id-ID');
     }
 
     function currentUserId() {
         const el = document.getElementById('currentUserId')
         const v = el ? String(el.value || '').trim() : ''
         return v
+    }
+
+    function isCurrentUserAdmin() {
+        const el = document.getElementById('currentUserIsAdmin')
+        const v = el ? String(el.value || '').trim().toLowerCase() : 'false'
+        return v === 'true'
     }
 
     function vendorNameById(id) {
@@ -123,10 +134,12 @@
         }
         
         // Then check cached vendors
-        const found = cachedVendors.find(v => {
-            const vId = String(v.vendorId || v.VendorId || '').toLowerCase()
-            return vId === String(gid).toLowerCase().trim()
-        })
+        const found = cachedVendors.find(v =>
+        [v.vendorId, v.VendorId]
+            .filter(Boolean)
+            .some(id => id.toLowerCase() === String(gid).trim().toLowerCase())
+        );
+
         if (!found) return null
         return String(found.vendorName || found.VendorName || '').trim() || null
     }
@@ -139,40 +152,66 @@
         return String(found.name || found.Name || found.code || found.Code || '').trim() || null
     }
 
+    function getVendorColor(vendorId) {
+        // Array of Bootstrap badge color classes
+        const colors = [
+            'primary',
+            'success',
+            'info',
+            'warning',
+            'danger',
+            'secondary',
+            'dark'
+        ]
+        
+        // Generate consistent color based on vendor ID
+        const id = String(vendorId || '').toLowerCase()
+        let hash = 0
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const index = Math.abs(hash) % colors.length
+        return colors[index]
+    }
+
+    function getStatusColor(statusId) {
+        // Map status IDs to colors - adjust these based on your status meanings
+        const statusColors = {
+            1: 'secondary',  // e.g., Draft
+            2: 'info',       // e.g., Submitted
+            3: 'warning',    // e.g., In Review
+            4: 'success',    // e.g., Approved
+            5: 'danger',     // e.g., Rejected
+            6: 'primary'     // e.g., Completed
+        }
+        return statusColors[statusId] || 'secondary'
+    }
+
     async function loadStatuses() {
         try {
             const result = await fetchJson(apis.progressStatuses)
             cachedStatuses = normalizeToArray(result)
+            console.log('Loaded statuses:', cachedStatuses.length, 'items')
             return cachedStatuses
         } catch (err) {
             console.error('Failed to load statuses:', err)
+            console.error('This usually means the API requires admin role. User will see status IDs instead of names.')
             return []
         }
     }
 
     async function loadCurrentUser() {
-        try {
-            const result = await fetchJson(apis.currentUser)
-            currentUserVendor = {
-                vendorId: result.vendorId,
-                vendorName: result.vendorName
-            }
-            
-            // Add current user's vendor to cachedVendors for table display
-            if (currentUserVendor.vendorId && currentUserVendor.vendorName) {
-                cachedVendors.push({
-                    vendorId: currentUserVendor.vendorId,
-                    VendorId: currentUserVendor.vendorId,
-                    vendorName: currentUserVendor.vendorName,
-                    VendorName: currentUserVendor.vendorName
-                });
-            }
-            
-            return currentUserVendor
-        } catch (err) {
-            console.error('Failed to load current user:', err)
-            return null
+        const result = await fetchJson(apis.currentUser)
+        currentUserVendor = {
+            vendorId: result.vendorId,
+            vendorName: result.vendorName
         }
+    }
+
+    async function loadVendors() {
+        const result = await fetchJson(apis.vendors);
+        cachedVendors = normalizeToArray(result);  
+        return cachedVendors;
     }
 
     function initTable() {
@@ -198,14 +237,17 @@
                 {
                     data: 'vendorId',
                     render: function (data) {
-                         return escapeHtml(vendorNameById(data) || data || '');
-                        //return data.Vendor.VendorName;
+                        const vendorName = vendorNameById(data) || data || 'Unknown'
+                        const colorClass = getVendorColor(data)
+                        return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(vendorName)}</span>`
                     }
                 },
                 {
                     data: 'progressStatusId',
                     render: function (data) {
-                        return escapeHtml(statusNameById(data) || data || '')
+                        const statusName = statusNameById(data) || data || 'Unknown'
+                        const colorClass = getStatusColor(data)
+                        return `<span class="fw-bold text-${colorClass}" style="font-size: 0.9rem;">${escapeHtml(statusName)}</span>`
                     }
                 },
                 {
@@ -283,9 +325,24 @@
         $('#vendorId').val('')
         $('#vendorName').val('')
         $('#progressStatusId').val('2')
+        $('#progressStatusSelect').val('2')
         $('#invoiceNumber').val('')
         $('#invoiceAmount').val('')
         $('#taxAmount').val('')
+    }
+
+    function populateStatusDropdown() {
+        const $select = $('#progressStatusSelect')
+        $select.empty()
+        $select.append('<option value=""> Pilih Progress Status untuk Invoice ini... </option>')
+        
+        cachedStatuses
+            .sort((a, b) => a.progressStatusId - b.progressStatusId)
+            .forEach(status => {
+            const id = status.progressStatusId || status.ProgressStatusId
+            const name = status.name || status.Name || status.code || status.Code
+            $select.append(`<option value="${id}">${escapeHtml(name)}</option>`)
+        })
     }
 
     function openCreate() {
@@ -304,6 +361,16 @@
         
         // Set default progress status to 2
         $('#progressStatusId').val('2')
+        $('#progressStatusSelect').val('2')
+        
+        // Show/hide progress status section based on user role
+        console.log('Is current user admin?', isCurrentUserAdmin());
+        if (isCurrentUserAdmin()) {
+            populateStatusDropdown()
+            $('#progressStatusSection').show()
+        } else {
+            $('#progressStatusSection').hide()
+        }
         
         $('#attachmentsSection').show()
         $('#attachmentsList').html('<div class="alert alert-info small">Files will be uploaded after saving the invoice</div>')
@@ -339,9 +406,19 @@
             $('#vendorName').val(vendorName)
             
             $('#progressStatusId').val(String(data.progressStatusId || ''))
+            $('#progressStatusSelect').val(String(data.progressStatusId || ''))
             $('#invoiceNumber').val(data.invoiceNumber || '')
             $('#invoiceAmount').val(data.invoiceAmount ?? '')
             $('#taxAmount').val(data.taxAmount ?? '')
+            
+            // Show/hide progress status section based on user role
+            if (isCurrentUserAdmin()) {
+                populateStatusDropdown()
+                $('#progressStatusSection').show()
+                $('#progressStatusSelect').val(String(data.progressStatusId || ''))
+            } else {
+                $('#progressStatusSection').hide()
+            }
             
             // Show attachments section and load files
             $('#attachmentsSection').show()
@@ -363,10 +440,15 @@
         const vendorId = String($('#vendorId').val() || '').trim()
         const isEdit = !!id
 
+        // Get progress status - from select if admin, otherwise from hidden field
+        const progressStatusId = isCurrentUserAdmin() 
+            ? toInt($('#progressStatusSelect').val())
+            : toInt($('#progressStatusId').val())
+
         const payload = {
             invoiceId: id || undefined,
             vendorId: vendorId,
-            progressStatusId: toInt($('#progressStatusId').val()),
+            progressStatusId: progressStatusId,
             invoiceNumber: String($('#invoiceNumber').val() || '').trim(),
             invoiceAmount: Number($('#invoiceAmount').val() || 0),
             taxAmount: Number($('#taxAmount').val() || 0),
@@ -648,7 +730,7 @@
         try {
             // Load current user first (which will populate cachedVendors with user's vendor)
             // Then load statuses. We don't need to load all vendors anymore.
-            await Promise.all([loadCurrentUser(), loadStatuses()])
+            await Promise.all([loadCurrentUser(), loadStatuses(), loadVendors()])
         } catch (err) {
             console.error('Initialization error:', err)
             // still allow page to load; table will show IDs

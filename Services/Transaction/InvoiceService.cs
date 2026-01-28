@@ -124,6 +124,10 @@ namespace MonitoringDokumenGS.Services.Transaction
 
             var old = entity.ToDto();
 
+            // Check if progress status is changed
+            bool progressStatusChanged = entity.ProgressStatusId != dto.ProgressStatusId;
+            int oldProgressStatusId = entity.ProgressStatusId;
+
             entity.VendorId = dto.VendorId;
             entity.CreatedByUserId = dto.CreatedByUserId;
             entity.InvoiceNumber = dto.InvoiceNumber;
@@ -143,6 +147,47 @@ namespace MonitoringDokumenGS.Services.Transaction
                 entity.ToDto(),
                 entity.InvoiceId.ToString()
             );
+
+            // Send notification if progress status changed and updated by admin (different from creator)
+            if (progressStatusChanged && entity.CreatedByUserId != Guid.Empty)
+            {
+                // Get updater ID from UpdatedBy (assuming it's a GUID string)
+                Guid updaterId = Guid.Empty;
+                if (!string.IsNullOrEmpty(dto.UpdatedBy.ToString()) && Guid.TryParse(dto.UpdatedBy.ToString(), out var parsedId))
+                {
+                    updaterId = parsedId;
+                }
+
+                // Only send notification if updater is different from creator (admin updating user's invoice)
+                if (updaterId != entity.CreatedByUserId)
+                {
+                    try
+                    {
+                        // Get status names
+                        var oldStatus = await _context.InvoiceProgressStatuses
+                            .Where(s => s.ProgressStatusId == oldProgressStatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefaultAsync() ?? "Unknown";
+
+                        var newStatus = await _context.InvoiceProgressStatuses
+                            .Where(s => s.ProgressStatusId == entity.ProgressStatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefaultAsync() ?? "Unknown";
+
+                        await _notificationService.CreateAsync(new Dtos.Infrastructure.NotificationDto
+                        {
+                            UserId = entity.CreatedByUserId,
+                            Title = "Invoice Status Updated",
+                            Message = $"Your invoice {entity.InvoiceNumber} status has been updated from '{oldStatus}' to '{newStatus}' by administrator."
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log notification error but don't fail the update
+                        Console.WriteLine($"Failed to create notification: {ex.Message}");
+                    }
+                }
+            }
 
             return true;
         }

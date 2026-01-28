@@ -1,7 +1,9 @@
 @using System.Security.Claims
 @{
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
-    var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    string? currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+    string? userRole = User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    bool isAdmin = userRole == "SUPER_ADMIN" || userRole == "ADMIN";
 }
 
 @section Styles {
@@ -40,12 +42,13 @@
 }
 
 <input type="hidden" id="currentUserId" value="@currentUserId" />
+<input type="hidden" id="currentUserIsAdmin" value="@isAdmin.ToString().ToLower()" />
 
 <!-- [ page-header ] start -->
 <div class="page-header">
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
-            <h5 class="m-b-10">Invoices</h5>
+            <h5 class="m-b-10">Invoices @isAdmin</h5>
         </div>
         <ul class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Transactions</a></li>
@@ -121,20 +124,26 @@
                             <label class="form-label">Vendor</label>
                             <input id="vendorName" class="form-control" disabled />
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12" id="progressStatusSection" style="display: none;">
+                            <label class="form-label">Progress Status</label>
+                            <select id="progressStatusSelect" class="form-control">
+                                <option value="">-- Select Status --</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
                             <label class="form-label">Invoice Number</label>
                             <input id="invoiceNumber" class="form-control" autocomplete="off" required />
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">Invoice Amount</label>
                             <input id="invoiceAmount" type="number" step="0.01" min="0" class="form-control" required />
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">Tax Amount</label>
                             <input id="taxAmount" type="number" step="0.01" min="0" class="form-control" required />
                         </div>
                     </div>
-                    <small class="text-muted d-block mt-2">Amounts use decimal, e.g. 10000.00</small>
+                    <small class="text-muted d-block mt-2">Pengisian amounts menggunakan decimal, e.g. 10000.00</small>
 
                     <!-- Attachments Section (only for Edit mode) -->
                     <div id="attachmentsSection" style="display: none;" class="mt-4">

@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+    [Authorize] // All authenticated users can access
     [ApiController]
     [Route("api/attachment-types")]
     public class AttachmentTypesController : ControllerBase
@@ -34,6 +34,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPost]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] AttachmentTypeDto dto)
         {
             var created = await _service.CreateAsync(dto);
@@ -41,6 +42,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Update(int id, [FromBody] AttachmentTypeDto dto)
         {
             dto.AttachmentTypeId = id;
@@ -50,6 +52,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteAsync(id);

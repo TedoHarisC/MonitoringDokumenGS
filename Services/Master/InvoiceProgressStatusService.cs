@@ -36,7 +36,7 @@ namespace MonitoringDokumenGS.Services.Master
             return await _context.InvoiceProgressStatuses
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.ProgressStatusId)
                 .Select(InvoiceProgressStatusMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);
         }
@@ -47,6 +47,7 @@ namespace MonitoringDokumenGS.Services.Master
             return await _context.InvoiceProgressStatuses
                 .AsNoTracking()
                 .Where(x => x.ProgressStatusId == id && !x.IsDeleted)
+                .OrderBy(x => x.ProgressStatusId)
                 .Select(InvoiceProgressStatusMappings.ToDtoExpr)
                 .FirstOrDefaultAsync();
         }

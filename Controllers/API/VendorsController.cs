@@ -7,7 +7,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+    [Authorize] // All authenticated users can access
     [ApiController]
     [Route("api/vendors")]
     public class VendorsController : ControllerBase
@@ -35,6 +35,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPost]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] VendorDto dto)
         {
             var created = await _service.CreateAsync(dto);
@@ -42,6 +43,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] VendorDto dto)
         {
             dto.VendorId = id;
@@ -51,6 +53,7 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var ok = await _service.DeleteAsync(id);

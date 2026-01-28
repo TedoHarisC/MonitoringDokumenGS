@@ -20,17 +20,19 @@ namespace MonitoringDokumenGS.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
         private readonly IEmailService _emailService;
+        private readonly IRoleService _roleService;
 
         public AuthService(
             ApplicationDBContext context,
             IConfiguration configuration,
             ILogger<AuthService> logger,
-            IEmailService emailService)
+            IEmailService emailService, IRoleService roleService)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
             _emailService = emailService;
+            _roleService = roleService;
         }
 
         public async Task<bool> RegisterAsync(RegisterRequestDto registerDto)
@@ -245,6 +247,8 @@ namespace MonitoringDokumenGS.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var roles = _roleService.GetUserRolesAsync(user.UserId).Result.FirstOrDefault()!.Code ?? "USER";
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
@@ -252,6 +256,7 @@ namespace MonitoringDokumenGS.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim("username", user.Username ?? string.Empty),
+                new Claim(ClaimTypes.Role, roles),
                 new Claim(JwtRegisteredClaimNames.Iat,
                     DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                     ClaimValueTypes.Integer64)

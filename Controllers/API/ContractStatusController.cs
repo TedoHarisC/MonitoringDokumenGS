@@ -6,7 +6,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
+    [Authorize] // All authenticated users can access
     [ApiController]
     [Route("api/contract-statuses")]
     public class ContractStatusController : ControllerBase
@@ -33,6 +33,8 @@ namespace MonitoringDokumenGS.Controllers.API
             return Ok(item);
         }
 
+
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ContractStatusDto dto)
         {
@@ -40,6 +42,8 @@ namespace MonitoringDokumenGS.Controllers.API
             return CreatedAtAction(nameof(GetById), new { id = created.ContractStatusId }, created);
         }
 
+
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] ContractStatusDto dto)
         {
@@ -49,6 +53,8 @@ namespace MonitoringDokumenGS.Controllers.API
             return NoContent();
         }
 
+
+        [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
