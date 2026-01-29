@@ -9,8 +9,8 @@
     const notificationsApi = '/api/notifications'
     let notifications = []
 
-    async function fetchJson(url, options = {}) {
-        const res = await fetch(url, options)
+    async function authFetchJson(url, options = {}) {
+        const res = await authFetch(url, options)
         if (!res.ok) {
             const err = await res.json().catch(() => ({ message: 'Request failed' }))
             throw err
@@ -32,7 +32,7 @@
 
     async function loadNotifications() {
         try {
-            const response = await fetchJson(notificationsApi)
+            const response = await authFetchJson(notificationsApi)
             
             if (response.success && response.data) {
                 notifications = Array.isArray(response.data) ? response.data : []
@@ -114,7 +114,7 @@
 
     async function markAsRead(notificationId) {
         try {
-            await fetchJson(`${notificationsApi}/${notificationId}/mark-read`, {
+            await authFetchJson(`${notificationsApi}/${notificationId}/mark-read`, {
                 method: 'PUT'
             })
 
@@ -132,7 +132,7 @@
 
     async function markAllAsRead() {
         try {
-            await fetchJson(`${notificationsApi}/mark-all-read`, {
+            await authFetchJson(`${notificationsApi}/mark-all-read`, {
                 method: 'PUT'
             })
 

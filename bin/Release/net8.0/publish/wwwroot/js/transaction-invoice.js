@@ -1,11 +1,3 @@
-/* transaction-invoice.js
-   Transactions > Invoice page
-   Uses API endpoints:
-   - /api/invoices
-   - /api/vendors?page=1&pageSize=2000
-   - /api/invoice-progress-statuses?page=1&pageSize=2000
-*/
-
 ;(function ($) {
     'use strict'
 
@@ -13,13 +5,16 @@
         invoices: '/api/invoices',
         vendors: '/api/vendors?page=1&pageSize=2000',
         progressStatuses: '/api/invoice-progress-statuses?page=1&pageSize=2000',
-        attachments: '/api/attachments'
+        attachments: '/api/attachments',
+        currentUser: '/api/auth/me'
     }
 
     let table
+    let cachedUserVendors = null;
     let cachedVendors = []
     let cachedStatuses = []
     let pendingFiles = []
+    let currentUserVendor = null
 
     function normalizeToArray(json) {
         if (!json) return []
@@ -38,7 +33,7 @@
     function showModal(modalId) {
         const el = document.getElementById(modalId)
         if (!el) return
-        const modal = new bootstrap.Modal(el)
+        const modal = bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)
         modal.show()
     }
 
@@ -46,11 +41,27 @@
         const el = document.getElementById(modalId)
         if (!el) return
         const modal = bootstrap.Modal.getInstance(el)
-        if (modal) modal.hide()
+        if (modal) {
+            modal.hide()
+            // Force remove backdrop if stuck
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop')
+                backdrops.forEach(backdrop => backdrop.remove())
+                document.body.classList.remove('modal-open')
+                document.body.style.overflow = ''
+                document.body.style.paddingRight = ''
+            }, 300)
+        }
     }
 
     async function fetchJson(url, options) {
-        const res = await fetch(url, options)
+        // Add credentials to include cookies for authentication
+        const fetchOptions = {
+            ...options,
+            credentials: 'same-origin'
+        }
+        
+        const res = await authFetch(url, fetchOptions)
         if (res.status === 204) return null
         if (!res.ok) {
             let body = null
@@ -91,10 +102,14 @@
     }
 
     function formatDate(value) {
-        if (!value) return ''
-        const d = new Date(value)
-        if (isNaN(d.getTime())) return String(value)
-        return d.toLocaleString()
+        if (!value) return '';
+        const d = new Date(
+            typeof value === 'string' && !value.endsWith('Z')
+            ? value + 'Z'
+            : value
+        );
+        if (isNaN(d.getTime())) return String(value);
+        return d.toLocaleString('id-ID');
     }
 
     function currentUserId() {
@@ -103,10 +118,28 @@
         return v
     }
 
+    function isCurrentUserAdmin() {
+        const el = document.getElementById('currentUserIsAdmin')
+        const v = el ? String(el.value || '').trim().toLowerCase() : 'false'
+        return v === 'true'
+    }
+
     function vendorNameById(id) {
         const gid = toGuidString(id)
         if (!gid) return null
-        const found = cachedVendors.find(v => String(v.vendorId || v.VendorId) === gid)
+        
+        // First check current user vendor
+        if (currentUserVendor && String(currentUserVendor.vendorId).toLowerCase() === String(gid).toLowerCase().trim()) {
+            return currentUserVendor.vendorName
+        }
+        
+        // Then check cached vendors
+        const found = cachedVendors.find(v =>
+        [v.vendorId, v.VendorId]
+            .filter(Boolean)
+            .some(id => id.toLowerCase() === String(gid).trim().toLowerCase())
+        );
+
         if (!found) return null
         return String(found.vendorName || found.VendorName || '').trim() || null
     }
@@ -119,41 +152,66 @@
         return String(found.name || found.Name || found.code || found.Code || '').trim() || null
     }
 
-    function setSelectOptions(selectEl, options, placeholder) {
-        const ph = placeholder ? `<option value="">${escapeHtml(placeholder)}</option>` : ''
-        selectEl.innerHTML = ph + options.join('')
+    function getVendorColor(vendorId) {
+        // Array of Bootstrap badge color classes
+        const colors = [
+            'primary',
+            'success',
+            'info',
+            'warning',
+            'danger',
+            'secondary',
+            'dark'
+        ]
+        
+        // Generate consistent color based on vendor ID
+        const id = String(vendorId || '').toLowerCase()
+        let hash = 0
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const index = Math.abs(hash) % colors.length
+        return colors[index]
     }
 
-    async function loadVendors() {
-        const result = await fetchJson(apis.vendors)
-        cachedVendors = normalizeToArray(result)
-        return cachedVendors
+    function getStatusColor(statusId) {
+        // Map status IDs to colors - adjust these based on your status meanings
+        const statusColors = {
+            1: 'secondary',  // e.g., Draft
+            2: 'info',       // e.g., Submitted
+            3: 'warning',    // e.g., In Review
+            4: 'success',    // e.g., Approved
+            5: 'danger',     // e.g., Rejected
+            6: 'primary'     // e.g., Completed
+        }
+        return statusColors[statusId] || 'secondary'
     }
 
     async function loadStatuses() {
-        const result = await fetchJson(apis.progressStatuses)
-        cachedStatuses = normalizeToArray(result)
-        return cachedStatuses
+        try {
+            const result = await fetchJson(apis.progressStatuses)
+            cachedStatuses = normalizeToArray(result)
+            console.log('Loaded statuses:', cachedStatuses.length, 'items')
+            return cachedStatuses
+        } catch (err) {
+            console.error('Failed to load statuses:', err)
+            console.error('This usually means the API requires admin role. User will see status IDs instead of names.')
+            return []
+        }
     }
 
-    function populateFormSelects() {
-        const vendorSelect = document.getElementById('vendorId')
-        const statusSelect = document.getElementById('progressStatusId')
+    async function loadCurrentUser() {
+        const result = await fetchJson(apis.currentUser)
+        currentUserVendor = {
+            vendorId: result.vendorId,
+            vendorName: result.vendorName
+        }
+    }
 
-        const vendorOptions = cachedVendors.map(v => {
-            const id = String(v.vendorId || v.VendorId || '')
-            const name = String(v.vendorName || v.VendorName || id)
-            return `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`
-        })
-
-        const statusOptions = cachedStatuses.map(s => {
-            const id = String(s.progressStatusId || s.ProgressStatusId || '')
-            const label = `${String(s.name || s.Name || '')}`.trim()
-            return `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`
-        })
-
-        setSelectOptions(vendorSelect, vendorOptions, '-- Select Vendor --')
-        setSelectOptions(statusSelect, statusOptions, '-- Select Status --')
+    async function loadVendors() {
+        const result = await fetchJson(apis.vendors);
+        cachedVendors = normalizeToArray(result);  
+        return cachedVendors;
     }
 
     function initTable() {
@@ -179,13 +237,17 @@
                 {
                     data: 'vendorId',
                     render: function (data) {
-                        return escapeHtml(vendorNameById(data) || data || '')
+                        const vendorName = vendorNameById(data) || data || 'Unknown'
+                        const colorClass = getVendorColor(data)
+                        return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(vendorName)}</span>`
                     }
                 },
                 {
                     data: 'progressStatusId',
                     render: function (data) {
-                        return escapeHtml(statusNameById(data) || data || '')
+                        const statusName = statusNameById(data) || data || 'Unknown'
+                        const colorClass = getStatusColor(data)
+                        return `<span class="fw-bold text-${colorClass}" style="font-size: 0.9rem;">${escapeHtml(statusName)}</span>`
                     }
                 },
                 {
@@ -261,40 +323,113 @@
     function clearForm() {
         $('#invoiceId').val('')
         $('#vendorId').val('')
-        $('#progressStatusId').val('')
+        $('#vendorName').val('')
+        $('#progressStatusId').val('2')
+        $('#progressStatusSelect').val('2')
         $('#invoiceNumber').val('')
         $('#invoiceAmount').val('')
         $('#taxAmount').val('')
+    }
+
+    function populateStatusDropdown() {
+        const $select = $('#progressStatusSelect')
+        $select.empty()
+        $select.append('<option value=""> Pilih Progress Status untuk Invoice ini... </option>')
+        
+        cachedStatuses
+            .sort((a, b) => a.progressStatusId - b.progressStatusId)
+            .forEach(status => {
+            const id = status.progressStatusId || status.ProgressStatusId
+            const name = status.name || status.Name || status.code || status.Code
+            $select.append(`<option value="${id}">${escapeHtml(name)}</option>`)
+        })
     }
 
     function openCreate() {
         portalModalToBody('invoiceModal')
         clearForm()
         $('#invoiceModalLabel').text('Create Invoice')
+        
+        // Set vendor from current user
+        if (currentUserVendor && currentUserVendor.vendorId) {
+            $('#vendorId').val(currentUserVendor.vendorId)
+            $('#vendorName').val(currentUserVendor.vendorName || '')
+        } else {
+            Swal.fire('Warning', 'No vendor assigned to your account. Please contact administrator.', 'warning')
+            return
+        }
+        
+        // Set default progress status to 2
+        $('#progressStatusId').val('2')
+        $('#progressStatusSelect').val('2')
+        
+        // Show/hide progress status section based on user role
+        console.log('Is current user admin?', isCurrentUserAdmin());
+        if (isCurrentUserAdmin()) {
+            populateStatusDropdown()
+            $('#progressStatusSection').show()
+        } else {
+            $('#progressStatusSection').hide()
+        }
+        
         $('#attachmentsSection').show()
         $('#attachmentsList').html('<div class="alert alert-info small">Files will be uploaded after saving the invoice</div>')
         pendingFiles = []
-        populateFormSelects()
         showModal('invoiceModal')
     }
 
     async function openEdit(id) {
-        portalModalToBody('invoiceModal')
-        const data = await fetchJson(`${apis.invoices}/${id}`)
-        $('#invoiceModalLabel').text('Edit Invoice')
-        $('#invoiceId').val(data.invoiceId)
-        populateFormSelects()
-        $('#vendorId').val(String(data.vendorId || ''))
-        $('#progressStatusId').val(String(data.progressStatusId || ''))
-        $('#invoiceNumber').val(data.invoiceNumber || '')
-        $('#invoiceAmount').val(data.invoiceAmount ?? '')
-        
-        // Show attachments section and load files
-        $('#attachmentsSection').show()
-        await loadAttachments(data.invoiceId)
-        
-        $('#taxAmount').val(data.taxAmount ?? '')
-        showModal('invoiceModal')
+        // Show loading indicator
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        })
+
+        try {
+            portalModalToBody('invoiceModal')
+            const data = await fetchJson(`${apis.invoices}/${id}`)
+            
+            // Close loading
+            Swal.close()
+            
+            $('#invoiceModalLabel').text('Edit Invoice')
+            $('#invoiceId').val(data.invoiceId)
+            
+            // Set vendor (should be user's own vendor)
+            const vendorName = vendorNameById(data.vendorId) || ''
+            $('#vendorId').val(String(data.vendorId || ''))
+            $('#vendorName').val(vendorName)
+            
+            $('#progressStatusId').val(String(data.progressStatusId || ''))
+            $('#progressStatusSelect').val(String(data.progressStatusId || ''))
+            $('#invoiceNumber').val(data.invoiceNumber || '')
+            $('#invoiceAmount').val(data.invoiceAmount ?? '')
+            $('#taxAmount').val(data.taxAmount ?? '')
+            
+            // Show/hide progress status section based on user role
+            if (isCurrentUserAdmin()) {
+                populateStatusDropdown()
+                $('#progressStatusSection').show()
+                $('#progressStatusSelect').val(String(data.progressStatusId || ''))
+            } else {
+                $('#progressStatusSection').hide()
+            }
+            
+            // Show attachments section and load files
+            $('#attachmentsSection').show()
+            await loadAttachments(data.invoiceId)
+            
+            showModal('invoiceModal')
+        } catch (err) {
+            Swal.close()
+            console.error('Failed to load invoice:', err)
+            Swal.fire('Error', 'Unable to load invoice', 'error')
+        }
     }
 
     async function saveInvoice(e) {
@@ -302,11 +437,18 @@
 
         const id = String($('#invoiceId').val() || '').trim()
         const uid = currentUserId()
+        const vendorId = String($('#vendorId').val() || '').trim()
+        const isEdit = !!id
+
+        // Get progress status - from select if admin, otherwise from hidden field
+        const progressStatusId = isCurrentUserAdmin() 
+            ? toInt($('#progressStatusSelect').val())
+            : toInt($('#progressStatusId').val())
 
         const payload = {
             invoiceId: id || undefined,
-            vendorId: String($('#vendorId').val() || ''),
-            progressStatusId: toInt($('#progressStatusId').val()),
+            vendorId: vendorId,
+            progressStatusId: progressStatusId,
             invoiceNumber: String($('#invoiceNumber').val() || '').trim(),
             invoiceAmount: Number($('#invoiceAmount').val() || 0),
             taxAmount: Number($('#taxAmount').val() || 0),
@@ -316,7 +458,7 @@
         }
 
         if (!payload.vendorId) {
-            return Swal.fire('Validation', 'Vendor is required.', 'warning')
+            return Swal.fire('Validation', 'Vendor is required. Please ensure your account has a vendor assigned.', 'warning')
         }
         if (!payload.progressStatusId) {
             return Swal.fire('Validation', 'Progress status is required.', 'warning')
@@ -325,8 +467,19 @@
             return Swal.fire('Validation', 'Invoice number is required.', 'warning')
         }
 
-        const method = id ? 'PUT' : 'POST'
-        const url = id ? `${apis.invoices}/${id}` : apis.invoices
+        const method = isEdit ? 'PUT' : 'POST'
+        const url = isEdit ? `${apis.invoices}/${id}` : apis.invoices
+
+        // Show loading
+        Swal.fire({
+            title: 'Saving...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        })
 
         try {
             const result = await fetchJson(url, {
@@ -336,13 +489,21 @@
             })
 
             // If creating new invoice and have pending files, upload them
-            if (!id && pendingFiles.length > 0 && result.invoiceId) {
+            if (!isEdit && pendingFiles.length > 0 && result.invoiceId) {
                 await uploadPendingFiles(result.invoiceId)
             }
 
             hideModal('invoiceModal')
             if (table) table.ajax.reload(null, false)
-            Swal.fire('Saved', 'Invoice saved successfully', 'success')
+            
+            // Single success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved',
+                text: 'Invoice saved successfully',
+                timer: 1500,
+                showConfirmButton: false
+            })
         } catch (err) {
             const message = (err && (err.message || err.title)) || 'Unable to save invoice.'
             Swal.fire('Error', message, 'error')
@@ -362,11 +523,50 @@
         if (!res.isConfirmed) return
 
         try {
-            await fetchJson(`${apis.invoices}/${id}`, { method: 'DELETE' })
+            console.log('Deleting invoice:', id)
+            const response = await authFetch(`${apis.invoices}/${id}`, { 
+                method: 'DELETE',
+                credentials: 'same-origin'
+            })
+
+            console.log('Delete response status:', response.status)
+
+            // Handle different response types
+            if (response.status === 204) {
+                // No content - successful delete
+                if (table) table.ajax.reload(null, false)
+                Swal.fire('Deleted', 'Invoice deleted', 'success')
+                return
+            }
+
+            if (response.status === 403 || response.status === 401) {
+                Swal.fire('Access Denied', 'You do not have permission to delete invoices', 'error')
+                return
+            }
+
+            if (!response.ok) {
+                const contentType = response.headers.get('content-type')
+                let errorMessage = 'Unable to delete invoice.'
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json()
+                    errorMessage = errorData.message || errorMessage
+                } else {
+                    // HTML response (error page)
+                    errorMessage = `Server error (${response.status})`
+                }
+                
+                throw new Error(errorMessage)
+            }
+
+            // Try to parse JSON if available
+            const data = await response.json().catch(() => null)
+            
             if (table) table.ajax.reload(null, false)
             Swal.fire('Deleted', 'Invoice deleted', 'success')
         } catch (err) {
-            const message = (err && (err.message || err.title)) || 'Unable to delete invoice.'
+            console.error('Delete error:', err)
+            const message = err.message || 'Unable to delete invoice.'
             Swal.fire('Error', message, 'error')
         }
     }
@@ -384,14 +584,19 @@
 
             attachments.forEach(att => {
                 const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1)
+                const fileUrl = `/api/attachments/download/${att.attachmentId}`
+                
                 const item = $(`
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="feather-file me-2"></i>
-                            <span>${escapeHtml(att.fileName)}</span>
-                            <small class="text-muted ms-2">(${sizeKB} KB)</small>
+                        <div class="flex-grow-1" style="cursor: pointer;">
+                            <a href="${fileUrl}" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
+                                <i class="feather-file me-2"></i>
+                                <span class="text-primary">${escapeHtml(att.fileName)}</span>
+                                <small class="text-muted ms-2">(${sizeKB} KB)</small>
+                                <i class="feather-external-link ms-2 text-muted" style="font-size: 14px;"></i>
+                            </a>
                         </div>
-                        <button type="button" class="btn btn-sm btn-light-danger btn-delete-attachment" data-id="${att.attachmentId}">
+                        <button type="button" class="btn btn-sm btn-light-danger btn-delete-attachment ms-2" data-id="${att.attachmentId}">
                             <i class="feather-trash-2"></i>
                         </button>
                     </div>
@@ -406,11 +611,14 @@
     async function uploadFile(file, invoiceId) {
         // If no invoiceId yet (create mode), add to pending list
         if (!invoiceId) {
+            console.log('No invoiceId yet, adding to pending files:', file.name)
             pendingFiles.push(file)
             updatePendingFilesList()
             $('#fileUpload').val('') // Clear input for next file
             return
         }
+
+        console.log('Uploading file:', file.name, 'for invoice:', invoiceId)
 
         const formData = new FormData()
         formData.append('file', file)
@@ -418,21 +626,38 @@
         formData.append('attachmentTypeId', '1') // Default type, adjust as needed
         formData.append('referenceId', invoiceId)
 
+        console.log('FormData prepared:', {
+            fileName: file.name,
+            module: 'Invoices',
+            attachmentTypeId: 1,
+            referenceId: invoiceId
+        })
+
         try {
-            const res = await fetch(`${apis.attachments}/upload`, {
+            console.log('Sending upload request to:', `${apis.attachments}/upload`)
+            const res = await authFetch(`${apis.attachments}/upload`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
+
+            console.log('Upload response status:', res.status)
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ message: 'Upload failed' }))
+                console.error('Upload failed with error:', err)
                 throw err
             }
 
             const result = await res.json()
+            console.log('Upload successful, result:', result)
+            
             await loadAttachments(invoiceId)
             $('#fileUpload').val('') // Clear input for next file
+            
+            console.log('File upload completed successfully')
         } catch (err) {
+            console.error('Upload error:', err)
             const message = (err && (err.message || err.title)) || 'Upload failed.'
             Swal.fire('Error', message, 'error')
         }
@@ -467,10 +692,14 @@
     async function uploadPendingFiles(invoiceId) {
         if (pendingFiles.length === 0) return
 
+        console.log(`Uploading ${pendingFiles.length} pending files for invoice:`, invoiceId)
+
         for (const file of pendingFiles) {
+            console.log('Processing pending file:', file.name)
             await uploadFile(file, invoiceId)
         }
         pendingFiles = []
+        console.log('All pending files uploaded')
     }
 
     async function deleteAttachment(attachmentId, invoiceId) {
@@ -499,8 +728,11 @@
         portalModalToBody('invoiceModal')
 
         try {
-            await Promise.all([loadVendors(), loadStatuses()])
-        } catch {
+            // Load current user first (which will populate cachedVendors with user's vendor)
+            // Then load statuses. We don't need to load all vendors anymore.
+            await Promise.all([loadCurrentUser(), loadStatuses(), loadVendors()])
+        } catch (err) {
+            console.error('Initialization error:', err)
             // still allow page to load; table will show IDs
         }
 
@@ -510,7 +742,7 @@
 
         $('#invoicesTable').on('click', '.btn-edit', function () {
             const id = $(this).data('id')
-            openEdit(id).catch(() => Swal.fire('Error', 'Unable to load invoice', 'error'))
+            openEdit(id)
         })
 
         $('#invoicesTable').on('click', '.btn-delete', function () {

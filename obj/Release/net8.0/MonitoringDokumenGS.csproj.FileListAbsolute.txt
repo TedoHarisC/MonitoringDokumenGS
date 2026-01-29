@@ -1,5 +1,6 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/appsettings.Development.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/appsettings.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/appsettings.Production.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/global.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/libman.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/MonitoringDokumenGS.staticwebassets.runtime.json

@@ -53,6 +53,7 @@
 
                     Swal.fire({ icon: 'success', title: 'Success', text: 'Login successful', timer: 900, showConfirmButton: false })
                     .then(() => {
+                        localStorage.setItem("mdgs_token", resp.token);
                         window.location.href = '/Home/Index';
                     });
                 })

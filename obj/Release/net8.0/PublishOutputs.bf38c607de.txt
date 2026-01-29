@@ -1,6 +1,7 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.Development.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.Production.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/global.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/libman.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/ApprovalRequired.html

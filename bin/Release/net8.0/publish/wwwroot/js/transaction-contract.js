@@ -6,7 +6,8 @@
         vendors: '/api/vendors?page=1&pageSize=2000',
         contractStatuses: '/api/contract-statuses?page=1&pageSize=2000',
         approvalStatuses: '/api/approval-statuses?page=1&pageSize=2000',
-        attachments: '/api/attachments'
+        attachments: '/api/attachments',
+        currentUser: '/api/auth/me'
     }
 
     let table
@@ -14,6 +15,7 @@
     let cachedContractStatuses = []
     let cachedApprovalStatuses = []
     let pendingFiles = []
+    let currentUserVendor = null
 
     function normalizeToArray(json) {
         if (!json) return []
@@ -44,7 +46,7 @@
     }
 
     async function fetchJson(url, options) {
-        const res = await fetch(url, options)
+        const res = await authFetch(url, options)
         if (res.status === 204) return null
         if (!res.ok) {
             let body = null
@@ -101,10 +103,30 @@
         return v
     }
 
+    function isCurrentUserAdmin() {
+        const el = document.getElementById('currentUserIsAdmin')
+        const v = el ? String(el.value || '').trim().toLowerCase() : 'false'
+        return v === 'true'
+    }
+
+    async function loadCurrentUser() {
+        const result = await fetchJson(apis.currentUser, { credentials: 'same-origin' })
+        currentUserVendor = {
+            vendorId: result.vendorId,
+            vendorName: result.vendorName
+        }
+    }
+
     function vendorNameById(id) {
         const gid = toGuidString(id)
         if (!gid) return null
-        const found = cachedVendors.find(v => String(v.vendorId || v.VendorId) === gid)
+        
+        // First check current user vendor
+        if (currentUserVendor && String(currentUserVendor.vendorId).toLowerCase() === String(gid).toLowerCase().trim()) {
+            return currentUserVendor.vendorName
+        }
+        
+        const found = cachedVendors.find(v => String(v.vendorId || v.VendorId).toLowerCase() === gid.toLowerCase())
         if (!found) return null
         return String(found.vendorName || found.VendorName || '').trim() || null
     }
@@ -123,6 +145,53 @@
         const found = cachedApprovalStatuses.find(s => toInt(s.approvalStatusId || s.ApprovalStatusId) === sid)
         if (!found) return null
         return String(found.name || found.Name || found.code || found.Code || '').trim() || null
+    }
+
+    function getVendorColor(vendorId) {
+        // Array of Bootstrap badge color classes
+        const colors = [
+            'primary',
+            'success',
+            'info',
+            'warning',
+            'danger',
+            'secondary',
+            'dark'
+        ]
+        
+        // Generate consistent color based on vendor ID
+        const id = String(vendorId || '').toLowerCase()
+        let hash = 0
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash)
+        }
+        const index = Math.abs(hash) % colors.length
+        return colors[index]
+    }
+
+    function getContractStatusColor(statusId) {
+        // Map contract status IDs to colors
+        const statusColors = {
+            1: 'secondary',  // e.g., Draft
+            2: 'info',       // e.g., Active
+            3: 'success',    // e.g., Completed
+            4: 'warning',    // e.g., On Hold
+            5: 'danger',     // e.g., Terminated
+            6: 'primary'     // e.g., Renewed
+        }
+        return statusColors[statusId] || 'secondary'
+    }
+
+    function getApprovalStatusColor(statusId) {
+        // Map approval status IDs to colors
+        const statusColors = {
+            6: 'warning',  // e.g., Draft
+            7: 'secondary',    // e.g., Pending Review
+            8: 'info',       // e.g., In Review
+            9: 'primary',    // e.g., Approved
+            10: 'success',     // e.g., Rejected
+        }
+        return statusColors[statusId] || 'secondary'
     }
 
     function setSelectOptions(selectEl, options, placeholder) {
@@ -146,6 +215,30 @@
         const result = await fetchJson(apis.approvalStatuses)
         cachedApprovalStatuses = normalizeToArray(result)
         return cachedApprovalStatuses
+    }
+
+    function populateContractStatusDropdown() {
+        const $select = $('#contractStatusSelect')
+        $select.empty()
+        $select.append('<option value="">-- Select Contract Status --</option>')
+        
+        cachedContractStatuses.forEach(status => {
+            const id = status.contractStatusId || status.ContractStatusId
+            const name = status.name || status.Name || status.code || status.Code
+            $select.append(`<option value="${id}">${escapeHtml(name)}</option>`)
+        })
+    }
+
+    function populateApprovalStatusDropdown() {
+        const $select = $('#approvalStatusSelect')
+        $select.empty()
+        $select.append('<option value="">-- Select Approval Status --</option>')
+        
+        cachedApprovalStatuses.forEach(status => {
+            const id = status.approvalStatusId || status.ApprovalStatusId
+            const name = status.name || status.Name || status.code || status.Code
+            $select.append(`<option value="${id}">${escapeHtml(name)}</option>`)
+        })
     }
 
     function populateFormSelects() {
@@ -199,7 +292,9 @@
                 {
                     data: 'vendorId',
                     render: function (data) {
-                        return escapeHtml(vendorNameById(data) || data || '')
+                        const vendorName = vendorNameById(data) || data || 'Unknown'
+                        const colorClass = getVendorColor(data)
+                        return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(vendorName)}</span>`
                     }
                 },
                 {
@@ -224,13 +319,17 @@
                 {
                     data: 'contractStatusId',
                     render: function (data) {
-                        return escapeHtml(contractStatusNameById(data) || data || '')
+                        const statusName = contractStatusNameById(data) || data || 'Unknown'
+                        const colorClass = getContractStatusColor(data)
+                        return `<span class="fw-bold text-${colorClass}" style="font-size: 0.9rem;">${escapeHtml(statusName)}</span>`
                     }
                 },
                 {
                     data: 'approvalStatusId',
                     render: function (data) {
-                        return escapeHtml(approvalStatusNameById(data) || data || '')
+                        const statusName = approvalStatusNameById(data) || data || 'Unknown'
+                        const colorClass = getApprovalStatusColor(data)
+                        return `<span class="badge bg-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(statusName)}</span>`
                     }
                 },
                 {
@@ -286,19 +385,48 @@
     function clearForm() {
         $('#contractId').val('')
         $('#vendorId').val('')
+        $('#vendorName').val('')
         $('#contractNumber').val('')
         $('#contractDescription').val('')
         $('#startDate').val('')
         $('#endDate').val('')
-        $('#contractStatusId').val('')
-        $('#approvalStatusId').val('')
+        $('#contractStatusId').val('2')
+        $('#contractStatusSelect').val('2')
+        $('#approvalStatusId').val('6')
+        $('#approvalStatusSelect').val('6')
     }
 
     function openCreate() {
         portalModalToBody('contractModal')
         clearForm()
         $('#contractModalLabel').text('Create Contract')
-        populateFormSelects()
+        
+        // Set vendor from current user
+        if (currentUserVendor && currentUserVendor.vendorId) {
+            $('#vendorId').val(currentUserVendor.vendorId)
+            $('#vendorName').val(currentUserVendor.vendorName || '')
+        } else {
+            Swal.fire('Warning', 'No vendor assigned to your account. Please contact administrator.', 'warning')
+            return
+        }
+        
+        // Set default statuses
+        $('#contractStatusId').val('2')
+        $('#contractStatusSelect').val('2')
+        $('#approvalStatusId').val('6')
+        $('#approvalStatusSelect').val('6')
+        
+        // Show/hide status sections based on user role
+        if (isCurrentUserAdmin()) {
+            populateContractStatusDropdown()
+            populateApprovalStatusDropdown()
+            $('#contractStatusSection').show()
+            $('#approvalStatusSection').show()
+        } else {
+            $('#contractStatusSection').hide()
+            $('#approvalStatusSection').hide()
+        }
+        
         $('#attachmentsSection').show()
         $('#attachmentsList').html('<div class="alert alert-info small">Files will be uploaded after saving the contract</div>')
         pendingFiles = []
@@ -310,14 +438,36 @@
         const data = await fetchJson(`${apis.contracts}/${id}`)
         $('#contractModalLabel').text('Edit Contract')
         $('#contractId').val(data.contractId)
-        populateFormSelects()
+        
+        // Set vendor
+        const vendorName = vendorNameById(data.vendorId) || ''
         $('#vendorId').val(String(data.vendorId || ''))
+        $('#vendorName').val(vendorName)
+        
         $('#contractNumber').val(data.contractNumber || '')
         $('#contractDescription').val(data.contractDescription || '')
         $('#startDate').val(formatDate(data.startDate))
         $('#endDate').val(formatDate(data.endDate))
+        
+        // Set status values
         $('#contractStatusId').val(String(data.contractStatusId || ''))
+        $('#contractStatusSelect').val(String(data.contractStatusId || ''))
         $('#approvalStatusId').val(String(data.approvalStatusId || ''))
+        $('#approvalStatusSelect').val(String(data.approvalStatusId || ''))
+        
+        // Show/hide status sections based on user role
+        if (isCurrentUserAdmin()) {
+            populateContractStatusDropdown()
+            populateApprovalStatusDropdown()
+            $('#contractStatusSection').show()
+            $('#contractStatusSelect').val(String(data.contractStatusId || ''))
+            $('#approvalStatusSection').show()
+            $('#approvalStatusSelect').val(String(data.approvalStatusId || ''))
+        } else {
+            $('#contractStatusSection').hide()
+            $('#approvalStatusSection').hide()
+        }
+        
         $('#attachmentsSection').show()
         await loadAttachments(data.contractId)
         showModal('contractModal')
@@ -328,16 +478,27 @@
 
         const id = String($('#contractId').val() || '').trim()
         const uid = currentUserId()
+        const vendorId = String($('#vendorId').val() || '').trim()
+        const isEdit = !!id
+
+        // Get statuses - from select if admin, otherwise from hidden field
+        const contractStatusId = isCurrentUserAdmin() 
+            ? toInt($('#contractStatusSelect').val())
+            : toInt($('#contractStatusId').val())
+        
+        const approvalStatusId = isCurrentUserAdmin() 
+            ? toInt($('#approvalStatusSelect').val())
+            : toInt($('#approvalStatusId').val())
 
         const payload = {
             contractId: id || undefined,
-            vendorId: String($('#vendorId').val() || ''),
+            vendorId: vendorId,
             contractNumber: String($('#contractNumber').val() || '').trim(),
             contractDescription: String($('#contractDescription').val() || '').trim(),
             startDate: $('#startDate').val(),
             endDate: $('#endDate').val(),
-            contractStatusId: toInt($('#contractStatusId').val()),
-            approvalStatusId: toInt($('#approvalStatusId').val()),
+            contractStatusId: contractStatusId,
+            approvalStatusId: approvalStatusId,
             createdByUserId: uid || undefined,
             createdBy: uid || undefined,
             updatedBy: uid || undefined
@@ -393,23 +554,30 @@
             $list.empty()
 
             if (!attachments || attachments.length === 0) {
-                $list.append('<div class="text-muted small">No attachments yet</div>')
+                $list.html('<div class="text-muted text-center py-3">No attachments yet</div>')
                 return
             }
 
             attachments.forEach(att => {
-                const sizeKb = (att.fileSize / 1024).toFixed(2)
-                $list.append(`
+                const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1)
+                const fileUrl = `/api/attachments/download/${att.attachmentId}`
+                
+                const item = $(`
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${att.fileName}</strong>
-                            <span class="text-muted small ms-2">(${sizeKb} KB)</span>
+                        <div class="flex-grow-1" style="cursor: pointer;">
+                            <a href="${fileUrl}" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
+                                <i class="feather-file me-2"></i>
+                                <span class="text-primary">${escapeHtml(att.fileName)}</span>
+                                <small class="text-muted ms-2">(${sizeKB} KB)</small>
+                                <i class="feather-external-link ms-2 text-muted" style="font-size: 14px;"></i>
+                            </a>
                         </div>
-                        <button type="button" class="btn btn-sm btn-danger btn-delete-attachment" data-id="${att.attachmentId}">
-                            <i class="bi bi-trash"></i>
+                        <button type="button" class="btn btn-sm btn-light-danger btn-delete-attachment ms-2" data-id="${att.attachmentId}">
+                            <i class="feather-trash-2"></i>
                         </button>
                     </div>
                 `)
+                $list.append(item)
             })
         } catch (err) {
             console.error('Failed to load attachments:', err)
@@ -432,7 +600,7 @@
         formData.append('referenceId', contractId)
 
         try {
-            await fetch(`${apis.attachments}/upload`, {
+            await autFetch(`${apis.attachments}/upload`, {
                 method: 'POST',
                 body: formData
             })
@@ -490,7 +658,7 @@
         if (!res.isConfirmed) return
 
         try {
-            await fetch(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
+            await authFetch(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
             Swal.fire('Deleted', 'Attachment deleted', 'success')
             await loadAttachments(contractId)
         } catch (err) {
@@ -524,8 +692,9 @@
         portalModalToBody('contractModal')
 
         try {
-            await Promise.all([loadVendors(), loadContractStatuses(), loadApprovalStatuses()])
-        } catch {
+            await Promise.all([loadCurrentUser(), loadVendors(), loadContractStatuses(), loadApprovalStatuses()])
+        } catch (err) {
+            console.error('Initialization error:', err)
             // still allow page to load; table will show IDs
         }
 

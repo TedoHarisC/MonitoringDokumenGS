@@ -51,7 +51,7 @@
         if (vendorCategoriesCache) return vendorCategoriesCache;
         try {
             const url = `${vendorCategoriesApiBase}?page=1&pageSize=1000`;
-            const res = await fetch(url);
+            const res = await authFetch(url);
             if (!res.ok) throw res;
             const json = await res.json();
             vendorCategoriesCache = normalizeToArray(json);
