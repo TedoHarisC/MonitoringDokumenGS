@@ -27,4 +27,32 @@ public class DashboardController : ControllerBase
         var data = await _dashboard.GetTopVendorsAsync(top, year);
         return Ok(data);
     }
+
+    [HttpGet("budget-kpi/{year}")]
+    public async Task<IActionResult> GetBudgetKpiByVendor(int year)
+    {
+        var data = await _dashboard.GetBudgetKpiByVendorAsync(year);
+        return Ok(data);
+    }
+
+    [HttpGet("budget-summary/{year}")]
+    public async Task<IActionResult> GetBudgetSummary(int year)
+    {
+        var data = await _dashboard.GetBudgetSummaryAsync(year);
+        return Ok(data);
+    }
+
+    [HttpGet("monthly-realisasi/{year}")]
+    public async Task<IActionResult> GetMonthlyRealisasi(int year)
+    {
+        var data = await _dashboard.GetMonthlyRealisasiAsync(year);
+        return Ok(data);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var data = await _dashboard.GetDashboardStatsAsync();
+        return Ok(data);
+    }
 }

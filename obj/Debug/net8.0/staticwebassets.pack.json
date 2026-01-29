@@ -37,6 +37,10 @@
       "PackagePath": "staticwebassets/js/auth-reset-password.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/dashboard-home.js",
+      "PackagePath": "staticwebassets/js/dashboard-home.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",
       "PackagePath": "staticwebassets/js/layout-logout.js"
     },
