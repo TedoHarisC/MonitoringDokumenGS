@@ -20,4 +20,11 @@ public class DashboardController : ControllerBase
         var data = await _dashboard.GetMonthlyBudgetAsync(year);
         return Ok(data);
     }
+
+    [HttpGet("top-vendors")]
+    public async Task<IActionResult> GetTopVendors([FromQuery] int top = 10, [FromQuery] int? year = null)
+    {
+        var data = await _dashboard.GetTopVendorsAsync(top, year);
+        return Ok(data);
+    }
 }

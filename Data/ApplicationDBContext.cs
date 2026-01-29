@@ -31,6 +31,7 @@ namespace MonitoringDokumenGS.Data
 
         // View
         public DbSet<DashboardBudgetMonthlyDto> V_Dashboard_Budget_Monthly { get; set; }
+        public DbSet<TopVendorSpendDto> V_TopVendorSpend { get; set; }
 
         // Define other DbSets for your entities here
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -91,6 +92,10 @@ namespace MonitoringDokumenGS.Data
             modelBuilder.Entity<DashboardBudgetMonthlyDto>()
                 .HasNoKey()
                 .ToView("V_Dashboard_Budget_Monthly");
+
+            modelBuilder.Entity<TopVendorSpendDto>()
+                .HasNoKey()
+                .ToView("V_TopVendorSpend");
         }
 
     }

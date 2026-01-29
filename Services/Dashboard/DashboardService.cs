@@ -25,4 +25,29 @@ public class DashboardService : IDashboard
             .FromSqlRaw(sql, new Microsoft.Data.SqlClient.SqlParameter("@year", year))
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<TopVendorSpendDto>> GetTopVendorsAsync(int top = 10, int? year = null)
+    {
+        var query = _context.Invoices
+            .Where(i => !i.IsDeleted);
+
+        // Filter by year if provided
+        if (year.HasValue)
+        {
+            query = query.Where(i => i.InvoiceYear == year.Value);
+        }
+
+        var topVendors = await query
+            .GroupBy(i => new { i.Vendor!.VendorId, i.Vendor.VendorName })
+            .Select(g => new TopVendorSpendDto
+            {
+                VendorName = g.Key.VendorName,
+                TotalSpend = g.Sum(i => i.InvoiceAmount)
+            })
+            .OrderByDescending(v => v.TotalSpend)
+            .Take(top)
+            .ToListAsync();
+
+        return topVendors;
+    }
 }
