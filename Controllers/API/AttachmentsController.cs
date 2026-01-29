@@ -97,11 +97,12 @@ namespace MonitoringDokumenGS.Controllers.API
 
         // POST: api/attachments/upload
         [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> Upload(
-            [FromForm] IFormFile file,
-            [FromForm] string module,           // "Invoices" or "Contracts"
-            [FromForm] int attachmentTypeId,
-            [FromForm] Guid referenceId)
+            IFormFile file,
+            string module,           // "Invoices" or "Contracts"
+            int attachmentTypeId,
+            Guid referenceId)
         {
             _logger.LogInformation("Upload request received - Module: {Module}, ReferenceId: {ReferenceId}, File: {FileName}",
                 module, referenceId, file?.FileName);

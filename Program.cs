@@ -46,6 +46,7 @@ builder.Services.AddScoped<IAttachment, AttachmentService>();
 builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IBudget, BudgetService>();
 
 // Configure Email Options from appsettings.json
 builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(

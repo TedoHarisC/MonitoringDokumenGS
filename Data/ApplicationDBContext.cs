@@ -27,6 +27,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<ContractStatus> ContractStatuses { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
+        public DbSet<Budget> MST_Budget { get; set; }
 
         // Define other DbSets for your entities here
 

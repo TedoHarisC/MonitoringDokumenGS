@@ -16,5 +16,7 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public int InvoiceYear { get; set; }
+        public int InvoiceMonth { get; set; }
     }
 }

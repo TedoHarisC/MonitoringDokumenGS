@@ -74,7 +74,9 @@ namespace MonitoringDokumenGS.Services.Transaction
                 CreatedBy = dto.CreatedBy,
                 UpdatedAt = null,
                 UpdatedBy = null,
-                IsDeleted = false
+                IsDeleted = false,
+                InvoiceYear = dto.InvoiceYear,
+                InvoiceMonth = dto.InvoiceMonth
             };
 
             _context.Invoices.Add(entity);
@@ -159,6 +161,8 @@ namespace MonitoringDokumenGS.Services.Transaction
             entity.UpdatedAt = DateTime.UtcNow;
             entity.UpdatedBy = dto.UpdatedBy;
             entity.IsDeleted = dto.IsDeleted;
+            entity.InvoiceYear = dto.InvoiceYear;
+            entity.InvoiceMonth = dto.InvoiceMonth;
 
             await _context.SaveChangesAsync();
 

@@ -17,6 +17,8 @@ namespace MonitoringDokumenGS.Models
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public int InvoiceYear { get; set; }
+        public int InvoiceMonth { get; set; }
 
         // Navigation properties
         public Vendor Vendor { get; set; } = default!;
