@@ -3,13 +3,18 @@
 // ==============================
 
 let budgetTable;
-let budgetModal;
 let isEditMode = false;
 
-$(document).ready(function () {
-    // Initialize modal
-    budgetModal = new bootstrap.Modal(document.getElementById('budgetModal'));
+// Ensure modal is appended to body to prevent z-index issues
+function portalModalToBody(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    if (el.parentElement !== document.body) {
+        document.body.appendChild(el);
+    }
+}
 
+$(document).ready(function () {
     // Initialize DataTable
     initDataTable();
 
@@ -104,7 +109,9 @@ function openAddModal() {
     $('#budgetModalLabel').text('Add Budget');
     $('#budgetForm')[0].reset();
     $('#budgetId').val('');
-    budgetModal.show();
+    portalModalToBody('budgetModal');
+    const modal = new bootstrap.Modal(document.getElementById('budgetModal'));
+    modal.show();
 }
 
 // Edit Budget
@@ -120,7 +127,9 @@ function editBudget(budgetId) {
             $('#year').val(data.year);
             $('#totalBudget').val(formatNumberForInput(data.totalBudget));
             $('#monthlyBudget').val(formatNumberForInput(data.monthlyBudget));
-            budgetModal.show();
+            portalModalToBody('budgetModal');
+            const modal = new bootstrap.Modal(document.getElementById('budgetModal'));
+            modal.show();
         },
         error: function (xhr) {
             showAlert('Failed to load budget data: ' + (xhr.responseJSON?.message || 'Unknown error'), 'danger');
@@ -148,7 +157,9 @@ function saveBudget() {
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function (response) {
-            budgetModal.hide();
+            const modalEl = document.getElementById('budgetModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
             budgetTable.ajax.reload();
             showAlert(isEditMode ? 'Budget updated successfully!' : 'Budget created successfully!', 'success');
         },
