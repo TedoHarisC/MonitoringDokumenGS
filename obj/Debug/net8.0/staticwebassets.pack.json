@@ -45,6 +45,10 @@
       "PackagePath": "staticwebassets/js/layout-notifications.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-budget.js",
+      "PackagePath": "staticwebassets/js/master-budget.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/master-index.js",
       "PackagePath": "staticwebassets/js/master-index.js"
     },

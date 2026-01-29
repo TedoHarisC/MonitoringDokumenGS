@@ -1,0 +1,154 @@
+@{
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* Keep DataTables controls aligned with template spacing */
+        div.dataTables_wrapper div.dataTables_filter label,
+        div.dataTables_wrapper div.dataTables_length label {
+            margin-bottom: 0;
+        }
+
+        div.dataTables_wrapper div.dataTables_filter input {
+            width: 240px;
+        }
+
+        table.dataTable>thead>tr>th {
+            white-space: nowrap;
+        }
+
+        /* Prevent action buttons from being visually clipped in scrollable DataTables wrappers */
+        .dataTables_scrollBody {
+            padding-bottom: .5rem;
+        }
+
+        td.dt-actions {
+            padding-top: .6rem !important;
+            padding-bottom: .6rem !important;
+            overflow: visible !important;
+        }
+
+        /* Ensure modal is always above template overlays/backdrop */
+        .modal {
+            z-index: 2000;
+        }
+
+        .modal-backdrop {
+            z-index: 1990;
+        }
+    </style>
+}
+
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Budget Management</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Master</a></li>
+            <li class="breadcrumb-item">Budget</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <a href="javascript:void(0)" class="btn btn-primary" id="btnAddBudget">
+                    <i class="feather-plus me-2"></i>
+                    <span>Add Budget</span>
+                </a>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="budgetTable" class="table table-hover" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Budget</th>
+                                    <th>Monthly Budget</th>
+                                    <th>Created At</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- DataTable will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<!-- Modal for Add/Edit Budget -->
+<div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="budgetForm">
+                <input type="hidden" id="budgetId" name="budgetId" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="budgetModalLabel">Add Budget</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Year <span class="text-danger">*</span></label>
+                            <input id="year" name="year" type="number" class="form-control" min="2000" max="2100"
+                                required />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Total Budget <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input id="totalBudget" name="totalBudget" type="text" class="form-control" required />
+                            </div>
+                            <small class="text-muted">Total budget untuk seluruh tahun</small>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Monthly Budget <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input id="monthlyBudget" name="monthlyBudget" type="text" class="form-control"
+                                    required />
+                            </div>
+                            <small class="text-muted">Budget per bulan (Total Budget / 12)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="btnSaveBudget" type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/master-budget.js?v=@DateTime.Now.Ticks"></script>
+}

@@ -23,5 +23,12 @@ namespace MonitoringDokumenGS.Controllers.Web
         {
             return View();
         }
+
+        // GET: /Master/Budget
+        [Authorize(Roles = "SUPER_ADMIN,ADMIN")]
+        public IActionResult Budget()
+        {
+            return View();
+        }
     }
 }
