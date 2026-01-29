@@ -11,6 +11,11 @@ using MonitoringDokumenGS.Services.Infrastructure;
 using MonitoringDokumenGS.Services.Master;
 using MonitoringDokumenGS.Services.Transaction;
 using MonitoringDokumenGS.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +52,7 @@ builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IBudget, BudgetService>();
+builder.Services.AddScoped<IDashboard, DashboardService>();
 
 // Configure Email Options from appsettings.json
 builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
@@ -63,43 +69,117 @@ builder.Services.AddScoped<IDbConnection>(sp =>
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddAuthentication(options =>
-    {
-        // Default to cookie authentication for the web UI. API controllers can explicitly require JWT.
-        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    })
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Auth/Index";
-        options.AccessDeniedPath = "/Auth/Index";
-        options.Cookie.Name = "mdgs_auth";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    })
-    .AddJwtBearer(options =>
-    {
-        var key = builder.Configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException("Configuration 'Jwt:Key' is missing. Please set 'Jwt:Key' in appsettings.json or as an environment variable (Jwt__Key).");
+//builder.Services.AddSwaggerGen();
 
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(key))
-        };
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Masukkan token JWT: Bearer {token}"
     });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Scheme = "bearer",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// builder.Services.AddAuthentication(options =>
+//     {
+//         // Default to cookie authentication for the web UI. API controllers can explicitly require JWT.
+//         options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//         options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//         options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//     })
+//     .AddCookie(options =>
+//     {
+//         options.LoginPath = "/Auth/Index";
+//         options.AccessDeniedPath = "/Auth/Index";
+//         options.Cookie.Name = "mdgs_auth";
+//         options.Cookie.HttpOnly = true;
+//         options.Cookie.SameSite = SameSiteMode.Lax;
+//         //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+//         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+//         options.ExpireTimeSpan = TimeSpan.FromHours(8);
+//     })
+//     .AddJwtBearer(options =>
+//     {
+//         var key = builder.Configuration["Jwt:Key"];
+//         if (string.IsNullOrWhiteSpace(key))
+//             throw new InvalidOperationException("Configuration 'Jwt:Key' is missing. Please set 'Jwt:Key' in appsettings.json or as an environment variable (Jwt__Key).");
+
+//         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidateAudience = true,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//             ValidAudience = builder.Configuration["Jwt:Audience"],
+//             IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+//                 System.Text.Encoding.UTF8.GetBytes(key))
+//         };
+//     });
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Smart";
+    options.DefaultChallengeScheme = "Smart";
+})
+.AddPolicyScheme("Smart", "JWT or Cookie", options =>
+{
+    options.ForwardDefaultSelector = context =>
+    {
+        // API → JWT
+        if (context.Request.Path.StartsWithSegments("/api"))
+            return JwtBearerDefaults.AuthenticationScheme;
+
+        // Web → Cookie
+        return CookieAuthenticationDefaults.AuthenticationScheme;
+    };
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/Auth/Index";
+    options.AccessDeniedPath = "/Auth/Index";
+    options.Cookie.Name = "mdgs_auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    var key = builder.Configuration["Jwt:Key"];
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(key!))
+    };
+});
+
 
 // File Storage Options
 builder.Services.Configure<FileStorageOptions>(

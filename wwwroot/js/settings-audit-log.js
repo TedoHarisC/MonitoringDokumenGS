@@ -15,7 +15,7 @@
     }
 
     async function fetchJson(url, options) {
-        const res = await fetch(url, options)
+        const res = await authFetch(url, options)
         if (res.status === 204) return null
         if (!res.ok) {
             let body = null

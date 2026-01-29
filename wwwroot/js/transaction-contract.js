@@ -46,7 +46,7 @@
     }
 
     async function fetchJson(url, options) {
-        const res = await fetch(url, options)
+        const res = await authFetch(url, options)
         if (res.status === 204) return null
         if (!res.ok) {
             let body = null
@@ -600,7 +600,7 @@
         formData.append('referenceId', contractId)
 
         try {
-            await fetch(`${apis.attachments}/upload`, {
+            await autFetch(`${apis.attachments}/upload`, {
                 method: 'POST',
                 body: formData
             })
@@ -658,7 +658,7 @@
         if (!res.isConfirmed) return
 
         try {
-            await fetch(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
+            await authFetch(`${apis.attachments}/${attachmentId}`, { method: 'DELETE' })
             Swal.fire('Deleted', 'Attachment deleted', 'success')
             await loadAttachments(contractId)
         } catch (err) {

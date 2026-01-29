@@ -780,6 +780,32 @@
 
     <!-- Script Section -->
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- AJAX Setup for Authorization Header -->
+    <script>
+        // KALAU PAKE AJAX, PASTIKAN SETUP INI ADA SUPAYA TOKEN TERKIRIM
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                const token = localStorage.getItem("mdgs_token");
+                if (token) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + token);
+                }
+            }
+        });
+
+        // KALAU PAKE FETCH 
+        window.authFetch = function (url, options = {}) {
+            const token = localStorage.getItem("mdgs_token");
+
+            options.headers = options.headers || {};
+
+            if (token) {
+                options.headers["Authorization"] = "Bearer " + token;
+            }
+
+            return fetch(url, options);
+        };
+    </script>
     <!--! ================================================================ !-->
     <!--! [End] Footer Script !-->
 </body>

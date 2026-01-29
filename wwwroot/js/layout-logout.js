@@ -21,6 +21,7 @@
                 method: 'POST'
             })
             .then(() => {
+                localStorage.removeItem("mdgs_token");
                 window.location.href = '/Auth/Index';
             })
             .catch(() => {

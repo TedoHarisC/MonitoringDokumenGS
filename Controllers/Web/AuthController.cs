@@ -97,7 +97,12 @@ public class AuthController : Controller
             );
 
             // jangan redirect, RETURN JSON
-            return Ok(new { success = true });
+            return Ok(new
+            {
+                success = true,
+                token = token,
+                refreshToken = refresh
+            });
         }
         catch (UnauthorizedAccessException ex)
         {

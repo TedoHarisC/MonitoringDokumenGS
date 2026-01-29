@@ -61,7 +61,7 @@
             credentials: 'same-origin'
         }
         
-        const res = await fetch(url, fetchOptions)
+        const res = await authFetch(url, fetchOptions)
         if (res.status === 204) return null
         if (!res.ok) {
             let body = null
@@ -524,7 +524,7 @@
 
         try {
             console.log('Deleting invoice:', id)
-            const response = await fetch(`${apis.invoices}/${id}`, { 
+            const response = await authFetch(`${apis.invoices}/${id}`, { 
                 method: 'DELETE',
                 credentials: 'same-origin'
             })
@@ -635,7 +635,7 @@
 
         try {
             console.log('Sending upload request to:', `${apis.attachments}/upload`)
-            const res = await fetch(`${apis.attachments}/upload`, {
+            const res = await authFetch(`${apis.attachments}/upload`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'

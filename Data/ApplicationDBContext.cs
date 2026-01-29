@@ -29,8 +29,10 @@ namespace MonitoringDokumenGS.Data
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<Budget> MST_Budget { get; set; }
 
-        // Define other DbSets for your entities here
+        // View
+        public DbSet<DashboardBudgetMonthlyDto> V_Dashboard_Budget_Monthly { get; set; }
 
+        // Define other DbSets for your entities here
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -85,6 +87,10 @@ namespace MonitoringDokumenGS.Data
                 .WithMany()
                 .HasForeignKey(a => a.AttachmentTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DashboardBudgetMonthlyDto>()
+                .HasNoKey()
+                .ToView("V_Dashboard_Budget_Monthly");
         }
 
     }
