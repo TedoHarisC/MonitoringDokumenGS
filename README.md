@@ -9,6 +9,7 @@ Sistem monitoring dokumen kontrak dan invoice untuk ABB.
 - .NET 8.0 SDK
 - SQL Server
 - SMTP Account (Gmail/Outlook untuk email notifications)
+- Git (for version control)
 
 ### Installation
 
@@ -19,37 +20,37 @@ Sistem monitoring dokumen kontrak dan invoice untuk ABB.
    cd MonitoringDokumenGS
    ```
 
-2. **Configure Database**
+2. **Setup User Secrets (Recommended for Development)**
 
-   Update connection string di `appsettings.json`:
+   **IMPORTANT:** Never commit sensitive data to Git! Use User Secrets for development.
 
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Server=your-server;Database=DB_MONITORING_KONTRAK_GS;..."
-     }
-   }
+   ```bash
+   # Initialize User Secrets (already done, ID: 056bda08-7e60-47e1-839b-edf6048ee244)
+   dotnet user-secrets init
+
+   # Set sensitive configuration
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=your-server;Database=DB_MONITORING_KONTRAK_GS;User Id=your-user;Password=your-password;TrustServerCertificate=True;MultipleActiveResultSets=true"
+
+   dotnet user-secrets set "Jwt:Key" "your-secret-jwt-key-minimum-32-characters"
+
+   dotnet user-secrets set "Email:Smtp:Password" "your-smtp-password"
    ```
 
-3. **Configure Email (Optional)**
+   See: 📖 **[Security Documentation](docs/SECRETS_SETUP_GUIDE.md)** for complete setup guide
 
-   Update SMTP settings di `appsettings.json`:
+3. **Configure Environment-Specific Settings**
 
-   ```json
-   {
-     "Email": {
-       "Provider": "Gmail",
-       "FromEmail": "your-email@gmail.com",
-       "Smtp": {
-         "Host": "smtp.gmail.com",
-         "Port": 587,
-         "Username": "your-email@gmail.com",
-         "Password": "your-app-password",
-         "UseSsl": true
-       }
-     }
-   }
+   Copy and customize for your environment:
+
+   ```bash
+   # Development (already configured in appsettings.Development.json)
+   # Edit appsettings.Development.json for non-sensitive values:
+   # - AppUrl
+   # - FileStorage.RootPath
+   # - Email.FromEmail, Email.Smtp.Host, Email.Smtp.Username
    ```
+
+   **Note:** `appsettings.Development.json` is gitignored for security
 
 4. **Run Application**
 
@@ -60,17 +61,28 @@ Sistem monitoring dokumen kontrak dan invoice untuk ABB.
 
 5. **Access Application**
 
-   Open browser: `http://localhost:5170`
+   Open browser: `http://localhost:5008`
 
 ## 📚 Documentation
 
 Dokumentasi lengkap tersedia di folder **[docs/](docs/README.md)**:
+
+### 🔐 Security & Configuration
+
+- 🔒 [Security README](docs/SECURITY_README.md) - **START HERE** for security overview
+- 🔑 [Secrets Management Guide](docs/SECRETS_MANAGEMENT.md) - Complete security practices
+- ⚙️ [Secrets Setup Guide](docs/SECRETS_SETUP_GUIDE.md) - Step-by-step User Secrets setup
+- 🚀 [Production Environment Template](docs/PRODUCTION_ENV_TEMPLATE.md) - Deploy to production
+- 📝 [Secrets Quick Reference](docs/SECRETS_QUICK_REFERENCE.txt) - Common commands
+
+### 📖 Feature Documentation
 
 - 🔐 [Forgot Password Guide](docs/FORGOT_PASSWORD_GUIDE.md) - Reset password via email
 - 📧 [Email System Guide](docs/EMAIL_USAGE_GUIDE.md) - SMTP configuration & usage
 - 📧 [Email Templates Guide](docs/EMAIL_TEMPLATES_GUIDE.md) - Email template documentation
 - 🔔 [Notification Guide](docs/NOTIFICATION_PAGE_GUIDE.md) - Notification management
 - 👤 [Avatar User Guide](docs/AVATAR_USER_GUIDE.md) - User avatar with initials
+- 💰 [Budget Feature](docs/BUDGET_FEATURE.md) - Budget management system
 
 ## 🎯 Features
 
@@ -101,11 +113,30 @@ Dokumentasi lengkap tersedia di folder **[docs/](docs/README.md)**:
 
 ## 🔐 Security
 
+### Authentication & Authorization
+
 - Cookie-based authentication with Claims
-- Role-based authorization
+- JWT tokens for API authentication
+- Role-based authorization (Super Admin, Admin, User)
 - Vendor-based data isolation for regular users
 - Password hashing with BCrypt
-- SMTP email validation
+
+### Secure Configuration Management
+
+- ✅ **User Secrets** for development (passwords, JWT keys, connection strings)
+- ✅ **Environment Variables** recommended for production
+- ✅ **appsettings.json** contains NO sensitive data (safe for Git)
+- ✅ **appsettings.Development.json** & **appsettings.Production.json** are gitignored
+- ✅ **.gitignore** configured to prevent accidental commits
+
+### Best Practices
+
+- Never commit passwords, API keys, or connection strings to Git
+- Use different credentials for development, staging, and production
+- Rotate secrets regularly
+- Use strong JWT keys (minimum 32 characters)
+
+**📖 See [Security Documentation](docs/SECURITY_README.md) for complete guidelines**
 
 ## 🛠️ Tech Stack
 
@@ -131,8 +162,27 @@ MonitoringDokumenGS/
 ├── wwwroot/             # Static files (CSS, JS, images)
 ├── EmailTemplates/      # HTML email templates
 ├── docs/                # 📚 Documentation
-└── appsettings.json     # Configuration
+├── appsettings.json     # Base configuration (NO secrets)
+├── appsettings.Development.json  # Dev overrides (gitignored)
+├── appsettings.Production.json   # Prod overrides (gitignored)
+├── ROLLBACK_BACKUP.txt  # Configuration rollback guide
+└── .gitignore           # Git exclusions (secrets, build outputs)
 ```
+
+### Configuration Files
+
+- **appsettings.json** - Base template, safe for Git (no sensitive data)
+- **appsettings.Development.json** - Development environment (gitignored)
+- **appsettings.Production.json** - Production environment (gitignored)
+- **User Secrets** - Sensitive data storage (~/.microsoft/usersecrets/)
+
+Configuration priority (highest to lowest):
+
+1. Command-line arguments
+2. Environment variables
+3. User Secrets (Development only)
+4. appsettings.{Environment}.json
+5. appsettings.json
 
 ## 🧪 Testing
 
