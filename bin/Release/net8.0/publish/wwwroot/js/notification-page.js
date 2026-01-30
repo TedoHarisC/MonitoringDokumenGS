@@ -393,6 +393,7 @@ $(document).ready(function () {
 function sendTestEmail() {
     const emailAddress = $('#testEmailAddress').val();
     const template = $('#testEmailTemplate').val();
+    const language = $('#testEmailLanguage').val() || 'en';
 
     if (!emailAddress) {
         showError('Please enter an email address');
@@ -417,6 +418,15 @@ function sendTestEmail() {
     } else if (template === 'contract') {
         endpoint = '/api/test/email/send-contract';
         requestData = { recipientEmail: emailAddress };
+    } else if (template === 'contract-expiring') {
+        endpoint = '/api/test/email/send-contract-expiring';
+        requestData = {
+            email: emailAddress,
+            contractNo: 'CON-TEST-' + new Date().getTime(),
+            endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            daysLeft: '15',
+            language: language
+        };
     } else if (template === 'welcome') {
         endpoint = '/api/test/email/send-welcome';
         requestData = {
