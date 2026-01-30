@@ -23,11 +23,18 @@ public static class ContractMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            DaysUntilExpiry = (int)(x.EndDate.Date - DateTime.Today).TotalDays,
+            ValidityStatus = x.EndDate.Date < DateTime.Today ? "Expired" :
+                           (x.EndDate.Date - DateTime.Today).TotalDays <= 30 ? "Expiring Soon" : "Active"
         };
 
     public static ContractDto ToDto(this Contract x)
     {
+        var daysUntilExpiry = (int)(x.EndDate.Date - DateTime.Today).TotalDays;
+        var validityStatus = x.EndDate.Date < DateTime.Today ? "Expired" :
+                           daysUntilExpiry <= 30 ? "Expiring Soon" : "Active";
+
         return new ContractDto
         {
             ContractId = x.ContractId,
@@ -43,7 +50,9 @@ public static class ContractMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            DaysUntilExpiry = daysUntilExpiry,
+            ValidityStatus = validityStatus
         };
     }
 }

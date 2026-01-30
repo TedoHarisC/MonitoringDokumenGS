@@ -317,13 +317,43 @@
                     }
                 },
                 {
-                    data: 'contractStatusId',
-                    render: function (data) {
-                        const statusName = contractStatusNameById(data) || data || 'Unknown'
-                        const colorClass = getContractStatusColor(data)
-                        return `<span class="fw-bold text-${colorClass}" style="font-size: 0.9rem;">${escapeHtml(statusName)}</span>`
+                    data: null,
+                    className: 'text-center',
+                    render: function (data, type, row) {
+                        const validityStatus = row.validityStatus || ''
+                        const daysUntilExpiry = row.daysUntilExpiry || 0
+                        
+                        let badgeClass = 'bg-success'
+                        let icon = 'feather-check-circle'
+                        let statusText = 'Active'
+                        let tooltipText = `${daysUntilExpiry} days remaining`
+                        
+                        if (validityStatus === 'Expired') {
+                            badgeClass = 'bg-danger'
+                            icon = 'feather-x-circle'
+                            statusText = 'Expired'
+                            tooltipText = `Expired ${Math.abs(daysUntilExpiry)} days ago`
+                        } else if (validityStatus === 'Expiring Soon') {
+                            badgeClass = 'bg-warning'
+                            icon = 'feather-alert-circle'
+                            statusText = 'Expiring Soon'
+                            tooltipText = `Expires in ${daysUntilExpiry} days`
+                        }
+                        
+                        return `<span class="badge ${badgeClass} text-white d-inline-flex align-items-center gap-1" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;" data-bs-toggle="tooltip" title="${escapeHtml(tooltipText)}">
+                            <i class="${icon}" style="font-size: 0.9rem;"></i>
+                            ${escapeHtml(statusText)}
+                        </span>`
                     }
                 },
+                // {
+                //     data: 'contractStatusId',
+                //     render: function (data) {
+                //         const statusName = contractStatusNameById(data) || data || 'Unknown'
+                //         const colorClass = getContractStatusColor(data)
+                //         return `<span class="fw-bold text-${colorClass}" style="font-size: 0.9rem;">${escapeHtml(statusName)}</span>`
+                //     }
+                // },
                 {
                     data: 'approvalStatusId',
                     render: function (data) {
@@ -378,7 +408,11 @@
                         td.classList.add('dt-actions')
                     }
                 }
-            ]
+            ],
+            drawCallback: function() {
+                // Initialize tooltips after table draw
+                $('[data-bs-toggle=\"tooltip\"]').tooltip()
+            }
         })
     }
 

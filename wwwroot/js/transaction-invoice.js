@@ -285,9 +285,9 @@
                     className: 'text-center',
                     render: function (data) {
                         if (data === true) {
-                            return '<span class="badge bg-success"><i class="feather-check-circle me-1"></i>Tepat Waktu</span>'
+                            return '<span class="badge bg-success d-flex align-items-center justify-content-center"><i class="feather-check-circle me-1"></i>Tepat Waktu</span>'
                         } else {
-                            return '<span class="badge bg-danger"><i class="feather-alert-circle me-1"></i>Terlambat</span>'
+                            return '<span class="badge bg-danger d-flex align-items-center justify-content-center"><i class="feather-alert-circle me-1"></i>Terlambat</span>'
                         }
                     }
                 },

@@ -18,5 +18,9 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+
+        // Computed properties
+        public string ValidityStatus { get; set; } = string.Empty;
+        public int DaysUntilExpiry { get; set; }
     }
 }
