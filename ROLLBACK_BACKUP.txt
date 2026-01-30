@@ -1,0 +1,97 @@
+================================================================================
+BACKUP UNTUK ROLLBACK - CLEAN UP APPSETTINGS.JSON
+Created: January 30, 2026
+================================================================================
+
+PERUBAHAN YANG DILAKUKAN:
+--------------------------
+
+1. appsettings.json - Dikosongkan nilai environment-specific:
+   - AppUrl: "http://localhost:5008" → ""
+   - FileStorage.RootPath: "C:\\AppData\\Nucleus\\Uploads" → ""
+   - Email.FromEmail: "noreply@company.com" → ""
+   - Email.Smtp.Host: "smtp.company.com" → ""
+   - Email.Smtp.Username: "noreply@company.com" → ""
+
+2. appsettings.Development.json - DIBUAT BARU dengan nilai:
+   - AppUrl: "http://localhost:5008"
+   - FileStorage.RootPath: "C:\\AppData\\Nucleus\\Uploads"
+   - Email.FromEmail: "noreply@company.com"
+   - Email.Smtp.Host: "smtp.company.com"
+   - Email.Smtp.Username: "noreply@company.com"
+
+================================================================================
+CARA ROLLBACK JIKA ADA ERROR:
+================================================================================
+
+OPSI 1: Rollback Manual di appsettings.json
+--------------------------------------------
+Buka appsettings.json dan kembalikan nilai-nilai ini:
+
+Ganti:
+  "AppUrl": "",
+Dengan:
+  "AppUrl": "http://localhost:5008",
+
+Ganti:
+  "FileStorage": {
+    "RootPath": ""
+  },
+Dengan:
+  "FileStorage": {
+    "RootPath": "C:\\AppData\\Nucleus\\Uploads"
+  },
+
+Ganti:
+  "Email": {
+    "Provider": "SMTP",
+    "FromName": "Monitoring GS",
+    "FromEmail": "",
+    "Smtp": {
+      "Host": "",
+      "Port": 587,
+      "Username": "",
+Dengan:
+  "Email": {
+    "Provider": "SMTP",
+    "FromName": "Monitoring GS",
+    "FromEmail": "noreply@company.com",
+    "Smtp": {
+      "Host": "smtp.company.com",
+      "Port": 587,
+      "Username": "noreply@company.com",
+
+Lalu HAPUS file appsettings.Development.json
+
+================================================================================
+
+OPSI 2: Rollback dengan Git
+----------------------------
+git checkout HEAD~1 appsettings.json
+git checkout HEAD~1 appsettings.Development.json
+
+================================================================================
+
+CARA TEST APAKAH MASIH JALAN:
+------------------------------
+1. dotnet build
+2. dotnet run
+3. Cek apakah aplikasi bisa akses database
+4. Cek apakah file upload masih berfungsi
+5. Cek apakah email (jika ada) masih bisa kirim
+
+================================================================================
+
+CATATAN PENTING:
+----------------
+- appsettings.Development.json TIDAK akan di-commit ke Git (sudah ada di .gitignore)
+- Nilai di appsettings.Development.json akan OVERRIDE nilai kosong di appsettings.json
+- User Secrets tetap diperlukan untuk password/JWT key
+
+PRIORITAS LOAD:
+1. appsettings.json (base)
+2. appsettings.Development.json (override untuk development)
+3. User Secrets (override untuk sensitive data)
+4. Environment Variables (override untuk production)
+
+================================================================================
