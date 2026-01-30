@@ -16,13 +16,23 @@ namespace MonitoringDokumenGS.Services.Infrastructure
         /// <summary>
         /// Load template dari file dan replace placeholders dengan data
         /// </summary>
-        public static string LoadTemplate(string templateName, Dictionary<string, string> data)
+        public static string LoadTemplate(
+            string templateName,
+            string language = "en",
+            Dictionary<string, string> data = null!)
         {
-            var templatePath = Path.Combine(TemplateBasePath, templateName);
+            var templatePath = Path.Combine(TemplateBasePath, language, templateName);
 
+            // Fallback to English if language-specific template doesn't exist
             if (!File.Exists(templatePath))
             {
-                throw new FileNotFoundException($"Email template not found: {templateName}", templatePath);
+                templatePath = Path.Combine(TemplateBasePath, "en", templateName);
+
+                // If English version also doesn't exist, throw exception
+                if (!File.Exists(templatePath))
+                {
+                    throw new FileNotFoundException($"Email template not found: {templateName} (tried both '{language}' and 'en' folders)", templatePath);
+                }
             }
 
             var html = File.ReadAllText(templatePath);
@@ -67,7 +77,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "Icon", icon }
             };
 
-            return LoadTemplate("Notification.html", data);
+            return LoadTemplate("Notification.html", "en", data);
         }
 
         #endregion
@@ -98,7 +108,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "InvoiceLink", invoiceLink }
             };
 
-            return LoadTemplate("InvoiceCreated.html", data);
+            return LoadTemplate("InvoiceCreated.html", "id", data);
         }
 
         #endregion
@@ -131,7 +141,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "ContractLink", contractLink }
             };
 
-            return LoadTemplate("ContractCreated.html", data);
+            return LoadTemplate("ContractCreated.html", "en", data);
         }
 
         #endregion
@@ -156,7 +166,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "SupportEmail", supportEmail }
             };
 
-            return LoadTemplate("Welcome.html", data);
+            return LoadTemplate("Welcome.html", "en", data);
         }
 
         #endregion
@@ -177,7 +187,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "SecurityEmail", securityEmail }
             };
 
-            return LoadTemplate("PasswordReset.html", data);
+            return LoadTemplate("PasswordReset.html", "en", data);
         }
 
         #endregion
@@ -212,7 +222,27 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "ViewDetailsLink", viewDetailsLink }
             };
 
-            return LoadTemplate("ApprovalRequired.html", data);
+            return LoadTemplate("ApprovalRequired.html", "en", data);
+        }
+
+        #endregion
+
+        #region Contract Expiring Email
+
+        public static string GetContractExpiringEmail(
+            string contractNo,
+            string endDate,
+            string daysLeft,
+            string language = "en")
+        {
+            var data = new Dictionary<string, string>
+            {
+                { "ContractNo", contractNo },
+                { "EndDate", endDate },
+                { "DaysLeft", daysLeft }
+            };
+
+            return LoadTemplate("ContractExpiring.html", language, data);
         }
 
         #endregion
@@ -241,7 +271,7 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 { "HelpLink", helpLink }
             };
 
-            return LoadTemplate("BaseLayout.html", data);
+            return LoadTemplate("BaseLayout.html", "en", data);
         }
 
         #endregion

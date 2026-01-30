@@ -58,6 +58,7 @@ builder.Services.AddScoped<IDashboard, DashboardService>();
 builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
     builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IContractNotificationJob, ContractNotificationJob>();
 
 builder.Services.AddAuthorization();
 

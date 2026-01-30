@@ -104,16 +104,27 @@
                                     <small class="text-muted">We'll send a test email to this address</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="testEmailTemplate" class="form-label">Email Template</label>
                                     <select class="form-select" id="testEmailTemplate">
                                         <option value="notification">General Notification</option>
                                         <option value="invoice">Invoice Created</option>
                                         <option value="contract">Contract Created</option>
+                                        <option value="contract-expiring">Contract Expiring ⚠️</option>
                                         <option value="welcome">Welcome Email</option>
                                     </select>
                                     <small class="text-muted">Select which template to test</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="testEmailLanguage" class="form-label">Language</label>
+                                    <select class="form-select" id="testEmailLanguage">
+                                        <option value="en">🇬🇧 EN</option>
+                                        <option value="id">🇮🇩 ID</option>
+                                    </select>
+                                    <small class="text-muted">Email language</small>
                                 </div>
                             </div>
                         </div>

@@ -191,6 +191,64 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         /// <summary>
+        /// Send test contract expiring email
+        /// POST api/test/email/send-contract-expiring
+        /// </summary>
+        [HttpPost("send-contract-expiring")]
+        public async Task<IActionResult> SendTestContractExpiringEmail([FromBody] ContractExpiringEmailRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return BadRequest(new { success = false, message = "Email is required" });
+            }
+
+            try
+            {
+                var language = request.Language?.ToLower() ?? "en";
+                if (language != "en" && language != "id")
+                {
+                    language = "en";
+                }
+
+                var htmlBody = EmailTemplateHelper.GetContractExpiringEmail(
+                    contractNo: request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd"),
+                    endDate: request.EndDate ?? DateTime.Now.AddDays(15).ToString("MMMM dd, yyyy"),
+                    daysLeft: request.DaysLeft ?? "15",
+                    language: language
+                );
+
+                var subject = language == "id"
+                    ? $"Pemberitahuan Kontrak Akan Berakhir - {request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd")}"
+                    : $"Contract Expiry Notification - {request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd")}";
+
+                await _emailService.SendAsync(
+                    to: request.Email,
+                    subject: subject,
+                    htmlBody: htmlBody
+                );
+
+                _logger.LogInformation("Test contract expiring email sent to {Email} in {Language}", request.Email, language);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Test contract expiring email sent to {request.Email} in {language}",
+                    contractNo = request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd")
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send test contract expiring email to {Email}", request.Email);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Failed to send contract expiring email",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
         /// Send welcome email
         /// POST api/test/email/send-welcome
         /// </summary>
@@ -292,5 +350,14 @@ namespace MonitoringDokumenGS.Controllers.API
         public string? Username { get; set; }
         public string? Role { get; set; }
         public string? LoginLink { get; set; }
+    }
+
+    public class ContractExpiringEmailRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string? ContractNo { get; set; }
+        public string? EndDate { get; set; }
+        public string? DaysLeft { get; set; }
+        public string? Language { get; set; } = "en";
     }
 }
