@@ -18,5 +18,6 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public bool IsDeleted { get; set; }
         public int InvoiceYear { get; set; }
         public int InvoiceMonth { get; set; }
+        public bool IsOnTime { get; set; }
     }
 }

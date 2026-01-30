@@ -199,6 +199,24 @@ $(document).ready(function () {
         loadMonthlyRealisasiChart(selectedYear);
     });
 
+    // Load Vendor On-Time Submission KPI
+    const $ontimeFilter = $('#ontimeYearFilter');
+    if ($ontimeFilter.length > 0) {
+        $ontimeFilter.val(currentYear);
+    } else {
+        console.warn('On-Time filter element NOT found! Element ID: #ontimeYearFilter');
+    }
+    
+    // Load KPI regardless of filter existence
+    setTimeout(function() {
+        loadOnTimeSubmissionKpi();
+    }, 500);
+
+    // On-Time Year filter change event
+    $('#ontimeYearFilter').on('change', function () {
+        loadOnTimeSubmissionKpi();
+    });
+
     initVisitorsOverviewChart();
     initSocialRadarChart();
     loadTopVendorChart();
@@ -484,5 +502,224 @@ function loadDashboardStats() {
             $('#totalInvoicesSubmitted').text('0');
             $('#totalInvoiceAmount').text('Rp 0');
         }
+    });
+}
+
+// ==============================
+// Vendor On-Time Submission KPI
+// ==============================
+let ontimeSubmissionChart = null;
+
+function loadOnTimeSubmissionKpi() {
+    // Get year from filter, or use current year as fallback
+    const $yearFilter = $('#ontimeYearFilter');
+    let year = null;
+    
+    if ($yearFilter.length > 0) {
+        year = $yearFilter.val();
+    } else {
+        console.warn('Filter element not found, using default (all years)');
+    }
+    
+    const url = year ? `/api/dashboard/vendor-ontime-submission?year=${year}` : '/api/dashboard/vendor-ontime-submission';
+    
+    // Check if table element exists
+    const $tbody = $('#vendorPerformanceTable');
+    if ($tbody.length === 0) {
+        console.error('ERROR: Table element #vendorPerformanceTable NOT FOUND in DOM!');
+        return;
+    }
+    
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (data) {
+            // Update overall stats
+            $('#ontimeTotalInvoices').text(data.totalInvoices || 0);
+            $('#ontimeOnTimeCount').text(data.onTimeSubmissions || 0);
+            $('#ontimeLateCount').text(data.lateSubmissions || 0);
+            $('#ontimePercentage').text((data.onTimePercentage || 0).toFixed(2) + '%');
+            
+            // Update progress bar
+            const percentage = data.onTimePercentage || 0;
+            $('#ontimeProgressBar').css('width', percentage + '%');
+            
+            // Set color and badge based on performance
+            let progressBarClass = 'bg-success';
+            let badgeText = 'Excellent';
+            let badgeClass = 'bg-success';
+            
+            if (percentage < 70) {
+                progressBarClass = 'bg-danger';
+                badgeText = 'Poor';
+                badgeClass = 'bg-danger';
+            } else if (percentage < 90) {
+                progressBarClass = 'bg-warning';
+                badgeText = 'Good';
+                badgeClass = 'bg-warning';
+            }
+            
+            $('#ontimeProgressBar').removeClass('bg-success bg-warning bg-danger').addClass(progressBarClass);
+            $('#ontimeStatusBadge').removeClass('bg-success bg-warning bg-danger').addClass(badgeClass).text(badgeText);
+            
+            // Render donut chart
+            renderOnTimeChart(data);
+            
+            // Render vendor performance table
+            renderVendorPerformanceTable(data.vendorBreakdown);
+        },
+        error: function (xhr, status, error) {
+            console.error('Failed to load on-time submission KPI:', xhr, status, error);
+            console.error('Response:', xhr.responseText);
+            
+            $('#ontimeTotalInvoices').text('0');
+            $('#ontimeOnTimeCount').text('0');
+            $('#ontimeLateCount').text('0');
+            $('#ontimePercentage').text('0%');
+            
+            // Show error in table
+            const $tbody = $('#vendorPerformanceTable');
+            $tbody.empty();
+            $tbody.append(`<tr><td colspan="4" class="text-center text-danger py-4">Failed to load data: ${error || 'Unknown error'}</td></tr>`);
+        }
+    });
+}
+
+function renderOnTimeChart(data) {
+    const chartOptions = {
+        series: [data.onTimeSubmissions, data.lateSubmissions],
+        chart: {
+            type: 'donut',
+            height: 350
+        },
+        labels: ['On-Time', 'Late'],
+        colors: ['#10b981', '#ef4444'],
+        legend: {
+            position: 'bottom',
+            fontSize: '14px'
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%',
+                    labels: {
+                        show: true,
+                        name: {
+                            show: true,
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            offsetY: -10
+                        },
+                        value: {
+                            show: true,
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            offsetY: 5,
+                            formatter: function (val) {
+                                return val;
+                            }
+                        },
+                        total: {
+                            show: true,
+                            label: 'Total Invoices',
+                            fontSize: '14px',
+                            fontWeight: 400,
+                            color: '#9ca3af',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => {
+                                    return a + b;
+                                }, 0);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val, opts) {
+                return opts.w.config.series[opts.seriesIndex];
+            },
+            style: {
+                fontSize: '14px',
+                fontWeight: 600
+            }
+        },
+        tooltip: {
+            theme: 'light',
+            y: {
+                formatter: function (val, opts) {
+                    const percentage = ((val / data.totalInvoices) * 100).toFixed(1);
+                    return val + ' (' + percentage + '%)';
+                }
+            }
+        }
+    };
+    
+    if (ontimeSubmissionChart) {
+        ontimeSubmissionChart.destroy();
+    }
+    
+    ontimeSubmissionChart = new ApexCharts(document.querySelector("#ontime-submission-chart"), chartOptions);
+    ontimeSubmissionChart.render();
+}
+
+function renderVendorPerformanceTable(vendors) {
+    
+    const $tbody = $('#vendorPerformanceTable');
+    
+    $tbody.empty();
+    
+    if (!vendors || vendors.length === 0) {
+        $tbody.append('<tr><td colspan="4" class="text-center text-muted py-4">No vendor data available</td></tr>');
+        return;
+    }
+    
+    
+    vendors.forEach((vendor, index) => {
+        const percentage = vendor.onTimePercentage.toFixed(1);
+        
+        // Determine badge color based on performance
+        let badgeClass = 'bg-success';
+        let badgeText = vendor.performanceStatus;
+        
+        if (vendor.performanceStatus === 'Poor') {
+            badgeClass = 'bg-danger';
+        } else if (vendor.performanceStatus === 'Good') {
+            badgeClass = 'bg-warning';
+        }
+        
+        // Add rank badge for top 3
+        let rankBadge = '';
+        if (index === 0) {
+            rankBadge = '<i class="feather-award text-warning me-2"></i>';
+        } else if (index === 1) {
+            rankBadge = '<i class="feather-award text-muted me-2"></i>';
+        } else if (index === 2) {
+            rankBadge = '<i class="feather-award text-secondary me-2"></i>';
+        }
+        
+        const row = `
+            <tr>
+                <td>
+                    ${rankBadge}<strong>${vendor.vendorName}</strong>
+                    <div class="fs-11 text-muted">${vendor.onTimeSubmissions} on-time / ${vendor.lateSubmissions} late</div>
+                </td>
+                <td class="text-center">${vendor.totalInvoices}</td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span class="fw-bold">${percentage}%</span>
+                        <div class="progress" style="width: 80px; height: 8px;">
+                            <div class="progress-bar ${badgeClass}" role="progressbar" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="badge ${badgeClass}">${badgeText}</span>
+                </td>
+            </tr>
+        `;
+        
+        $tbody.append(row);
     });
 }

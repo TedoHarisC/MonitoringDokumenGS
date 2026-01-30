@@ -265,6 +265,33 @@
                     }
                 },
                 {
+                    data: 'invoiceYear',
+                    className: 'text-center',
+                    render: function (data) {
+                        return escapeHtml(data || '-')
+                    }
+                },
+                {
+                    data: 'invoiceMonth',
+                    className: 'text-center',
+                    render: function (data) {
+                        const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                        const monthNum = toInt(data)
+                        return escapeHtml(monthNames[monthNum] || data || '-')
+                    }
+                },
+                {
+                    data: 'isOnTime',
+                    className: 'text-center',
+                    render: function (data) {
+                        if (data === true) {
+                            return '<span class="badge bg-success"><i class="feather-check-circle me-1"></i>Tepat Waktu</span>'
+                        } else {
+                            return '<span class="badge bg-danger"><i class="feather-alert-circle me-1"></i>Terlambat</span>'
+                        }
+                    }
+                },
+                {
                     data: 'createdAt',
                     render: function (data) {
                         return escapeHtml(formatDate(data))
@@ -329,6 +356,8 @@
         $('#invoiceNumber').val('')
         $('#invoiceAmount').val('')
         $('#taxAmount').val('')
+        $('#invoiceYear').val('')
+        $('#invoiceMonth').val('')
     }
 
     function populateStatusDropdown() {
@@ -410,6 +439,8 @@
             $('#invoiceNumber').val(data.invoiceNumber || '')
             $('#invoiceAmount').val(data.invoiceAmount ?? '')
             $('#taxAmount').val(data.taxAmount ?? '')
+            $('#invoiceYear').val(data.invoiceYear ?? '')
+            $('#invoiceMonth').val(String(data.invoiceMonth || ''))
             
             // Show/hide progress status section based on user role
             if (isCurrentUserAdmin()) {
@@ -452,6 +483,8 @@
             invoiceNumber: String($('#invoiceNumber').val() || '').trim(),
             invoiceAmount: Number($('#invoiceAmount').val() || 0),
             taxAmount: Number($('#taxAmount').val() || 0),
+            invoiceYear: toInt($('#invoiceYear').val()),
+            invoiceMonth: toInt($('#invoiceMonth').val()),
             createdByUserId: uid || undefined,
             createdBy: uid || undefined,
             updatedBy: uid || undefined
@@ -465,6 +498,12 @@
         }
         if (!payload.invoiceNumber) {
             return Swal.fire('Validation', 'Invoice number is required.', 'warning')
+        }
+        if (!payload.invoiceYear || payload.invoiceYear < 2000) {
+            return Swal.fire('Validation', 'Invoice year is required and must be valid.', 'warning')
+        }
+        if (!payload.invoiceMonth || payload.invoiceMonth < 1 || payload.invoiceMonth > 12) {
+            return Swal.fire('Validation', 'Invoice month is required and must be between 1-12.', 'warning')
         }
 
         const method = isEdit ? 'PUT' : 'POST'

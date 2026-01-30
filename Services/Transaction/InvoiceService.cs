@@ -61,6 +61,12 @@ namespace MonitoringDokumenGS.Services.Transaction
         {
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
+            var createdAt = DateTime.UtcNow;
+
+            // Calculate IsOnTime: submission should be <= 7th day of InvoiceYear/InvoiceMonth
+            var deadline = new DateTime(dto.InvoiceYear, dto.InvoiceMonth, 7);
+            var isOnTime = createdAt.Date <= deadline.Date;
+
             var entity = new Invoice
             {
                 InvoiceId = dto.InvoiceId == Guid.Empty ? Guid.NewGuid() : dto.InvoiceId,
@@ -70,13 +76,14 @@ namespace MonitoringDokumenGS.Services.Transaction
                 ProgressStatusId = dto.ProgressStatusId,
                 InvoiceAmount = dto.InvoiceAmount,
                 TaxAmount = dto.TaxAmount,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = createdAt,
                 CreatedBy = dto.CreatedBy,
                 UpdatedAt = null,
                 UpdatedBy = null,
                 IsDeleted = false,
                 InvoiceYear = dto.InvoiceYear,
-                InvoiceMonth = dto.InvoiceMonth
+                InvoiceMonth = dto.InvoiceMonth,
+                IsOnTime = isOnTime
             };
 
             _context.Invoices.Add(entity);
@@ -152,6 +159,10 @@ namespace MonitoringDokumenGS.Services.Transaction
             bool progressStatusChanged = entity.ProgressStatusId != dto.ProgressStatusId;
             int oldProgressStatusId = entity.ProgressStatusId;
 
+            // Recalculate IsOnTime based on CreatedAt and InvoiceYear/Month
+            var deadline = new DateTime(dto.InvoiceYear, dto.InvoiceMonth, 7);
+            var isOnTime = entity.CreatedAt.Date <= deadline.Date;
+
             entity.VendorId = dto.VendorId;
             entity.CreatedByUserId = dto.CreatedByUserId;
             entity.InvoiceNumber = dto.InvoiceNumber;
@@ -163,6 +174,7 @@ namespace MonitoringDokumenGS.Services.Transaction
             entity.IsDeleted = dto.IsDeleted;
             entity.InvoiceYear = dto.InvoiceYear;
             entity.InvoiceMonth = dto.InvoiceMonth;
+            entity.IsOnTime = isOnTime;
 
             await _context.SaveChangesAsync();
 

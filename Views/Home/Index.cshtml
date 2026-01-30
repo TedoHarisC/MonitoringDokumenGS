@@ -130,8 +130,132 @@
         </div>
         <!-- [Budget KPI Summary] end -->
 
+        <!-- [Vendor On-Time Submission KPI] start -->
+        <div class="col-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Vendor On-Time Submission KPI <span class="badge bg-info">Target: ≤ 7th
+                            Day</span></h5>
+                    <div class="card-header-action">
+                        <select id="ontimeYearFilter" class="form-select form-select-sm" style="width: 120px;">
+                            <option value="">All Years</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Overall Stats -->
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Total Invoices</div>
+                                <h3 class="fw-bold text-dark" id="ontimeTotalInvoices">0</h3>
+                                <div class="fs-11 text-muted mt-1">All submissions</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">On-Time Submissions</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold text-success mb-0" id="ontimeOnTimeCount">0</h3>
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="feather-check-circle"></i>
+                                    </span>
+                                </div>
+                                <div class="fs-11 text-muted mt-1">Submitted by 7th</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Late Submissions</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold text-danger mb-0" id="ontimeLateCount">0</h3>
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="feather-alert-circle"></i>
+                                    </span>
+                                </div>
+                                <div class="fs-11 text-muted mt-1">After deadline</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded position-relative">
+                                <div class="fs-12 text-muted mb-1">On-Time Percentage</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold mb-0" id="ontimePercentage">0%</h3>
+                                    <span id="ontimeStatusBadge" class="badge"></span>
+                                </div>
+                                <div class="progress mt-2" style="height: 10px;">
+                                    <div id="ontimeProgressBar" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [Vendor On-Time Submission KPI] end -->
+
+        <!-- [On-Time Submission Chart & Vendor Performance] start -->
+        <div class="col-xxl-6">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">On-Time vs Late Distribution</h5>
+                    <div class="card-header-action">
+                        <div class="card-header-btn">
+                            <div data-bs-toggle="tooltip" title="Refresh">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                    onclick="loadOnTimeSubmissionKpi()"> </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body custom-card-action">
+                    <div id="ontime-submission-chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xxl-6">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Vendor Performance Ranking</h5>
+                    <div class="card-header-action">
+                        <div class="card-header-btn">
+                            <div data-bs-toggle="tooltip" title="Refresh">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                    onclick="loadOnTimeSubmissionKpi()"> </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body custom-card-action">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Vendor</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">On-Time %</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendorPerformanceTable">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [On-Time Submission Chart & Vendor Performance] end -->
+
         <!-- [Budget vs Realisasi by Vendor] start -->
-        <div class="col-xxl-8">
+        <div class="col-xxl-6">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Budget vs Realisasi per Vendor</h5>
@@ -152,7 +276,7 @@
         <!-- [Budget vs Realisasi by Vendor] end -->
 
         <!-- [Monthly Realisasi Trend] start -->
-        <div class="col-xxl-4">
+        <div class="col-xxl-6">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Trend Realisasi Bulanan</h5>

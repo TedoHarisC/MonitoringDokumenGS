@@ -21,7 +21,11 @@ public static class InvoiceMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            InvoiceYear = x.InvoiceYear,
+            InvoiceMonth = x.InvoiceMonth,
+            // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
+            IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };
 
     public static InvoiceDto ToDto(this Invoice x)
@@ -39,7 +43,11 @@ public static class InvoiceMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            InvoiceYear = x.InvoiceYear,
+            InvoiceMonth = x.InvoiceMonth,
+            // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
+            IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };
     }
 }

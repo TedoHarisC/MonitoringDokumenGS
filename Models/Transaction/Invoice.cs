@@ -19,6 +19,7 @@ namespace MonitoringDokumenGS.Models
         public bool IsDeleted { get; set; }
         public int InvoiceYear { get; set; }
         public int InvoiceMonth { get; set; }
+        public bool IsOnTime { get; set; }
 
         // Navigation properties
         public Vendor Vendor { get; set; } = default!;

@@ -92,6 +92,9 @@
                                     <th>Status</th>
                                     <th class="text-end">Invoice Amount</th>
                                     <th class="text-end">Tax Amount</th>
+                                    <th class="text-center">Year</th>
+                                    <th class="text-center">Month</th>
+                                    <th class="text-center">On-Time Status</th>
                                     <th>Created At</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -141,6 +144,28 @@
                         <div class="col-12 col-md-4">
                             <label class="form-label">Tax Amount</label>
                             <input id="taxAmount" type="number" step="0.01" min="0" class="form-control" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Invoice Year</label>
+                            <input id="invoiceYear" type="number" min="2000" max="2100" class="form-control" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Invoice Month</label>
+                            <select id="invoiceMonth" class="form-control" required>
+                                <option value="">-- Select Month --</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">Pengisian amounts menggunakan decimal, e.g. 10000.00</small>

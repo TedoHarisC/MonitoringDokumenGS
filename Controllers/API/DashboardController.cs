@@ -55,4 +55,25 @@ public class DashboardController : ControllerBase
         var data = await _dashboard.GetDashboardStatsAsync();
         return Ok(data);
     }
+
+    [HttpGet("vendor-ontime-submission")]
+    public async Task<IActionResult> GetVendorOnTimeSubmissionKpi([FromQuery] int? year = null)
+    {
+        var data = await _dashboard.GetVendorOnTimeSubmissionKpiAsync(year);
+        return Ok(data);
+    }
+
+    [HttpGet("user-monthly-trend")]
+    public async Task<IActionResult> GetUserMonthlyTrend([FromQuery] int? year = null)
+    {
+        // Get current user ID from claims
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "User not authenticated" });
+        }
+
+        var data = await _dashboard.GetUserMonthlyInvoiceTrendAsync(userId, year);
+        return Ok(data);
+    }
 }

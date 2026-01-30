@@ -228,4 +228,131 @@ public class DashboardService : IDashboard
             ContractsExpiringSoon = contractsExpiringSoon
         };
     }
+
+    public async Task<OnTimeSubmissionKpiDto> GetVendorOnTimeSubmissionKpiAsync(int? year = null)
+    {
+        // Build query for invoices
+        var query = _context.Invoices
+            .Include(i => i.Vendor)
+            .Where(i => !i.IsDeleted && i.Vendor != null);
+
+        // Filter by year if provided
+        if (year.HasValue)
+        {
+            query = query.Where(i => i.InvoiceYear == year.Value);
+        }
+
+        // Get all invoices with their on-time status
+        var invoices = await query.ToListAsync();
+
+        // Calculate overall KPI
+        var totalInvoices = invoices.Count;
+        var onTimeInvoices = invoices.Count(i => i.IsOnTime);
+        var lateInvoices = totalInvoices - onTimeInvoices;
+        var onTimePercentage = totalInvoices > 0 ? (decimal)onTimeInvoices / totalInvoices * 100 : 0;
+
+        // Group by vendor to get vendor breakdown
+        var vendorBreakdown = invoices
+            .GroupBy(i => new { i.Vendor.VendorId, i.Vendor.VendorName })
+            .Select(g =>
+            {
+                var total = g.Count();
+                var onTime = g.Count(i => i.IsOnTime);
+                var late = total - onTime;
+                var percentage = total > 0 ? (decimal)onTime / total * 100 : 0;
+
+                // Determine performance status
+                string performanceStatus;
+                if (percentage >= 90)
+                    performanceStatus = "Excellent";
+                else if (percentage >= 70)
+                    performanceStatus = "Good";
+                else
+                    performanceStatus = "Poor";
+
+                return new VendorOnTimeSubmissionDto
+                {
+                    VendorName = g.Key.VendorName,
+                    TotalInvoices = total,
+                    OnTimeSubmissions = onTime,
+                    LateSubmissions = late,
+                    OnTimePercentage = Math.Round(percentage, 2),
+                    PerformanceStatus = performanceStatus
+                };
+            })
+            .OrderByDescending(v => v.OnTimePercentage)
+            .ToList();
+
+        return new OnTimeSubmissionKpiDto
+        {
+            TotalInvoices = totalInvoices,
+            OnTimeSubmissions = onTimeInvoices,
+            LateSubmissions = lateInvoices,
+            OnTimePercentage = Math.Round(onTimePercentage, 2),
+            VendorBreakdown = vendorBreakdown
+        };
+    }
+
+    public async Task<object> GetUserMonthlyInvoiceTrendAsync(Guid userId, int? year = null)
+    {
+        // Get user's vendor
+        var user = await _context.Users
+            .Where(u => u.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (user == null || user.VendorId == Guid.Empty)
+        {
+            return new
+            {
+                months = new string[] { },
+                onTimeData = new int[] { },
+                lateData = new int[] { }
+            };
+        }
+
+        // Build query for user's vendor invoices
+        var query = _context.Invoices
+            .Where(i => !i.IsDeleted && i.VendorId == user.VendorId);
+
+        // Filter by year if provided
+        if (year.HasValue)
+        {
+            query = query.Where(i => i.InvoiceYear == year.Value);
+        }
+
+        var invoices = await query.ToListAsync();
+
+        // Group by month and calculate on-time vs late
+        var monthlyData = invoices
+            .GroupBy(i => i.InvoiceMonth)
+            .Select(g => new
+            {
+                Month = g.Key,
+                OnTime = g.Count(i => i.IsOnTime),
+                Late = g.Count(i => !i.IsOnTime)
+            })
+            .OrderBy(x => x.Month)
+            .ToList();
+
+        // Fill all 12 months with data (0 if no data)
+        var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        var onTimeData = new int[12];
+        var lateData = new int[12];
+
+        foreach (var data in monthlyData)
+        {
+            if (data.Month >= 1 && data.Month <= 12)
+            {
+                onTimeData[data.Month - 1] = data.OnTime;
+                lateData[data.Month - 1] = data.Late;
+            }
+        }
+
+        return new
+        {
+            months = monthNames,
+            onTimeData = onTimeData,
+            lateData = lateData
+        };
+    }
 }
