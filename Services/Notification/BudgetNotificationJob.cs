@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Services.Infrastructure;
@@ -13,19 +14,24 @@ namespace MonitoringDokumenGS.Services.Notification
         private readonly IAuditLog _auditLog;
         private readonly ILogger<BudgetNotificationJob> _logger;
         private readonly INotifications _notificationService;
+        private readonly IConfiguration _configuration;
+        private readonly string _appUrl;
 
         public BudgetNotificationJob(
             ApplicationDBContext context,
             IEmailService emailService,
             IAuditLog auditLog,
             ILogger<BudgetNotificationJob> logger,
-            INotifications notificationService)
+            INotifications notificationService,
+            IConfiguration configuration)
         {
             _context = context;
             _emailService = emailService;
             _auditLog = auditLog;
             _logger = logger;
             _notificationService = notificationService;
+            _configuration = configuration;
+            _appUrl = _configuration["AppUrl"] ?? "http://localhost:5008";
         }
 
         public async Task RunAsync()
@@ -202,7 +208,9 @@ namespace MonitoringDokumenGS.Services.Notification
                         x => x.ur.RoleId,
                         r => r.RoleId,
                         (x, r) => new { x.u, r })
-                    .Where(x => x.r.Code == "SUPER_ADMIN" || x.r.Code == "ADMIN")
+                    //.Where(x => x.r.Code == "SUPER_ADMIN" || x.r.Code == "ADMIN")
+                    // Hanya admin saja yang dikirimkan email secara admin disini adalah GS Dept Head dan GS Staff
+                    .Where(x => x.r.Code == "ADMIN")
                     .Select(x => new { x.u.UserId, x.u.Email, x.u.Username })
                     .Distinct()
                     .ToListAsync();
@@ -228,7 +236,7 @@ namespace MonitoringDokumenGS.Services.Notification
                             referenceId: $"BUDGET-{type}-{year}" + (month.HasValue ? $"-{month:00}" : ""),
                             type: "Budget Alert",
                             date: DateTime.Now.ToString("MMMM dd, yyyy HH:mm"),
-                            actionLink: $"http://localhost:5008/Master/Budget",
+                            actionLink: $"{_appUrl}/Master/Budget",
                             actionButtonText: "View Budget Details",
                             iconBackgroundColor: "#dc3545",
                             icon: "⚠️"
@@ -321,7 +329,7 @@ namespace MonitoringDokumenGS.Services.Notification
                             referenceId: $"BUDGET-WARNING-{year}-{month:00}",
                             type: "Budget Warning",
                             date: DateTime.Now.ToString("MMMM dd, yyyy HH:mm"),
-                            actionLink: $"http://localhost:5008/Master/Budget",
+                            actionLink: $"{_appUrl}/Master/Budget",
                             actionButtonText: "View Budget",
                             iconBackgroundColor: "#ffc107",
                             icon: "⚡"

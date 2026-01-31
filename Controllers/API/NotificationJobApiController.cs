@@ -11,15 +11,18 @@ public class NotificationJobApiController : ControllerBase
     private readonly IContractNotificationJob _contractJob;
     private readonly IBudgetNotificationJob _budgetJob;
     private readonly ILogger<NotificationJobApiController> _logger;
+    private readonly IConfiguration _configuration;
 
     public NotificationJobApiController(
         IContractNotificationJob contractJob,
         IBudgetNotificationJob budgetJob,
-        ILogger<NotificationJobApiController> logger)
+        ILogger<NotificationJobApiController> logger,
+        IConfiguration configuration)
     {
         _contractJob = contractJob;
         _budgetJob = budgetJob;
         _logger = logger;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -160,6 +163,7 @@ public class NotificationJobApiController : ControllerBase
             var utilizationPercent = testData.Budget > 0 ? (testData.Spent / testData.Budget) * 100 : 0;
             var excessPercent = utilizationPercent - 100;
 
+            var appUrl = _configuration["AppUrl"] ?? "http://localhost:5008";
             var title = $"⚠️ BUDGET OVERRUN ALERT (TEST) - {testData.Period}";
             var emailBody = MonitoringDokumenGS.Services.Infrastructure.EmailTemplateHelper.GetNotificationEmail(
                 title: title,
@@ -172,7 +176,7 @@ public class NotificationJobApiController : ControllerBase
                 referenceId: $"TEST-BUDGET-{testData.Type}-{testData.Year}-{testData.Month}",
                 type: "Budget Alert Test",
                 date: DateTime.Now.ToString("MMMM dd, yyyy HH:mm"),
-                actionLink: "http://localhost:5008/Master/Budget",
+                actionLink: $"{appUrl}/Master/Budget",
                 actionButtonText: "View Budget Details",
                 iconBackgroundColor: "#dc3545",
                 icon: "⚠️"
