@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3c4cc88548d53f10ebb4d724fc2d4ec38d9ae489")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+38db80b2f1ce03a977fc237065c1e38ae63f2364")]
 [assembly: System.Reflection.AssemblyProductAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

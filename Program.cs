@@ -59,6 +59,7 @@ builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
     builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IContractNotificationJob, ContractNotificationJob>();
+builder.Services.AddScoped<IBudgetNotificationJob, MonitoringDokumenGS.Services.Notification.BudgetNotificationJob>();
 
 builder.Services.AddAuthorization();
 

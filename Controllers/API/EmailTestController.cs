@@ -263,11 +263,11 @@ namespace MonitoringDokumenGS.Controllers.API
             try
             {
                 var htmlBody = EmailTemplateHelper.GetWelcomeEmail(
-                    userName: request.UserName ?? "Test User",
+                    userName: request.FullName ?? "Test User",
                     username: request.Username ?? "testuser",
                     email: request.Email,
                     role: request.Role ?? "User",
-                    loginLink: request.LoginLink ?? "http://localhost:5170/auth/login",
+                    loginLink: request.LoginLink ?? "http://localhost:5008/auth/login",
                     supportEmail: "support@abb.com"
                 );
 
@@ -346,7 +346,7 @@ namespace MonitoringDokumenGS.Controllers.API
     public class WelcomeEmailRequest
     {
         public string Email { get; set; } = string.Empty;
-        public string? UserName { get; set; }
+        public string? FullName { get; set; }
         public string? Username { get; set; }
         public string? Role { get; set; }
         public string? LoginLink { get; set; }
