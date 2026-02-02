@@ -355,4 +355,33 @@ public class DashboardService : IDashboard
             lateData = lateData
         };
     }
+
+    public async Task<IEnumerable<ContractExpiringDto>> GetContractsExpiringSoonAsync(int days = 30)
+    {
+        var today = DateTime.Now.Date;
+        var futureDate = today.AddDays(days);
+
+        var contracts = await _context.Contracts
+            .Include(c => c.Vendor)
+            .Include(c => c.ContractStatus)
+            .Where(c => !c.IsDeleted && c.EndDate >= today && c.EndDate <= futureDate)
+            .OrderBy(c => c.EndDate)
+            .Select(c => new ContractExpiringDto
+            {
+                ContractId = c.ContractId,
+                ContractNo = c.ContractNumber,
+                VendorName = c.Vendor != null ? c.Vendor.VendorName : "N/A",
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                DaysRemaining = (int)(c.EndDate.Date - today).TotalDays,
+                ContractValue = 0, // Contract model doesn't have TotalValue
+                Status = c.ContractStatus != null ? c.ContractStatus.Name : "N/A",
+                AlertLevel = (int)(c.EndDate.Date - today).TotalDays < 15 ? "Critical" :
+                             (int)(c.EndDate.Date - today).TotalDays < 30 ? "Warning" : "Safe",
+                Description = c.ContractDescription ?? ""
+            })
+            .ToListAsync();
+
+        return contracts;
+    }
 }

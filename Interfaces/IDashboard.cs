@@ -12,5 +12,6 @@ namespace MonitoringDokumenGS.Interfaces
         Task<DashboardStatsDto> GetDashboardStatsAsync();
         Task<OnTimeSubmissionKpiDto> GetVendorOnTimeSubmissionKpiAsync(int? year = null);
         Task<object> GetUserMonthlyInvoiceTrendAsync(Guid userId, int? year = null);
+        Task<IEnumerable<ContractExpiringDto>> GetContractsExpiringSoonAsync(int days = 30);
     }
 }

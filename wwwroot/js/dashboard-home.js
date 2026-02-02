@@ -95,6 +95,7 @@ function initSocialRadarChart() {
 // Top 5 Vendor Spend Chart
 let topVendorChart = null;
 
+// Load Top Vendor Spend Chart
 function loadTopVendorChart() {
     $.ajax({
         url: '/api/dashboard/top-vendors?top=5',
@@ -215,6 +216,15 @@ $(document).ready(function () {
     // On-Time Year filter change event
     $('#ontimeYearFilter').on('change', function () {
         loadOnTimeSubmissionKpi();
+    });
+
+    // Load Contracts Expiring Soon
+    loadContractsExpiring(30);
+    
+    // Contracts expiry filter change event
+    $('#expiryDaysFilter').on('change', function () {
+        const selectedDays = parseInt($(this).val());
+        loadContractsExpiring(selectedDays);
     });
 
     initVisitorsOverviewChart();
@@ -722,4 +732,248 @@ function renderVendorPerformanceTable(vendors) {
         
         $tbody.append(row);
     });
+}
+// ==============================
+// Contracts Expiring Soon
+// ==============================
+
+let contractsData = [];
+let contractsCurrentPage = 1;
+const contractsPerPage = 5;
+
+function loadContractsExpiring(days = 30) {
+    console.log('Loading contracts expiring in', days, 'days');
+    $.ajax({
+        url: `/api/dashboard/contracts-expiring?days=${days}`,
+        method: 'GET',
+        success: function(response) {
+            console.log('Contracts response:', response);
+            if (response.success) {
+                contractsData = response.data || [];
+                contractsCurrentPage = 1;
+                updateContractsExpiringTable();
+                updateContractsPagination();
+                updateContractSummary();
+                $('#expiringContractsCount').text(response.count);
+            } else {
+                console.error('Response success is false:', response);
+                $('#contractsExpiringTableBody').html(
+                    '<tr><td colspan="4" class="text-center text-danger py-4">Failed to load contracts: ' + (response.message || 'Unknown error') + '</td></tr>'
+                );
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX error:', { xhr, status, error });
+            console.error('Response text:', xhr.responseText);
+            let errorMessage = 'Failed to load contracts';
+            if (xhr.status === 401) {
+                errorMessage = 'Unauthorized - Please login again';
+            } else if (xhr.status === 500) {
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    errorMessage = xhr.responseText || errorMessage;
+                }
+            }
+            $('#contractsExpiringTableBody').html(
+                '<tr><td colspan="4" class="text-center text-danger py-4">' + errorMessage + '</td></tr>'
+            );
+        }
+    });
+}
+
+function updateContractsExpiringTable() {
+    console.log('Updating table with contracts:', contractsData);
+    const $tbody = $('#contractsExpiringTableBody');
+    $tbody.empty();
+    
+    if (!contractsData || contractsData.length === 0) {
+        $tbody.append('<tr><td colspan="4" class="text-center text-muted py-4">No contracts expiring soon</td></tr>');
+        $('#expiringContractsCount').text('0');
+        return;
+    }
+    
+    // Calculate pagination
+    const startIndex = (contractsCurrentPage - 1) * contractsPerPage;
+    const endIndex = startIndex + contractsPerPage;
+    const paginatedContracts = contractsData.slice(startIndex, endIndex);
+    
+    paginatedContracts.forEach((contract) => {
+        // Determine alert badge
+        let alertBadge = '';
+        let statusClass = '';
+        
+        if (contract.alertLevel === 'Critical') {
+            alertBadge = '<span class="badge bg-danger">Critical</span>';
+            statusClass = 'text-danger fw-bold';
+        } else if (contract.alertLevel === 'Warning') {
+            alertBadge = '<span class="badge bg-warning">Warning</span>';
+            statusClass = 'text-warning fw-bold';
+        } else {
+            alertBadge = '<span class="badge bg-success">Safe</span>';
+            statusClass = 'text-success';
+        }
+        
+        // Format countdown
+        const countdownHtml = formatContractCountdown(contract.daysRemaining);
+        
+        // Format dates
+        const endDate = new Date(contract.endDate).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+        
+        const row = `
+            <tr>
+                <td>
+                    <div class="hstack gap-2">
+                        <span class="wd-10 ht-10 ${contract.alertLevel === 'Critical' ? 'bg-danger' : contract.alertLevel === 'Warning' ? 'bg-warning' : 'bg-success'} rounded-circle d-inline-block me-2 lh-base"></span>
+                        <div class="border-3 border-start rounded ps-3">
+                            <a href="/Contract/Details/${contract.contractId}" class="mb-2 d-block">
+                                <span>${contract.contractNo}</span>
+                            </a>
+                            <p class="fs-12 text-muted mb-0">${contract.vendorName}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>${alertBadge}</td>
+                <td>
+                    <div class="${statusClass}">
+                        ${countdownHtml}
+                    </div>
+                    <div class="fs-11 text-muted">Ends: ${endDate}</div>
+                </td>
+                <td class="text-end">
+                    <a href="/Contract/Details/${contract.contractId}" class="avatar-text avatar-md ms-auto" data-bs-toggle="tooltip" title="View Details">
+                        <i class="feather-arrow-right"></i>
+                    </a>
+                </td>
+            </tr>
+        `;
+        
+        $tbody.append(row);
+    });
+    
+    // Re-initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+}
+
+function updateContractsPagination() {
+    const totalPages = Math.ceil(contractsData.length / contractsPerPage);
+    const $pagination = $('#contractsPagination');
+    
+    if (totalPages <= 1) {
+        $pagination.hide();
+        return;
+    }
+    
+    $pagination.show();
+    $pagination.empty();
+    
+    // Previous button
+    $pagination.append(`
+        <li>
+            <a href="javascript:void(0);" id="contractsPrevPage" ${contractsCurrentPage === 1 ? 'class="disabled"' : ''}>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </li>
+    `);
+    
+    // Page numbers
+    let startPage = Math.max(1, contractsCurrentPage - 1);
+    let endPage = Math.min(totalPages, startPage + 2);
+    
+    if (endPage - startPage < 2) {
+        startPage = Math.max(1, endPage - 2);
+    }
+    
+    if (startPage > 1) {
+        $pagination.append(`<li><a href="javascript:void(0);" data-page="1">1</a></li>`);
+        if (startPage > 2) {
+            $pagination.append(`<li><a href="javascript:void(0);"><i class="bi bi-dot"></i></a></li>`);
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        $pagination.append(`
+            <li>
+                <a href="javascript:void(0);" data-page="${i}" class="${i === contractsCurrentPage ? 'active' : ''}">${i}</a>
+            </li>
+        `);
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            $pagination.append(`<li><a href="javascript:void(0);"><i class="bi bi-dot"></i></a></li>`);
+        }
+        $pagination.append(`<li><a href="javascript:void(0);" data-page="${totalPages}">${totalPages}</a></li>`);
+    }
+    
+    // Next button
+    $pagination.append(`
+        <li>
+            <a href="javascript:void(0);" id="contractsNextPage" ${contractsCurrentPage === totalPages ? 'class="disabled"' : ''}>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </li>
+    `);
+    
+    // Bind events
+    $pagination.find('a[data-page]').off('click').on('click', function(e) {
+        e.preventDefault();
+        const page = parseInt($(this).data('page'));
+        if (page) {
+            contractsCurrentPage = page;
+            updateContractsExpiringTable();
+            updateContractsPagination();
+        }
+    });
+    
+    $('#contractsPrevPage').off('click').on('click', function(e) {
+        e.preventDefault();
+        if (contractsCurrentPage > 1) {
+            contractsCurrentPage--;
+            updateContractsExpiringTable();
+            updateContractsPagination();
+        }
+    });
+    
+    $('#contractsNextPage').off('click').on('click', function(e) {
+        e.preventDefault();
+        if (contractsCurrentPage < totalPages) {
+            contractsCurrentPage++;
+            updateContractsExpiringTable();
+            updateContractsPagination();
+        }
+    });
+}
+
+function formatContractCountdown(days) {
+    if (days < 0) {
+        return '<span class="text-danger">Expired</span>';
+    } else if (days === 0) {
+        return '<span class="text-danger fw-bold">Expires Today!</span>';
+    } else if (days === 1) {
+        return '<span class="text-danger fw-bold">1 Day</span>';
+    } else if (days < 7) {
+        return `<span class="text-danger fw-bold">${days} Days</span>`;
+    } else if (days < 15) {
+        return `<span class="text-danger">${days} Days</span>`;
+    } else if (days < 30) {
+        return `<span class="text-warning">${days} Days</span>`;
+    } else {
+        return `<span>${days} Days</span>`;
+    }
+}
+
+function updateContractSummary() {
+    const critical = contractsData.filter(c => c.alertLevel === 'Critical').length;
+    const warning = contractsData.filter(c => c.alertLevel === 'Warning').length;
+    const safe = contractsData.filter(c => c.alertLevel === 'Safe').length;
+    
+    $('#criticalContractsCount').text(critical);
+    $('#warningContractsCount').text(warning);
+    $('#safeContractsCount').text(safe);
 }

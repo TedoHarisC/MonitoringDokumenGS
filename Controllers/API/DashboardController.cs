@@ -8,10 +8,12 @@ using MonitoringDokumenGS.Interfaces;
 public class DashboardController : ControllerBase
 {
     private readonly IDashboard _dashboard;
+    private readonly ILogger<DashboardController> _logger;
 
-    public DashboardController(IDashboard dashboard)
+    public DashboardController(IDashboard dashboard, ILogger<DashboardController> logger)
     {
         _dashboard = dashboard;
+        _logger = logger;
     }
 
     [HttpGet("budget/{year}")]
@@ -75,5 +77,22 @@ public class DashboardController : ControllerBase
 
         var data = await _dashboard.GetUserMonthlyInvoiceTrendAsync(userId, year);
         return Ok(data);
+    }
+
+    [HttpGet("contracts-expiring")]
+    public async Task<IActionResult> GetContractsExpiring([FromQuery] int days = 30)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching contracts expiring in {Days} days", days);
+            var contracts = await _dashboard.GetContractsExpiringSoonAsync(days);
+            _logger.LogInformation("Found {Count} contracts expiring", contracts.Count());
+            return Ok(new { success = true, data = contracts, count = contracts.Count() });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching contracts expiring in {Days} days", days);
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
     }
 }

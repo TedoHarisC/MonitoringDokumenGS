@@ -75,61 +75,6 @@
         </div>
         <!-- [Contract & Invoice Stats] end -->
 
-        <!-- [Budget KPI Summary] start -->
-        <div class="col-12">
-            <div class="card stretch stretch-full">
-                <div class="card-header">
-                    <h5 class="card-title">Budget Summary <span id="budget-year-display"
-                            class="badge bg-primary">2026</span></h5>
-                    <div class="card-header-action">
-                        <select id="budgetYearFilter" class="form-select form-select-sm" style="width: 120px;">
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026" selected>2026</option>
-                            <option value="2027">2027</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="p-3 border border-dashed rounded">
-                                <div class="fs-12 text-muted mb-1">Total Budget</div>
-                                <h3 class="fw-bold text-dark" id="totalBudget">Rp 0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 border border-dashed rounded">
-                                <div class="fs-12 text-muted mb-1">Realisasi</div>
-                                <h3 class="fw-bold text-primary" id="totalRealisasi">Rp 0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 border border-dashed rounded">
-                                <div class="fs-12 text-muted mb-1">Sisa Budget</div>
-                                <h3 class="fw-bold text-success" id="sisaBudget">Rp 0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 border border-dashed rounded position-relative">
-                                <div class="fs-12 text-muted mb-1">Serapan Anggaran</div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <h3 class="fw-bold mb-0" id="persentaseSerapan">0%</h3>
-                                    <span id="trafficLight" class="badge"
-                                        style="width: 20px; height: 20px; border-radius: 50%;"></span>
-                                </div>
-                                <div class="progress mt-2" style="height: 10px;">
-                                    <div id="serapanProgressBar" class="progress-bar" role="progressbar"
-                                        style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- [Budget KPI Summary] end -->
-
         <!-- [Vendor On-Time Submission KPI] start -->
         <div class="col-12">
             <div class="card stretch stretch-full">
@@ -254,6 +199,62 @@
         </div>
         <!-- [On-Time Submission Chart & Vendor Performance] end -->
 
+
+        <!-- [Budget KPI Summary] start -->
+        <div class="col-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Budget Summary <span id="budget-year-display"
+                            class="badge bg-primary">2026</span></h5>
+                    <div class="card-header-action">
+                        <select id="budgetYearFilter" class="form-select form-select-sm" style="width: 120px;">
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Total Budget</div>
+                                <h3 class="fw-bold text-dark" id="totalBudget">Rp 0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Realisasi</div>
+                                <h3 class="fw-bold text-primary" id="totalRealisasi">Rp 0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Sisa Budget</div>
+                                <h3 class="fw-bold text-success" id="sisaBudget">Rp 0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded position-relative">
+                                <div class="fs-12 text-muted mb-1">Serapan Anggaran</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold mb-0" id="persentaseSerapan">0%</h3>
+                                    <span id="trafficLight" class="badge"
+                                        style="width: 20px; height: 20px; border-radius: 50%;"></span>
+                                </div>
+                                <div class="progress mt-2" style="height: 10px;">
+                                    <div id="serapanProgressBar" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [Budget KPI Summary] end -->
+
         <!-- [Budget vs Realisasi by Vendor] start -->
         <div class="col-xxl-6">
             <div class="card stretch stretch-full">
@@ -297,7 +298,7 @@
         <!-- [Monthly Realisasi Trend] end -->
 
         <!-- [Mini Card] start -->
-        <div class="col-12">
+        @* <div class="col-12">
             <div class="card stretch stretch-full">
                 <div class="card-body">
                     <div class="hstack justify-content-between mb-4 pb-">
@@ -375,10 +376,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Mini Card] end -->
         <!-- [Visitors Overview] start -->
-        <div class="col-xxl-8">
+        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Visitors Overview</h5>
@@ -426,10 +427,10 @@
                     <div id="visitors-overview-statistics-chart"></div>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Visitors Overview] end -->
         <!-- [Top 5 Vendor Spend] start -->
-        <div class="col-xxl-6">
+        <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Top 5 Vendor Spend</h5>
@@ -451,178 +452,82 @@
             </div>
         </div>
         <!-- [Top 5 Vendor Spend] end -->
-        <!-- [Browser States] start -->
-        <div class="col-xxl-6">
+        <!-- [Contract Status Summary] start -->
+        <div class="col-xxl-4">
             <div class="card stretch stretch-full">
                 <div class="card-header">
-                    <h5 class="card-title">Browser States</h5>
+                    <h5 class="card-title">Contract Alerts Summary</h5>
                     <div class="card-header-action">
                         <div class="card-header-btn">
-                            <div data-bs-toggle="tooltip" title="Collapse/Expand">
-                                <a href="#" class="avatar-text avatar-xs bg-gray-300" data-bs-toggle="collapse"> </a>
-                            </div>
                             <div data-bs-toggle="tooltip" title="Delete">
-                                <a href="#" class="avatar-text avatar-xs bg-danger" data-bs-toggle="remove"> </a>
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger"
+                                    data-bs-toggle="remove"> </a>
                             </div>
                             <div data-bs-toggle="tooltip" title="Refresh">
-                                <a href="#" class="avatar-text avatar-xs bg-warning" data-bs-toggle="refresh"> </a>
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                    onclick="updateContractSummary()"> </a>
                             </div>
                             <div data-bs-toggle="tooltip" title="Maximize/Minimize">
-                                <a href="#" class="avatar-text avatar-xs bg-success" data-bs-toggle="expand"> </a>
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success"
+                                    data-bs-toggle="expand"> </a>
                             </div>
                         </div>
-                        <div class="dropdown">
-                            <a href="#" class="avatar-text avatar-sm" data-bs-toggle="dropdown" data-bs-offset="25, 25">
-                                <div data-bs-toggle="tooltip" title="Options">
-                                    <i class="feather-more-vertical"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="p-4 text-center border border-danger border-dashed rounded-3 bg-danger-subtle">
+                                <div class="mb-3">
+                                    <i class="feather-alert-circle text-danger" style="font-size: 48px;"></i>
                                 </div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-at-sign"></i>New</a>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-calendar"></i>Event</a>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-bell"></i>Snoozed</a>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-trash-2"></i>Deleted</a>
-                                <div class="dropdown-divider"></div>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-settings"></i>Settings</a>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="feather-life-buoy"></i>Tips &
-                                    Tricks</a>
+                                <h2 class="fs-3 fw-bold text-danger mb-2" id="criticalContractsCount">0</h2>
+                                <h6 class="fs-13 text-spacing-1 mb-2">Critical (< 15 Days)</h6>
+                                        <div class="fs-11 text-muted">Immediate action required</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div
+                                class="p-3 text-center border border-warning border-dashed rounded-3 bg-warning-subtle">
+                                <div class="mb-2">
+                                    <i class="feather-alert-triangle text-warning" style="font-size: 32px;"></i>
+                                </div>
+                                <h3 class="fs-4 fw-bold text-warning mb-1" id="warningContractsCount">0</h3>
+                                <h6 class="fs-12 text-spacing-1 mb-1">Warning</h6>
+                                <div class="fs-11 text-muted">15-30 Days</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div
+                                class="p-3 text-center border border-success border-dashed rounded-3 bg-success-subtle">
+                                <div class="mb-2">
+                                    <i class="feather-check-circle text-success" style="font-size: 32px;"></i>
+                                </div>
+                                <h3 class="fs-4 fw-bold text-success mb-1" id="safeContractsCount">0</h3>
+                                <h6 class="fs-12 text-spacing-1 mb-1">Safe</h6>
+                                <div class="fs-11 text-muted">> 30 Days</div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body custom-card-action p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-chrome fs-16 text-primary me-2"></i>
-                                            <span>Google Chrome</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">90%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-success" style="width: 90%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-firefox-browser fs-16 text-warning me-2"></i>
-                                            <span>Mozila Firefox</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">76%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-primary" style="width: 76%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-safari fs-16 text-info me-2"></i>
-                                            <span>Apple Safari</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">50%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-warning" style="width: 50%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-edge fs-16 text-success me-2"></i>
-                                            <span>Edge Browser</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">20%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-success" style="width: 20%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-opera fs-16 text-danger me-2"></i>
-                                            <span>Opera mini</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">15%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-danger" style="width: 15%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-internet-explorer fs-16 text-teal me-2"></i>
-                                            <span>Internet Explorer</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">12%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-teal" style="width: 12%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="javascript:void(0);">
-                                            <i class="fa-brands fa-octopus-deploy fs-16 text-dark me-2"></i>
-                                            <span>Others Browser</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-end d-flex align-items-center m-0">
-                                            <span class="me-3">6%</span>
-                                            <span class="progress w-100 ht-5">
-                                                <span class="progress-bar bg-dark" style="width: 6%"></span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <h6 class="mb-2">Action Required</h6>
+                        <p class="fs-12 text-muted mb-3">Review and renew contracts before expiration</p>
+                        <a href="/Contract" class="btn btn-sm btn-primary">
+                            <i class="feather-file-text me-1"></i>
+                            View All Contracts
+                        </a>
                     </div>
                 </div>
-                <a href="javascript:void(0);" class="card-footer fs-11 fw-bold text-uppercase text-center">Explore
-                    Details</a>
+                <a href="javascript:void(0);" class="card-footer fs-11 fw-bold text-uppercase text-center"
+                    onclick="$('#expiryDaysFilter').val('90').trigger('change')">
+                    Show 90 Days Range
+                </a>
             </div>
         </div>
-        <!-- [Browser States] end -->
+        <!-- [Contract Status Summary] end -->
         <!-- [Mini Card] start -->
-        <div class="col-xxl-3 col-md-6">
+        @* <div class="col-xxl-3 col-md-6">
             <div class="card stretch stretch-full">
                 <div class="card-body p-0">
                     <div class="d-flex justify-content-between p-4 mb-4">
@@ -689,10 +594,10 @@
                     <div id="conversions-rate"></div>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Mini Card] end -->
         <!-- [Goal Progress] start -->
-        <div class="col-xxl-4">
+        @* <div class="col-xxl-4">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Goal Progress</h5>
@@ -781,10 +686,10 @@
                     <a href="javascript:void(0);" class="btn btn-primary">Generate Report</a>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Goal Progress] end -->
         <!-- [Marketing Campaign] start -->
-        <div class="col-xxl-8">
+        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Marketing Campaign</h5>
@@ -872,10 +777,106 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Marketing Campaign] end -->
+        <!-- [Contracts Expiring Soon] start -->
+        <div class="col-xxl-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        Contracts Expiring Soon
+                        <span class="badge bg-warning" id="expiringContractsCount">0</span>
+                    </h5>
+                    <div class="card-header-action">
+                        <select id="expiryDaysFilter" class="form-select form-select-sm me-2" style="width: 150px;">
+                            <option value="30" selected>Next 30 Days</option>
+                            <option value="60">Next 60 Days</option>
+                            <option value="90">Next 90 Days</option>
+                        </select>
+                        <div class="card-header-btn">
+                            <div data-bs-toggle="tooltip" title="Delete">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger"
+                                    data-bs-toggle="remove"> </a>
+                            </div>
+                            <div data-bs-toggle="tooltip" title="Refresh">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                    onclick="loadContractsExpiring(parseInt($('#expiryDaysFilter').val()))"> </a>
+                            </div>
+                            <div data-bs-toggle="tooltip" title="Maximize/Minimize">
+                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success"
+                                    data-bs-toggle="expand"> </a>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown"
+                                data-bs-offset="25, 25">
+                                <div data-bs-toggle="tooltip" title="Options">
+                                    <i class="feather-more-vertical"></i>
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-at-sign"></i>New</a>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-calendar"></i>Event</a>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-bell"></i>Snoozed</a>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-trash-2"></i>Deleted</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-settings"></i>Settings</a>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="feather-life-buoy"></i>Tips &
+                                    Tricks</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body custom-card-action p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Contract</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Expires In</th>
+                                    <th scope="col" class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contractsExpiringTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        Loading contracts...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <ul class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style"
+                            id="contractsPagination">
+                            <li>
+                                <a href="javascript:void(0);" id="contractsPrevPage"><i
+                                        class="bi bi-arrow-left"></i></a>
+                            </li>
+                            <li><a href="javascript:void(0);" class="active" data-page="1">1</a></li>
+                            <li>
+                                <a href="javascript:void(0);" id="contractsNextPage"><i
+                                        class="bi bi-arrow-right"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [Contracts Expiring Soon] end -->
+
         <!-- [Project Remainders] start -->
-        <div class="col-xxl-8">
+        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Project Remainders</h5>
@@ -1132,10 +1133,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> *@
         <!-- [Project Remainders] end -->
-        <!-- [Social Statistics] start -->
-        <div class="col-xxl-4">
+        <!-- Social Statistic -->
+        @* <div class="col-xxl-4">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Social Statistics</h5>
@@ -1186,8 +1187,8 @@
                 <a href="javascript:void(0);" class="card-footer fs-11 fw-bold text-uppercase text-center">Explore
                     Details</a>
             </div>
-        </div>
-        <!-- [Social Statistics] end -->
+        </div> *@
+        <!-- End of Social Statistic -->
     </div>
 </div>
 
