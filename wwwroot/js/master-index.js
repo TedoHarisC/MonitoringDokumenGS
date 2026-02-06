@@ -236,7 +236,7 @@
 
         $('#approvalStatusesTable').on('click', '.btn-approval-edit', function () {
             const id = $(this).data('id');
-            fetch(`${apis.approval}/${id}`)
+            authFetch(`${apis.approval}/${id}`)
                 .then(r => (r.ok ? r.json() : Promise.reject(r)))
                 .then(data => {
                     $('#approvalModalLabel').text('Edit Approval Status');
@@ -252,7 +252,7 @@
             const id = $(this).data('id');
             confirmDelete('approval status').then(result => {
                 if (!result.isConfirmed) return;
-                fetch(`${apis.approval}/${id}`, { method: 'DELETE' })
+                authFetch(`${apis.approval}/${id}`, { method: 'DELETE' })
                     .then(r => {
                         if (r.status === 204 || r.ok) return;
                         return r.json().then(b => Promise.reject(b));
@@ -275,7 +275,7 @@
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.approval}/${id}` : apis.approval;
-            fetch(url, {
+            authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -354,7 +354,7 @@
 
         $('#attachmentTypesTable').on('click', '.btn-attachment-edit', function () {
             const id = $(this).data('id');
-            fetch(`${apis.attachment}/${id}`)
+            authFetch(`${apis.attachment}/${id}`)
                 .then(r => (r.ok ? r.json() : Promise.reject(r)))
                 .then(data => {
                     $('#attachmentModalLabel').text('Edit Attachment Type');
@@ -372,7 +372,7 @@
             const id = $(this).data('id');
             confirmDelete('attachment type').then(result => {
                 if (!result.isConfirmed) return;
-                fetch(`${apis.attachment}/${id}`, { method: 'DELETE' })
+                authFetch(`${apis.attachment}/${id}`, { method: 'DELETE' })
                     .then(r => {
                         if (r.status === 204 || r.ok) return;
                         return r.json().then(b => Promise.reject(b));
@@ -397,7 +397,7 @@
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.attachment}/${id}` : apis.attachment;
-            fetch(url, {
+            authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -469,7 +469,7 @@
 
         $('#contractStatusesTable').on('click', '.btn-contract-edit', function () {
             const id = $(this).data('id');
-            fetch(`${apis.contract}/${id}`)
+            authFetch(`${apis.contract}/${id}`)
                 .then(r => (r.ok ? r.json() : Promise.reject(r)))
                 .then(data => {
                     $('#contractModalLabel').text('Edit Contract Status');
@@ -485,7 +485,7 @@
             const id = $(this).data('id');
             confirmDelete('contract status').then(result => {
                 if (!result.isConfirmed) return;
-                fetch(`${apis.contract}/${id}`, { method: 'DELETE' })
+                authFetch(`${apis.contract}/${id}`, { method: 'DELETE' })
                     .then(r => {
                         if (r.status === 204 || r.ok) return;
                         return r.json().then(b => Promise.reject(b));
@@ -508,7 +508,7 @@
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.contract}/${id}` : apis.contract;
-            fetch(url, {
+            authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -578,7 +578,7 @@
 
         $('#invoiceProgressStatusesTable').on('click', '.btn-invoiceprogress-edit', function () {
             const id = $(this).data('id');
-            fetch(`${apis.invoiceProgress}/${id}`)
+            authFetch(`${apis.invoiceProgress}/${id}`)
                 .then(r => (r.ok ? r.json() : Promise.reject(r)))
                 .then(data => {
                     $('#invoiceProgressModalLabel').text('Edit Invoice Progress Status');
@@ -594,7 +594,7 @@
             const id = $(this).data('id');
             confirmDelete('invoice progress status').then(result => {
                 if (!result.isConfirmed) return;
-                fetch(`${apis.invoiceProgress}/${id}`, { method: 'DELETE' })
+                authFetch(`${apis.invoiceProgress}/${id}`, { method: 'DELETE' })
                     .then(r => {
                         if (r.status === 204 || r.ok) return;
                         return r.json().then(b => Promise.reject(b));
@@ -617,7 +617,7 @@
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.invoiceProgress}/${id}` : apis.invoiceProgress;
-            fetch(url, {
+            authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -685,7 +685,7 @@
 
         $('#vendorCategoriesTable').on('click', '.btn-vendorcat-edit', function () {
             const id = $(this).data('id');
-            fetch(`${apis.vendorCategory}/${id}`)
+            authFetch(`${apis.vendorCategory}/${id}`)
                 .then(r => (r.ok ? r.json() : Promise.reject(r)))
                 .then(data => {
                     $('#vendorCategoryModalLabel').text('Edit Vendor Category');
@@ -700,7 +700,7 @@
             const id = $(this).data('id');
             confirmDelete('vendor category').then(result => {
                 if (!result.isConfirmed) return;
-                fetch(`${apis.vendorCategory}/${id}`, { method: 'DELETE' })
+                authFetch(`${apis.vendorCategory}/${id}`, { method: 'DELETE' })
                     .then(r => {
                         if (r.status === 204 || r.ok) return;
                         return r.json().then(b => Promise.reject(b));
@@ -722,7 +722,7 @@
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${apis.vendorCategory}/${id}` : apis.vendorCategory;
-            fetch(url, {
+            authFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

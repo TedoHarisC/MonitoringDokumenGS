@@ -255,7 +255,7 @@
     }
 
     function openEdit(id) {
-        fetch(`${apiBase}/${id}`)
+        authFetch(`${apiBase}/${id}`)
             .then(r => {
                 if (!r.ok) throw r;
                 return r.json();
@@ -314,7 +314,7 @@
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${apiBase}/${id}` : apiBase;
 
-        fetch(url, {
+        authFetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -346,7 +346,7 @@
             cancelButtonText: 'Cancel'
         }).then(result => {
             if (!result.isConfirmed) return;
-            fetch(`${apiBase}/${id}`, { method: 'DELETE' })
+            authFetch(`${apiBase}/${id}`, { method: 'DELETE' })
                 .then(r => {
                     if (r.status === 204 || r.ok) {
                         table.ajax.reload(null, false);

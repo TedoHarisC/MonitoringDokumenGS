@@ -17,7 +17,7 @@
         }).then(function (result) {
             if (!result.isConfirmed) return;
 
-            fetch('/Auth/Logout', {
+            authFetch('/Auth/Logout', {
                 method: 'POST'
             })
             .then(() => {
