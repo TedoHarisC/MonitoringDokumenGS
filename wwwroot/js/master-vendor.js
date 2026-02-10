@@ -2,6 +2,7 @@
    - DataTable listing vendors
    - Create/Edit modal using Bootstrap 5
    - Uses Vendors API at /api/v1/Vendors
+   - Handles Vendor PIC (Person In Charge) management
 */
 
 ;(function ($) {
@@ -12,6 +13,7 @@
     const vendorCategoriesApiBase = '/api/vendor-categories';
 
     let vendorCategoriesCache = null;
+    let picCounter = 0;
 
     function normalizeToArray(json) {
         if (!json) return [];
@@ -244,8 +246,95 @@
         });
     }
 
+    // ========================= VENDOR PIC MANAGEMENT =========================
+    function createPicRow(pic = null) {
+        const uniqueId = pic?.vendorPicId || `new-${++picCounter}`;
+        const isNew = !pic || !pic.vendorPicId || pic.vendorPicId === '00000000-0000-0000-0000-000000000000';
+        
+        const $row = $(`
+            <div class="col-12 pic-item border rounded p-3 mb-2 bg-light" data-pic-id="${uniqueId}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted fw-bold">PIC Entry</small>
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-pic">
+                        <i class="feather-x"></i> Remove
+                    </button>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label small">PIC Name</label>
+                        <input type="text" class="form-control form-control-sm pic-name" 
+                               value="${pic?.picName || ''}" placeholder="Enter PIC name" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">PIC Phone</label>
+                        <input type="text" class="form-control form-control-sm pic-number" 
+                               value="${pic?.picNumber || ''}" placeholder="Enter phone number" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">PIC Email</label>
+                        <input type="email" class="form-control form-control-sm pic-email" 
+                               value="${pic?.picEmail || ''}" placeholder="Enter email address" />
+                    </div>
+                </div>
+            </div>
+        `);
+
+        // Handle remove button
+        $row.find('.btn-remove-pic').on('click', function() {
+            $row.remove();
+        });
+
+        return $row;
+    }
+
+    function clearPicContainer() {
+        $('#picContainer').empty();
+        picCounter = 0;
+    }
+
+    function loadPics(pics) {
+        clearPicContainer();
+        if (pics && pics.length > 0) {
+            pics.forEach(pic => {
+                $('#picContainer').append(createPicRow(pic));
+            });
+        }
+    }
+
+    function collectPics() {
+        const pics = [];
+        $('.pic-item').each(function() {
+            const $item = $(this);
+            const picId = $item.data('pic-id');
+            const picName = $item.find('.pic-name').val().trim();
+            const picNumber = $item.find('.pic-number').val().trim();
+            const picEmail = $item.find('.pic-email').val().trim();
+
+            // Only include if at least one field is filled
+            if (picName || picNumber || picEmail) {
+                const pic = {
+                    picName: picName || null,
+                    picNumber: picNumber || null,
+                    picEmail: picEmail || null
+                };
+
+                // If it's an existing PIC (not a new one), include the ID
+                if (typeof picId === 'string' && !picId.startsWith('new-')) {
+                    pic.vendorPicId = picId;
+                } else {
+                    pic.vendorPicId = '00000000-0000-0000-0000-000000000000';
+                }
+
+                pics.push(pic);
+            }
+        });
+        return pics;
+    }
+
+    // ========================= MODAL FUNCTIONS =========================
     function openCreate() {
         clearForm();
+        clearPicContainer();
         $('#vendorModalLabel').text('Create Vendor');
         ensureVendorCategoriesLoaded().finally(() => {
             $('#vendorCategoryId').val('');
@@ -266,6 +355,10 @@
                 $('#vendorCode').val(data.vendorCode);
                 $('#vendorName').val(data.vendorName);
                 $('#shortName').val(data.shortName);
+                
+                // Load PICs
+                loadPics(data.vendorPics);
+                
                 return ensureVendorCategoriesLoaded().then(() => {
                     $('#vendorCategoryId').val(String(data.vendorCategoryId ?? ''));
                     return data;
@@ -294,6 +387,7 @@
         $('#ownerName').val('');
         $('#ownerPhone').val('');
         $('#companyEmail').val('');
+        clearPicContainer();
     }
 
     function saveVendor(e) {
@@ -309,6 +403,7 @@
             ownerPhone: $('#ownerPhone').val(),
             companyEmail: $('#companyEmail').val(),
             npwp: $('#npwp').val(),
+            vendorPics: collectPics()
         };
 
         const method = id ? 'PUT' : 'POST';
@@ -375,6 +470,11 @@
         initTable();
 
         $('#btnCreate').on('click', openCreate);
+
+        // Add PIC button handler
+        $('#btnAddPic').on('click', function() {
+            $('#picContainer').append(createPicRow());
+        });
 
         $('#vendorsTable').on('click', '.btn-edit', function () {
             const id = $(this).data('id');

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MonitoringDokumenGS.Dtos.Master
 {
@@ -13,5 +14,6 @@ namespace MonitoringDokumenGS.Dtos.Master
         public string OwnerPhone { get; set; } = string.Empty;
         public string CompanyEmail { get; set; } = string.Empty;
         public string NPWP { get; set; } = string.Empty;
+        public List<VendorPicDto>? VendorPics { get; set; }
     }
 }

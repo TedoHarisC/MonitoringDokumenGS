@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using MonitoringDokumenGS.Dtos.Master;
 using MonitoringDokumenGS.Models;
@@ -23,7 +24,15 @@ public static class VendorMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            VendorPics = x.VendorPics.Where(p => !p.IsDeleted).Select(p => new VendorPicDto
+            {
+                VendorPicId = p.VendorPicId,
+                VendorId = p.VendorId,
+                PicName = p.PicName,
+                PicNumber = p.PicNumber,
+                PicEmail = p.PicEmail
+            }).ToList()
         };
 
     public static VendorDto ToDto(this Vendor x)
@@ -43,7 +52,8 @@ public static class VendorMappings
             CreatedBy = x.CreatedBy,
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
-            IsDeleted = x.IsDeleted
+            IsDeleted = x.IsDeleted,
+            VendorPics = x.VendorPics?.Where(p => !p.IsDeleted).Select(p => p.ToDto()).ToList()
         };
     }
 }

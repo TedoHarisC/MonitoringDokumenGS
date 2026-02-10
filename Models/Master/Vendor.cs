@@ -18,5 +18,6 @@ namespace MonitoringDokumenGS.Models
         // Navigation properties
         public UserModel Users { get; set; } = default!;
         public VendorCategory VendorCategory { get; set; } = default!;
+        public ICollection<VendorPics> VendorPics { get; set; } = new List<VendorPics>();
     }
 }

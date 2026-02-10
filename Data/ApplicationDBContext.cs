@@ -20,6 +20,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Notifications> Notifications { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
+        public DbSet<VendorPics> VendorPics { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<Attachment> Attachments { get; set; }

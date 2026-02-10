@@ -193,7 +193,10 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="vendorId" />
-                    <div class="row g-3">
+                    
+                    <!-- Vendor Basic Information -->
+                    <h6 class="mb-3 text-primary">Vendor Information</h6>
+                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Nomer Vendor (SAP)</label>
                             <input id="vendorCode" name="vendorCode" class="form-control" />
@@ -227,6 +230,19 @@
                         <div class="col-md-12">
                             <label class="form-label">Company Email</label>
                             <input id="companyEmail" name="companyEmail" type="email" class="form-control" />
+                        </div>
+                    </div>
+
+                    <!-- Vendor PIC Section -->
+                    <div class="border-top pt-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="mb-0 text-primary">Person In Charge (PIC) - Optional</h6>
+                            <button type="button" id="btnAddPic" class="btn btn-sm btn-outline-primary">
+                                <i class="feather-plus me-1"></i> Add PIC
+                            </button>
+                        </div>
+                        <div id="picContainer" class="row g-3">
+                            <!-- PIC items will be dynamically added here -->
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,12 @@ namespace MonitoringDokumenGS.Controllers.API
         public VendorsController(IVendor service)
         {
             _service = service;
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
         }
 
         [HttpGet]
@@ -38,6 +45,13 @@ namespace MonitoringDokumenGS.Controllers.API
         [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] VendorDto dto)
         {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            dto.CreatedBy = userId;
             var created = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.VendorId }, created);
         }
@@ -46,7 +60,14 @@ namespace MonitoringDokumenGS.Controllers.API
         [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] VendorDto dto)
         {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
             dto.VendorId = id;
+            dto.UpdatedBy = userId;
             var ok = await _service.UpdateAsync(dto);
             if (!ok) return NotFound();
             return NoContent();

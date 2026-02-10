@@ -24,6 +24,7 @@ namespace MonitoringDokumenGS.Services.Master
         public async Task<IEnumerable<VendorDto>> GetAllAsync()
         {
             return await _context.Vendors
+                .Include(v => v.VendorPics)
                 .Where(x => !x.IsDeleted)
                 .Select(VendorMappings.ToDtoExpr)
                 .ToListAsync();
@@ -33,6 +34,7 @@ namespace MonitoringDokumenGS.Services.Master
         public async Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize)
         {
             return await _context.Vendors
+                .Include(v => v.VendorPics)
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.VendorName)
                 .Select(VendorMappings.ToDtoExpr)
@@ -43,6 +45,7 @@ namespace MonitoringDokumenGS.Services.Master
         public async Task<VendorDto?> GetByIdAsync(Guid id)
         {
             return await _context.Vendors
+                .Include(v => v.VendorPics)
                 .Where(x => x.VendorId == id && !x.IsDeleted)
                 .Select(VendorMappings.ToDtoExpr)
                 .FirstOrDefaultAsync();
@@ -67,6 +70,26 @@ namespace MonitoringDokumenGS.Services.Master
                 IsDeleted = false
             };
 
+            // Add VendorPics if provided
+            if (dto.VendorPics != null && dto.VendorPics.Any())
+            {
+                foreach (var picDto in dto.VendorPics)
+                {
+                    var pic = new VendorPics
+                    {
+                        VendorPicId = Guid.NewGuid(),
+                        VendorId = entity.VendorId,
+                        PicName = picDto.PicName,
+                        PicNumber = picDto.PicNumber,
+                        PicEmail = picDto.PicEmail,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = dto.CreatedBy,
+                        IsDeleted = false
+                    };
+                    entity.VendorPics.Add(pic);
+                }
+            }
+
             _context.Vendors.Add(entity);
             await _context.SaveChangesAsync();
 
@@ -85,7 +108,13 @@ namespace MonitoringDokumenGS.Services.Master
             if (entity == null)
                 return false;
 
-            var old = entity.ToDto();
+            // Load old data for audit (with tracking disabled for this query)
+            var oldDto = await _context.Vendors
+                .Include(v => v.VendorPics)
+                .AsNoTracking()
+                .Where(x => x.VendorId == dto.VendorId)
+                .Select(VendorMappings.ToDtoExpr)
+                .FirstOrDefaultAsync();
 
             entity.VendorCode = dto.VendorCode;
             entity.VendorName = dto.VendorName;
@@ -99,9 +128,67 @@ namespace MonitoringDokumenGS.Services.Master
             entity.UpdatedBy = dto.UpdatedBy;
             entity.IsDeleted = dto.IsDeleted;
 
+            // Handle VendorPics updates - load separately to avoid tracking issues
+            var existingPics = await _context.Set<VendorPics>()
+                .Where(p => p.VendorId == entity.VendorId)
+                .ToListAsync();
+
+            if (dto.VendorPics != null)
+            {
+                var incomingPicIds = dto.VendorPics
+                    .Where(p => p.VendorPicId != Guid.Empty)
+                    .Select(p => p.VendorPicId)
+                    .ToList();
+
+                // Soft delete removed PICs
+                foreach (var existingPic in existingPics.Where(p => !p.IsDeleted))
+                {
+                    if (!incomingPicIds.Contains(existingPic.VendorPicId))
+                    {
+                        existingPic.IsDeleted = true;
+                        existingPic.UpdatedAt = DateTime.UtcNow;
+                        existingPic.UpdatedBy = dto.UpdatedBy;
+                    }
+                }
+
+                // Update or Add PICs
+                foreach (var picDto in dto.VendorPics)
+                {
+                    if (picDto.VendorPicId == Guid.Empty)
+                    {
+                        // New PIC
+                        var newPic = new VendorPics
+                        {
+                            VendorPicId = Guid.NewGuid(),
+                            VendorId = entity.VendorId,
+                            PicName = picDto.PicName,
+                            PicNumber = picDto.PicNumber,
+                            PicEmail = picDto.PicEmail,
+                            CreatedAt = DateTime.UtcNow,
+                            CreatedBy = dto.UpdatedBy,
+                            IsDeleted = false
+                        };
+                        _context.Set<VendorPics>().Add(newPic);
+                    }
+                    else
+                    {
+                        // Update existing PIC
+                        var existingPic = existingPics.FirstOrDefault(p => p.VendorPicId == picDto.VendorPicId);
+                        if (existingPic != null)
+                        {
+                            existingPic.PicName = picDto.PicName;
+                            existingPic.PicNumber = picDto.PicNumber;
+                            existingPic.PicEmail = picDto.PicEmail;
+                            existingPic.UpdatedAt = DateTime.UtcNow;
+                            existingPic.UpdatedBy = dto.UpdatedBy;
+                        }
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-            await _auditLog.LogAsync("Vendor", "Update", old, entity.ToDto(), entity.VendorId.ToString());
+            await _auditLog.LogAsync("Vendor", "Update", oldDto, entity.ToDto(), entity.VendorId.ToString());
             return true;
         }
 
