@@ -53,6 +53,7 @@ namespace MonitoringDokumenGS.Services.Master
             {
                 BudgetId = Guid.NewGuid(),
                 Year = dto.Year,
+                TypeBudget = dto.TypeBudget,
                 TotalBudget = dto.TotalBudget,
                 MonthlyBudget = dto.MonthlyBudget,
                 CreatedAt = DateTime.UtcNow,
@@ -80,6 +81,7 @@ namespace MonitoringDokumenGS.Services.Master
             var old = entity.ToDto();
 
             entity.Year = dto.Year;
+            entity.TypeBudget = dto.TypeBudget;
             entity.TotalBudget = dto.TotalBudget;
             entity.MonthlyBudget = dto.MonthlyBudget;
 

@@ -59,6 +59,12 @@ function initDataTable() {
         columns: [
             { data: 'year', className: 'fw-bold' },
             {
+                data: 'typeBudget',
+                render: function (data) {
+                    return data || '-';
+                }
+            },
+            {
                 data: 'totalBudget',
                 render: function (data) {
                     return formatRupiah(data);
@@ -125,6 +131,7 @@ function editBudget(budgetId) {
         success: function (data) {
             $('#budgetId').val(data.budgetId);
             $('#year').val(data.year);
+            $('#typeBudget').val(data.typeBudget || '');
             $('#totalBudget').val(formatNumberForInput(data.totalBudget));
             $('#monthlyBudget').val(formatNumberForInput(data.monthlyBudget));
             portalModalToBody('budgetModal');
@@ -143,6 +150,7 @@ function saveBudget() {
     const data = {
         budgetId: budgetId || '00000000-0000-0000-0000-000000000000',
         year: parseInt($('#year').val()),
+        typeBudget: $('#typeBudget').val(),
         totalBudget: parseFloat($('#totalBudget').val().replace(/\./g, '').replace(',', '.')),
         monthlyBudget: parseFloat($('#monthlyBudget').val().replace(/\./g, '').replace(',', '.')),
         createdBy: '00000000-0000-0000-0000-000000000000' // Will be set by server

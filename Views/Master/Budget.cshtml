@@ -4,39 +4,39 @@
 
 @section Styles {
     <style>
-        /* Keep DataTables controls aligned with template spacing */
-        div.dataTables_wrapper div.dataTables_filter label,
-        div.dataTables_wrapper div.dataTables_length label {
-            margin-bottom: 0;
-        }
+            /* Keep DataTables controls aligned with template spacing */
+            div.dataTables_wrapper div.dataTables_filter label,
+            div.dataTables_wrapper div.dataTables_length label {
+                margin-bottom: 0;
+            }
 
-        div.dataTables_wrapper div.dataTables_filter input {
-            width: 240px;
-        }
+            div.dataTables_wrapper div.dataTables_filter input {
+                width: 240px;
+            }
 
-        table.dataTable>thead>tr>th {
-            white-space: nowrap;
-        }
+            table.dataTable>thead>tr>th {
+                white-space: nowrap;
+            }
 
-        /* Prevent action buttons from being visually clipped in scrollable DataTables wrappers */
-        .dataTables_scrollBody {
-            padding-bottom: .5rem;
-        }
+            /* Prevent action buttons from being visually clipped in scrollable DataTables wrappers */
+            .dataTables_scrollBody {
+                padding-bottom: .5rem;
+            }
 
-        td.dt-actions {
-            padding-top: .6rem !important;
-            padding-bottom: .6rem !important;
-            overflow: visible !important;
-        }
+            td.dt-actions {
+                padding-top: .6rem !important;
+                padding-bottom: .6rem !important;
+                overflow: visible !important;
+            }
 
-        /* Ensure modal is always above template overlays/backdrop */
-        .modal {
-            z-index: 2000;
-        }
+            /* Ensure modal is always above template overlays/backdrop */
+            .modal {
+                z-index: 2000;
+            }
 
-        .modal-backdrop {
-            z-index: 1990;
-        }
+            .modal-backdrop {
+                z-index: 1990;
+            }
     </style>
 }
 
@@ -86,6 +86,7 @@
                             <thead>
                                 <tr>
                                     <th>Year</th>
+                                    <th>Vendor Category</th>
                                     <th>Total Budget</th>
                                     <th>Monthly Budget</th>
                                     <th>Created At</th>
@@ -105,7 +106,8 @@
 <!-- [ Main Content ] end -->
 
 <!-- Modal for Add/Edit Budget -->
-<div class="modal fade" id="budgetModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="budgetModalLabel" aria-hidden="true">
+<div class="modal fade" id="budgetModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="budgetModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form id="budgetForm">
@@ -119,7 +121,20 @@
                         <div class="col-md-12">
                             <label class="form-label">Year <span class="text-danger">*</span></label>
                             <input id="year" name="year" type="number" class="form-control" min="2000" max="2100"
-                                required />
+                                   required />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Vendor Category <span class="text-danger">*</span></label>
+                            <select id="typeBudget" name="typeBudget" class="form-control" required>
+                                <option value="">-- Select Vendor Category --</option>
+                                @if (ViewBag.VendorCategories != null)
+                                {
+                                    @foreach (var category in ViewBag.VendorCategories)
+                                    {
+                                        <option value="@category.Name">@category.Name</option>
+                                    }
+                                }
+                            </select>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Total Budget <span class="text-danger">*</span></label>
@@ -134,7 +149,7 @@
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
                                 <input id="monthlyBudget" name="monthlyBudget" type="text" class="form-control"
-                                    required />
+                                       required />
                             </div>
                             <small class="text-muted">Budget per bulan (Total Budget / 12)</small>
                         </div>
