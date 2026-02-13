@@ -13,15 +13,18 @@ namespace MonitoringDokumenGS.Services.Transaction
         private readonly ApplicationDBContext _context;
         private readonly IAuditLog _auditLog;
         private readonly INotifications _notificationService;
+        private readonly IBudgetNotificationJob _budgetNotificationJob;
 
         public InvoiceService(
             ApplicationDBContext context,
             IAuditLog auditLog,
-            INotifications notificationService)
+            INotifications notificationService,
+            IBudgetNotificationJob budgetNotificationJob)
         {
             _context = context;
             _auditLog = auditLog;
             _notificationService = notificationService;
+            _budgetNotificationJob = budgetNotificationJob;
         }
 
         // ========================= GET ALL =========================
@@ -137,6 +140,17 @@ namespace MonitoringDokumenGS.Services.Transaction
                 Console.WriteLine($"Failed to create admin notifications: {ex.Message}");
             }
 
+            // Real-time budget check after invoice created
+            try
+            {
+                await _budgetNotificationJob.CheckBudgetOnInvoiceChangeAsync(entity.InvoiceYear, entity.InvoiceMonth);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't fail invoice creation
+                Console.WriteLine($"Failed to run budget check: {ex.Message}");
+            }
+
             return result;
         }
 
@@ -222,6 +236,30 @@ namespace MonitoringDokumenGS.Services.Transaction
                     }
                 }
 
+            }
+
+            // Real-time budget check after invoice updated
+            // Check if amount or year/month changed - these affect budget
+            if (old.InvoiceAmount != entity.InvoiceAmount ||
+                old.InvoiceYear != entity.InvoiceYear ||
+                old.InvoiceMonth != entity.InvoiceMonth)
+            {
+                try
+                {
+                    // Check budget for new month/year
+                    await _budgetNotificationJob.CheckBudgetOnInvoiceChangeAsync(entity.InvoiceYear, entity.InvoiceMonth);
+
+                    // Also check old month/year if changed
+                    if (old.InvoiceYear != entity.InvoiceYear || old.InvoiceMonth != entity.InvoiceMonth)
+                    {
+                        await _budgetNotificationJob.CheckBudgetOnInvoiceChangeAsync(old.InvoiceYear, old.InvoiceMonth);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't fail invoice update
+                    Console.WriteLine($"Failed to run budget check: {ex.Message}");
+                }
             }
 
             return true;

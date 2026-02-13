@@ -58,8 +58,15 @@ builder.Services.AddScoped<IDashboard, DashboardService>();
 builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
     builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+
+// Notification Jobs
 builder.Services.AddScoped<IContractNotificationJob, ContractNotificationJob>();
 builder.Services.AddScoped<IBudgetNotificationJob, MonitoringDokumenGS.Services.Notification.BudgetNotificationJob>();
+builder.Services.AddScoped<INotificationLog, NotificationLogService>();
+
+// Background Services for scheduled notifications
+builder.Services.AddHostedService<MonitoringDokumenGS.Services.Notification.BudgetCheckBackgroundService>();
+builder.Services.AddHostedService<MonitoringDokumenGS.Services.Notification.ContractExpiringBackgroundService>();
 
 builder.Services.AddAuthorization();
 
@@ -223,5 +230,15 @@ app.MapControllerRoute(
 
 // Using Rate Limiter
 app.UseRateLimiter();
+
+app.MapGet("/health/background-services", () =>
+{
+    return Results.Ok(new
+    {
+        status = "running",
+        timestamp = DateTime.Now,
+        message = "Background services operational"
+    });
+});
 
 app.Run();

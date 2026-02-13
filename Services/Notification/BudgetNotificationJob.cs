@@ -4,6 +4,7 @@ using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Interfaces;
 using MonitoringDokumenGS.Services.Infrastructure;
 using MonitoringDokumenGS.Dtos.Infrastructure;
+using MonitoringDokumenGS.Models.Infrastructure;
 
 namespace MonitoringDokumenGS.Services.Notification
 {
@@ -15,6 +16,7 @@ namespace MonitoringDokumenGS.Services.Notification
         private readonly ILogger<BudgetNotificationJob> _logger;
         private readonly INotifications _notificationService;
         private readonly IConfiguration _configuration;
+        private readonly INotificationLog _notificationLog;
         private readonly string _appUrl;
 
         public BudgetNotificationJob(
@@ -23,7 +25,8 @@ namespace MonitoringDokumenGS.Services.Notification
             IAuditLog auditLog,
             ILogger<BudgetNotificationJob> logger,
             INotifications notificationService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            INotificationLog notificationLog)
         {
             _context = context;
             _emailService = emailService;
@@ -31,6 +34,7 @@ namespace MonitoringDokumenGS.Services.Notification
             _logger = logger;
             _notificationService = notificationService;
             _configuration = configuration;
+            _notificationLog = notificationLog;
             _appUrl = _configuration["AppUrl"] ?? "http://localhost:5008";
         }
 
@@ -43,56 +47,79 @@ namespace MonitoringDokumenGS.Services.Notification
 
                 _logger.LogInformation("Starting budget overbudget check for {Year}/{Month}", currentYear, currentMonth);
 
-                // Get budget status
-                var budgetStatus = await GetBudgetStatusAsync(currentYear);
+                // Get ALL budgets for the year (can be multiple per vendor category)
+                var budgets = await _context.MST_Budget
+                    .Where(b => b.Year == currentYear)
+                    .ToListAsync();
 
-                if (budgetStatus == null)
+                if (!budgets.Any())
                 {
                     _logger.LogWarning("No budget configured for year {Year}", currentYear);
                     return;
                 }
 
-                // Check overall budget status
-                if (budgetStatus.IsOverBudget)
+                // Check each budget (per vendor category)
+                foreach (var budget in budgets)
                 {
-                    await SendOverbudgetAlert(
-                        "YEARLY",
-                        currentYear,
-                        null,
-                        budgetStatus.TotalBudget,
-                        budgetStatus.TotalSpent,
-                        budgetStatus.BudgetUtilizationPercent
-                    );
-                }
+                    var categoryName = budget.TypeBudget?.Trim();
 
-                // Check monthly budget status
-                foreach (var monthStatus in budgetStatus.MonthlyStatus)
-                {
-                    if (monthStatus.IsOverBudget)
+                    _logger.LogInformation("Checking budget for Category: {Category}, Year: {Year}",
+                        categoryName ?? "(All)", currentYear);
+
+                    // Get budget status for this category
+                    var budgetStatus = await GetBudgetStatusForCategoryAsync(currentYear, categoryName);
+
+                    if (budgetStatus == null) continue;
+
+                    // Check overall budget status
+                    if (budgetStatus.IsOverBudget)
                     {
                         await SendOverbudgetAlert(
-                            "MONTHLY",
+                            "YEARLY",
                             currentYear,
-                            monthStatus.Month,
-                            monthStatus.Budget,
-                            monthStatus.Spent,
-                            monthStatus.UtilizationPercent
+                            null,
+                            budgetStatus.TotalBudget,
+                            budgetStatus.TotalSpent,
+                            budgetStatus.BudgetUtilizationPercent,
+                            categoryName
                         );
                     }
-                    else if (monthStatus.IsNearLimit && monthStatus.Month == currentMonth)
+
+                    // Check monthly budget status
+                    foreach (var monthStatus in budgetStatus.MonthlyStatus)
                     {
-                        // Send warning for current month if near limit (>90%)
-                        await SendBudgetWarningAlert(
-                            currentYear,
-                            monthStatus.Month,
-                            monthStatus.Budget,
-                            monthStatus.Spent,
-                            monthStatus.UtilizationPercent
-                        );
+                        if (monthStatus.IsOverBudget)
+                        {
+                            await SendOverbudgetAlert(
+                                "MONTHLY",
+                                currentYear,
+                                monthStatus.Month,
+                                monthStatus.Budget,
+                                monthStatus.Spent,
+                                monthStatus.UtilizationPercent,
+                                categoryName
+                            );
+                        }
+                        else if (monthStatus.IsNearLimit && monthStatus.Month == currentMonth)
+                        {
+                            // Send warning for current month if near limit (>90%)
+                            await SendBudgetWarningAlert(
+                                currentYear,
+                                monthStatus.Month,
+                                monthStatus.Budget,
+                                monthStatus.Spent,
+                                monthStatus.UtilizationPercent,
+                                categoryName
+                            );
+                        }
                     }
+
+                    _logger.LogInformation(
+                        "Budget check completed for {Category} - Year: {Year}",
+                        categoryName ?? "(All)", currentYear);
                 }
 
-                _logger.LogInformation("Budget overbudget check completed for {Year}", currentYear);
+                _logger.LogInformation("Budget overbudget check completed for all categories in {Year}", currentYear);
             }
             catch (Exception ex)
             {
@@ -101,6 +128,149 @@ namespace MonitoringDokumenGS.Services.Notification
             }
         }
 
+        public async Task CheckBudgetOnInvoiceChangeAsync(int year, int month)
+        {
+            try
+            {
+                _logger.LogInformation("Real-time budget check triggered for {Year}/{Month}", year, month);
+
+                // Check all budgets (per vendor category)
+                var budgets = await _context.MST_Budget
+                    .Where(b => b.Year == year)
+                    .ToListAsync();
+
+                if (!budgets.Any())
+                {
+                    _logger.LogWarning("No budget configured for year {Year}", year);
+                    return;
+                }
+
+                foreach (var budget in budgets)
+                {
+                    var categoryName = budget.TypeBudget?.Trim();
+                    var budgetStatus = await GetBudgetStatusForCategoryAsync(year, categoryName);
+
+                    if (budgetStatus == null) continue;
+
+                    // Check monthly budget for the specific month
+                    var monthStatus = budgetStatus.MonthlyStatus.FirstOrDefault(m => m.Month == month);
+
+                    if (monthStatus != null && monthStatus.IsOverBudget)
+                    {
+                        await SendOverbudgetAlert(
+                            "MONTHLY",
+                            year,
+                            month,
+                            monthStatus.Budget,
+                            monthStatus.Spent,
+                            monthStatus.UtilizationPercent,
+                            categoryName
+                        );
+                    }
+
+                    // Also check overall yearly budget
+                    if (budgetStatus.IsOverBudget)
+                    {
+                        await SendOverbudgetAlert(
+                            "YEARLY",
+                            year,
+                            null,
+                            budgetStatus.TotalBudget,
+                            budgetStatus.TotalSpent,
+                            budgetStatus.BudgetUtilizationPercent,
+                            categoryName
+                        );
+                    }
+                }
+
+                _logger.LogInformation("Real-time budget check completed for all categories {Year}/{Month}", year, month);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in real-time budget check for {Year}/{Month}", year, month);
+                // Don't throw - we don't want invoice operations to fail because of notification issues
+            }
+        }
+
+        /// <summary>
+        /// Get budget status for a specific vendor category
+        /// </summary>
+        public async Task<BudgetOverviewResult> GetBudgetStatusForCategoryAsync(int year, string? categoryName)
+        {
+            var budget = await _context.MST_Budget
+                .Where(b => b.Year == year && b.TypeBudget == categoryName)
+                .FirstOrDefaultAsync();
+
+            if (budget == null)
+                return null!;
+
+            // Get vendor IDs for this category
+            var vendorIds = string.IsNullOrWhiteSpace(categoryName)
+                ? await _context.Vendors.Where(v => !v.IsDeleted).Select(v => v.VendorId).ToListAsync()
+                : await _context.Vendors
+                    .Include(v => v.VendorCategory)
+                    .Where(v => !v.IsDeleted && v.VendorCategory.Name == categoryName)
+                    .Select(v => v.VendorId)
+                    .ToListAsync();
+
+            // Get total spending for the year (filtered by vendor category)
+            var totalSpent = await _context.Invoices
+                .Where(i => i.InvoiceYear == year && !i.IsDeleted && vendorIds.Contains(i.VendorId))
+                .SumAsync(i => i.InvoiceAmount);
+
+            // Get monthly spending (filtered by vendor category)
+            var monthlySpending = await _context.Invoices
+                .Where(i => i.InvoiceYear == year && !i.IsDeleted && vendorIds.Contains(i.VendorId))
+                .GroupBy(i => i.InvoiceMonth)
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Spent = g.Sum(i => i.InvoiceAmount)
+                })
+                .ToListAsync();
+
+            var monthNames = new[] { "", "January", "February", "March", "April", "May", "June",
+                                    "July", "August", "September", "October", "November", "December" };
+
+            var monthlyStatus = new List<MonthlyBudgetStatus>();
+            for (int month = 1; month <= 12; month++)
+            {
+                var spent = monthlySpending.FirstOrDefault(m => m.Month == month)?.Spent ?? 0;
+                var utilizationPercent = budget.MonthlyBudget > 0 ? (spent / budget.MonthlyBudget) * 100 : 0;
+
+                monthlyStatus.Add(new MonthlyBudgetStatus
+                {
+                    Month = month,
+                    MonthName = monthNames[month],
+                    Budget = budget.MonthlyBudget,
+                    Spent = spent,
+                    Remaining = budget.MonthlyBudget - spent,
+                    UtilizationPercent = utilizationPercent,
+                    IsOverBudget = spent > budget.MonthlyBudget,
+                    IsNearLimit = utilizationPercent >= 90 && utilizationPercent <= 100
+                });
+            }
+
+            var remainingBudget = budget.TotalBudget - totalSpent;
+            var budgetUtilization = budget.TotalBudget > 0 ? (totalSpent / budget.TotalBudget) * 100 : 0;
+
+            return new BudgetOverviewResult
+            {
+                Year = year,
+                TotalBudget = budget.TotalBudget,
+                MonthlyBudget = budget.MonthlyBudget,
+                TotalSpent = totalSpent,
+                RemainingBudget = remainingBudget,
+                BudgetUtilizationPercent = budgetUtilization,
+                IsOverBudget = totalSpent > budget.TotalBudget,
+                MonthlyStatus = monthlyStatus
+            };
+        }
+
+        /// <summary>
+        /// Legacy method - returns budget status for first budget found (not category-aware)
+        /// Use GetBudgetStatusForCategoryAsync for category-specific checks
+        /// </summary>
         public async Task<BudgetOverviewResult> GetBudgetStatusAsync(int year)
         {
             var budget = await _context.MST_Budget
@@ -170,10 +340,30 @@ namespace MonitoringDokumenGS.Services.Notification
             int? month,
             decimal budget,
             decimal spent,
-            decimal utilizationPercent)
+            decimal utilizationPercent,
+            string? categoryName = null)
         {
             try
             {
+                // Anti-spam check: Don't send same alert within 24 hours
+                var notificationType = type == "YEARLY"
+                    ? NotificationTypes.BUDGET_OVERBUDGET_YEARLY
+                    : NotificationTypes.BUDGET_OVERBUDGET_MONTHLY;
+
+                var referenceId = type == "YEARLY"
+                    ? $"{year}-{categoryName ?? "ALL"}"
+                    : $"{year}-{month:00}-{categoryName ?? "ALL"}";
+
+                var canSend = await _notificationLog.CanSendNotificationAsync(notificationType, referenceId, cooldownHours: 24);
+
+                if (!canSend)
+                {
+                    _logger.LogInformation(
+                        "Skipping overbudget alert (cooldown active). Type: {Type}, Ref: {Ref}",
+                        notificationType, referenceId);
+                    return;
+                }
+
                 var monthName = month.HasValue
                     ? new[] { "", "January", "February", "March", "April", "May", "June",
                              "July", "August", "September", "October", "November", "December" }[month.Value]
@@ -183,12 +373,15 @@ namespace MonitoringDokumenGS.Services.Notification
                     ? $"Year {year}"
                     : $"{monthName} {year}";
 
+                var categoryText = string.IsNullOrWhiteSpace(categoryName) ? "All Categories" : categoryName;
+
                 var excess = spent - budget;
                 var excessPercent = utilizationPercent - 100;
 
-                var title = $"⚠️ BUDGET OVERRUN ALERT - {periodText}";
+                var title = $"⚠️ BUDGET OVERRUN ALERT - {categoryText} - {periodText}";
                 var message = $@"
                     <strong>Budget Exceeded!</strong><br/>
+                    Category: {categoryText}<br/>
                     Period: {periodText}<br/>
                     Budget: {budget:N2}<br/>
                     Spent: {spent:N2}<br/>
@@ -250,6 +443,15 @@ namespace MonitoringDokumenGS.Services.Notification
 
                         _logger.LogInformation("Overbudget alert sent to {Email} for {Period}", admin.Email, periodText);
                     }
+
+                    // Log notification sent for anti-spam tracking
+                    await _notificationLog.LogNotificationSentAsync(
+                        notificationType,
+                        referenceId,
+                        admin.Email,
+                        reminderLevel: 0,
+                        details: $"Overbudget: {excess:N2} ({excessPercent:N1}%)"
+                    );
                 }
 
                 // Log to audit
@@ -272,18 +474,35 @@ namespace MonitoringDokumenGS.Services.Notification
             int month,
             decimal budget,
             decimal spent,
-            decimal utilizationPercent)
+            decimal utilizationPercent,
+            string? categoryName = null)
         {
             try
             {
+                // Anti-spam check: Don't send same warning within 24 hours
+                var notificationType = NotificationTypes.BUDGET_WARNING_MONTHLY;
+                var referenceId = $"{year}-{month:00}-{categoryName ?? "ALL"}";
+
+                var canSend = await _notificationLog.CanSendNotificationAsync(notificationType, referenceId, cooldownHours: 24);
+
+                if (!canSend)
+                {
+                    _logger.LogInformation(
+                        "Skipping budget warning (cooldown active). Ref: {Ref}",
+                        referenceId);
+                    return;
+                }
+
                 var monthName = new[] { "", "January", "February", "March", "April", "May", "June",
                                        "July", "August", "September", "October", "November", "December" }[month];
 
+                var categoryText = string.IsNullOrWhiteSpace(categoryName) ? "All Categories" : categoryName;
                 var remaining = budget - spent;
 
-                var title = $"⚡ Budget Warning - {monthName} {year}";
+                var title = $"⚡ Budget Warning - {categoryText} - {monthName} {year}";
                 var message = $@"
                     <strong>Budget Approaching Limit</strong><br/>
+                    Category: {categoryText}<br/>
                     Period: {monthName} {year}<br/>
                     Budget: {budget:N2}<br/>
                     Spent: {spent:N2}<br/>
@@ -341,6 +560,15 @@ namespace MonitoringDokumenGS.Services.Notification
                             htmlBody: emailBody
                         );
                     }
+
+                    // Log notification sent for anti-spam tracking
+                    await _notificationLog.LogNotificationSentAsync(
+                        notificationType,
+                        referenceId,
+                        admin.Email,
+                        reminderLevel: 0,
+                        details: $"Warning: {utilizationPercent:N1}% utilization"
+                    );
                 }
 
                 _logger.LogInformation("Budget warning sent for {Month}/{Year} - {Utilization}%", month, year, utilizationPercent);

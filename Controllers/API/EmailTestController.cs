@@ -211,7 +211,8 @@ namespace MonitoringDokumenGS.Controllers.API
                 }
 
                 var htmlBody = EmailTemplateHelper.GetContractExpiringEmail(
-                    contractNo: request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd"),
+                    vendorName: request.VendorName ?? "PT. Sample Vendor Indonesia",
+                    contractNumber: request.ContractNo ?? "CON-TEST-" + DateTime.Now.ToString("yyyyMMdd"),
                     endDate: request.EndDate ?? DateTime.Now.AddDays(15).ToString("MMMM dd, yyyy"),
                     daysLeft: request.DaysLeft ?? "15",
                     language: language
@@ -355,6 +356,7 @@ namespace MonitoringDokumenGS.Controllers.API
     public class ContractExpiringEmailRequest
     {
         public string Email { get; set; } = string.Empty;
+        public string? VendorName { get; set; }
         public string? ContractNo { get; set; }
         public string? EndDate { get; set; }
         public string? DaysLeft { get; set; }

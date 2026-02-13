@@ -11,6 +11,11 @@ namespace MonitoringDokumenGS.Interfaces
         /// Get current budget status for a specific year
         /// </summary>
         Task<BudgetOverviewResult> GetBudgetStatusAsync(int year);
+
+        /// <summary>
+        /// Check budget immediately after invoice change (real-time check)
+        /// </summary>
+        Task CheckBudgetOnInvoiceChangeAsync(int year, int month);
     }
 
     public class BudgetOverviewResult

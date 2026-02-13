@@ -230,16 +230,20 @@ namespace MonitoringDokumenGS.Services.Infrastructure
         #region Contract Expiring Email
 
         public static string GetContractExpiringEmail(
-            string contractNo,
+            string contractNumber,
+            string vendorName,
             string endDate,
             string daysLeft,
+            string actionLink = "#",
             string language = "en")
         {
             var data = new Dictionary<string, string>
             {
-                { "ContractNo", contractNo },
+                { "ContractNumber", contractNumber },
+                { "VendorName", vendorName },
                 { "EndDate", endDate },
-                { "DaysLeft", daysLeft }
+                { "DaysLeft", daysLeft },
+                { "ActionLink", actionLink }
             };
 
             return LoadTemplate("ContractExpiring.html", language, data);

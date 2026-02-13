@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonitoringDokumenGS.Models;
+using MonitoringDokumenGS.Models.Infrastructure;
 
 namespace MonitoringDokumenGS.Data
 {
@@ -29,6 +30,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<Budget> MST_Budget { get; set; }
+        public DbSet<NotificationLog> SYS_NotificationLog { get; set; }
 
         // View
         public DbSet<DashboardBudgetMonthlyDto> V_Dashboard_Budget_Monthly { get; set; }
