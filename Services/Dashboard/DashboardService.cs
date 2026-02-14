@@ -55,38 +55,55 @@ public class DashboardService : IDashboard
 
     public async Task<IEnumerable<BudgetKpiDto>> GetBudgetKpiByVendorAsync(int year)
     {
-        // Get budget for the year
-        var budget = await _context.MST_Budget
+        // Get ALL budgets for the year (per vendor category)
+        var budgets = await _context.MST_Budget
             .Where(b => b.Year == year)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
 
-        if (budget == null)
+        if (!budgets.Any())
         {
             return new List<BudgetKpiDto>();
         }
 
-        // Get realisasi per vendor from invoices
+        // Get realisasi per vendor with category information
         var vendorRealisasi = await _context.Invoices
             .Include(i => i.Vendor)
+            .ThenInclude(v => v.VendorCategory)
             .Where(i => !i.IsDeleted && i.InvoiceYear == year && i.Vendor != null)
-            .GroupBy(i => new { i.Vendor.VendorId, i.Vendor.VendorName })
+            .GroupBy(i => new
+            {
+                i.Vendor.VendorId,
+                i.Vendor.VendorName,
+                CategoryName = i.Vendor.VendorCategory.Name
+            })
             .Select(g => new
             {
                 VendorId = g.Key.VendorId,
                 VendorName = g.Key.VendorName,
+                CategoryName = g.Key.CategoryName,
                 Realisasi = g.Sum(i => i.InvoiceAmount)
             })
             .ToListAsync();
 
-        // Get total contracts per vendor to calculate budget allocation
-        var totalContracts = await _context.Contracts
-            .Where(c => !c.IsDeleted)
-            .CountAsync();
+        // Create budget lookup by category
+        var budgetByCategory = budgets.ToDictionary(
+            b => b.TypeBudget ?? "",
+            b => b.TotalBudget
+        );
 
         var result = vendorRealisasi.Select(v =>
         {
-            // Simple budget allocation: divide total budget by number of vendors
-            var allocatedBudget = vendorRealisasi.Count > 0 ? budget.TotalBudget / vendorRealisasi.Count : 0;
+            // Get budget for this vendor's category
+            var categoryBudget = budgetByCategory.ContainsKey(v.CategoryName ?? "")
+                ? budgetByCategory[v.CategoryName ?? ""]
+                : 0;
+
+            // Count vendors in same category for budget allocation
+            var vendorsInCategory = vendorRealisasi.Count(x => x.CategoryName == v.CategoryName);
+            var allocatedBudget = vendorsInCategory > 0 && categoryBudget > 0
+                ? categoryBudget / vendorsInCategory
+                : 0;
+
             var sisaBudget = allocatedBudget - v.Realisasi;
             var persentaseSerapan = allocatedBudget > 0 ? (v.Realisasi / allocatedBudget) * 100 : 0;
             var variance = allocatedBudget - v.Realisasi;
@@ -101,7 +118,7 @@ public class DashboardService : IDashboard
 
             return new BudgetKpiDto
             {
-                VendorName = v.VendorName,
+                VendorName = $"{v.VendorName} ({v.CategoryName})",
                 TotalBudget = allocatedBudget,
                 Realisasi = v.Realisasi,
                 SisaBudget = sisaBudget,
@@ -117,28 +134,56 @@ public class DashboardService : IDashboard
 
     public async Task<BudgetSummaryDto> GetBudgetSummaryAsync(int year)
     {
-        var budget = await _context.MST_Budget
+        // Get ALL budgets for the year (per vendor category)
+        var budgets = await _context.MST_Budget
             .Where(b => b.Year == year)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
 
-        var totalRealisasi = await _context.Invoices
-            .Where(i => !i.IsDeleted && i.InvoiceYear == year)
-            .SumAsync(i => (decimal?)i.InvoiceAmount) ?? 0;
+        // Calculate total budget from all categories
+        var totalBudget = budgets.Sum(b => b.TotalBudget);
 
-        if (budget == null)
+        if (!budgets.Any())
         {
+            var totalRealisasiNobudget = await _context.Invoices
+                .Where(i => !i.IsDeleted && i.InvoiceYear == year)
+                .SumAsync(i => (decimal?)i.InvoiceAmount) ?? 0;
+
             return new BudgetSummaryDto
             {
                 TotalBudget = 0,
-                TotalRealisasi = totalRealisasi,
+                TotalRealisasi = totalRealisasiNobudget,
                 TotalSisaBudget = 0,
                 OverallPersentaseSerapan = 0,
                 OverallTrafficLight = "green"
             };
         }
 
-        var sisaBudget = budget.TotalBudget - totalRealisasi;
-        var persentaseSerapan = budget.TotalBudget > 0 ? (totalRealisasi / budget.TotalBudget) * 100 : 0;
+        // Calculate realisasi per category
+        var categoryRealisasi = new List<decimal>();
+        foreach (var budget in budgets)
+        {
+            var categoryName = budget.TypeBudget?.Trim();
+
+            // Get vendor IDs for this category
+            var vendorIds = string.IsNullOrWhiteSpace(categoryName)
+                ? await _context.Vendors.Where(v => !v.IsDeleted).Select(v => v.VendorId).ToListAsync()
+                : await _context.Vendors
+                    .Include(v => v.VendorCategory)
+                    .Where(v => !v.IsDeleted && v.VendorCategory.Name == categoryName)
+                    .Select(v => v.VendorId)
+                    .ToListAsync();
+
+            // Sum invoices for this category
+            var spent = await _context.Invoices
+                .Where(i => i.InvoiceYear == year && !i.IsDeleted && vendorIds.Contains(i.VendorId))
+                .SumAsync(i => (decimal?)i.InvoiceAmount) ?? 0;
+
+            categoryRealisasi.Add(spent);
+        }
+
+        var totalRealisasi = categoryRealisasi.Sum();
+        var sisaBudget = totalBudget - totalRealisasi;
+        var persentaseSerapan = totalBudget > 0 ? (totalRealisasi / totalBudget) * 100 : 0;
 
         string trafficLight = "green";
         if (persentaseSerapan >= 95)
@@ -148,7 +193,7 @@ public class DashboardService : IDashboard
 
         return new BudgetSummaryDto
         {
-            TotalBudget = budget.TotalBudget,
+            TotalBudget = totalBudget,
             TotalRealisasi = totalRealisasi,
             TotalSisaBudget = sisaBudget,
             OverallPersentaseSerapan = persentaseSerapan,
@@ -158,38 +203,57 @@ public class DashboardService : IDashboard
 
     public async Task<IEnumerable<MonthlyRealisasiDto>> GetMonthlyRealisasiAsync(int year)
     {
-        var budget = await _context.MST_Budget
+        // Get ALL budgets for the year (per vendor category)
+        var budgets = await _context.MST_Budget
             .Where(b => b.Year == year)
-            .FirstOrDefaultAsync();
-
-        var monthlyBudget = budget != null ? budget.MonthlyBudget : 0;
-
-        var monthlyData = await _context.Invoices
-            .Where(i => !i.IsDeleted && i.InvoiceYear == year)
-            .GroupBy(i => i.InvoiceMonth)
-            .Select(g => new MonthlyRealisasiDto
-            {
-                Month = g.Key,
-                MonthName = "",
-                Realisasi = g.Sum(i => i.InvoiceAmount),
-                Budget = monthlyBudget
-            })
             .ToListAsync();
+
+        // Calculate total monthly budget from all categories
+        var totalMonthlyBudget = budgets.Sum(b => b.MonthlyBudget);
+
+        // Get monthly realisasi aggregated from all categories
+        var monthlyDataByCategory = new Dictionary<int, decimal>();
+
+        foreach (var budget in budgets)
+        {
+            var categoryName = budget.TypeBudget?.Trim();
+
+            // Get vendor IDs for this category
+            var vendorIds = string.IsNullOrWhiteSpace(categoryName)
+                ? await _context.Vendors.Where(v => !v.IsDeleted).Select(v => v.VendorId).ToListAsync()
+                : await _context.Vendors
+                    .Include(v => v.VendorCategory)
+                    .Where(v => !v.IsDeleted && v.VendorCategory.Name == categoryName)
+                    .Select(v => v.VendorId)
+                    .ToListAsync();
+
+            // Get monthly spending for this category
+            var categoryMonthly = await _context.Invoices
+                .Where(i => !i.IsDeleted && i.InvoiceYear == year && vendorIds.Contains(i.VendorId))
+                .GroupBy(i => i.InvoiceMonth)
+                .Select(g => new { Month = g.Key, Total = g.Sum(i => i.InvoiceAmount) })
+                .ToListAsync();
+
+            // Aggregate to total
+            foreach (var item in categoryMonthly)
+            {
+                if (monthlyDataByCategory.ContainsKey(item.Month))
+                    monthlyDataByCategory[item.Month] += item.Total;
+                else
+                    monthlyDataByCategory[item.Month] = item.Total;
+            }
+        }
 
         // Add month names
         var monthNames = new[] { "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        foreach (var item in monthlyData)
-        {
-            item.MonthName = monthNames[item.Month];
-        }
 
-        // Fill missing months with zero
+        // Fill all 12 months
         var allMonths = Enumerable.Range(1, 12).Select(m => new MonthlyRealisasiDto
         {
             Month = m,
             MonthName = monthNames[m],
-            Realisasi = monthlyData.FirstOrDefault(x => x.Month == m)?.Realisasi ?? 0,
-            Budget = monthlyBudget
+            Realisasi = monthlyDataByCategory.ContainsKey(m) ? monthlyDataByCategory[m] : 0,
+            Budget = totalMonthlyBudget
         }).ToList();
 
         return allMonths;
