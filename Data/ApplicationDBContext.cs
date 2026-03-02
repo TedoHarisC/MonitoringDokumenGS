@@ -30,6 +30,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<Budget> MST_Budget { get; set; }
+        public DbSet<BudgetCode> BudgetCode { get; set; }
         public DbSet<NotificationLog> SYS_NotificationLog { get; set; }
 
         // View

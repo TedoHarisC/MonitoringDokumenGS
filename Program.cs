@@ -52,6 +52,7 @@ builder.Services.AddScoped<IVendorCategory, VendorCategoryService>();
 builder.Services.AddScoped<IVendor, VendorService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IBudget, BudgetService>();
+builder.Services.AddScoped<IBudgetCode, BudgetCodeService>();
 builder.Services.AddScoped<IDashboard, DashboardService>();
 
 // Configure Email Options from appsettings.json

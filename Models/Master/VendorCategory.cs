@@ -6,6 +6,8 @@ namespace MonitoringDokumenGS.Models
     {
         [Key]
         public int VendorCategoryId { get; set; }
+        public string? NoCoa { get; set; }
+        public Guid? ParentBudgetCodeId { get; set; }
         public string Name { get; set; } = default!;
     }
 }

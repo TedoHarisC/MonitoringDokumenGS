@@ -11,6 +11,8 @@ public static class VendorCategoryMappings
         x => new VendorCategoryDto
         {
             VendorCategoryId = x.VendorCategoryId,
+            NoCoa = x.NoCoa,
+            ParentBudgetCodeId = x.ParentBudgetCodeId,
             Name = x.Name,
             CreatedAt = x.CreatedAt,
             CreatedBy = x.CreatedBy,
@@ -24,6 +26,8 @@ public static class VendorCategoryMappings
         return new VendorCategoryDto
         {
             VendorCategoryId = x.VendorCategoryId,
+            NoCoa = x.NoCoa,
+            ParentBudgetCodeId = x.ParentBudgetCodeId,
             Name = x.Name,
             CreatedAt = x.CreatedAt,
             CreatedBy = x.CreatedBy,

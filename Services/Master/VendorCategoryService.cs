@@ -28,7 +28,22 @@ namespace MonitoringDokumenGS.Services.Master
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.Name)
-                .Select(VendorCategoryMappings.ToDtoExpr)
+                .Select(x => new VendorCategoryDto
+                {
+                    VendorCategoryId = x.VendorCategoryId,
+                    NoCoa = x.NoCoa,
+                    ParentBudgetCodeId = x.ParentBudgetCodeId,
+                    ParentBudgetCodeLabel = _context.BudgetCode
+                        .Where(b => b.BudgetCodeId == x.ParentBudgetCodeId)
+                        .Select(b => b.Code + " - " + b.Description)
+                        .FirstOrDefault(),
+                    Name = x.Name,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                    UpdatedBy = x.UpdatedBy,
+                    IsDeleted = x.IsDeleted
+                })
                 .ToListAsync();
         }
 
@@ -39,7 +54,22 @@ namespace MonitoringDokumenGS.Services.Master
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.Name)
-                .Select(VendorCategoryMappings.ToDtoExpr)
+                .Select(x => new VendorCategoryDto
+                {
+                    VendorCategoryId = x.VendorCategoryId,
+                    NoCoa = x.NoCoa,
+                    ParentBudgetCodeId = x.ParentBudgetCodeId,
+                    ParentBudgetCodeLabel = _context.BudgetCode
+                        .Where(b => b.BudgetCodeId == x.ParentBudgetCodeId)
+                        .Select(b => b.Code + " - " + b.Description)
+                        .FirstOrDefault(),
+                    Name = x.Name,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                    UpdatedBy = x.UpdatedBy,
+                    IsDeleted = x.IsDeleted
+                })
                 .ToPagedResponseAsync(page, pageSize);
         }
 
@@ -49,7 +79,22 @@ namespace MonitoringDokumenGS.Services.Master
             return await _context.VendorCategories
                 .AsNoTracking()
                 .Where(x => x.VendorCategoryId == id && !x.IsDeleted)
-                .Select(VendorCategoryMappings.ToDtoExpr)
+                .Select(x => new VendorCategoryDto
+                {
+                    VendorCategoryId = x.VendorCategoryId,
+                    NoCoa = x.NoCoa,
+                    ParentBudgetCodeId = x.ParentBudgetCodeId,
+                    ParentBudgetCodeLabel = _context.BudgetCode
+                        .Where(b => b.BudgetCodeId == x.ParentBudgetCodeId)
+                        .Select(b => b.Code + " - " + b.Description)
+                        .FirstOrDefault(),
+                    Name = x.Name,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                    UpdatedBy = x.UpdatedBy,
+                    IsDeleted = x.IsDeleted
+                })
                 .FirstOrDefaultAsync();
         }
 
@@ -58,6 +103,8 @@ namespace MonitoringDokumenGS.Services.Master
         {
             var entity = new VendorCategory
             {
+                NoCoa = dto.NoCoa,
+                ParentBudgetCodeId = dto.ParentBudgetCodeId,
                 Name = dto.Name,
                 CreatedBy = dto.CreatedBy,
                 CreatedAt = DateTime.UtcNow,
@@ -90,6 +137,8 @@ namespace MonitoringDokumenGS.Services.Master
 
             var old = entity.ToDto();
 
+            entity.NoCoa = dto.NoCoa;
+            entity.ParentBudgetCodeId = dto.ParentBudgetCodeId;
             entity.Name = dto.Name;
 
             await _context.SaveChangesAsync();

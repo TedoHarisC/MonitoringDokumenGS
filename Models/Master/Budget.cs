@@ -7,6 +7,7 @@ namespace MonitoringDokumenGS.Models
         [Key]
         public Guid BudgetId { get; set; }
         public int Year { get; set; }
+        public Guid? BudgetCodeId { get; set; }
         public decimal TotalBudget { get; set; }
         public decimal MonthlyBudget { get; set; }
         public string TypeBudget { get; set; } = string.Empty;

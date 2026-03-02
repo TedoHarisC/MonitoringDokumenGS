@@ -90,7 +90,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("ApprovalStatusId");
 
-                    b.ToTable("ApprovalStatuses");
+                    b.ToTable("ApprovalStatuses", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Attachment", b =>
@@ -128,7 +128,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.AttachmentTypes", b =>
@@ -171,7 +171,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("AttachmentTypeId");
 
-                    b.ToTable("AttachmentTypes");
+                    b.ToTable("AttachmentTypes", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.AuditLog", b =>
@@ -204,7 +204,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("AuditLogId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Budget", b =>
@@ -230,7 +230,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("BudgetId");
 
-                    b.ToTable("MST_Budget");
+                    b.ToTable("MST_Budget", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Contract", b =>
@@ -290,7 +290,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.ContractStatus", b =>
@@ -326,7 +326,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("ContractStatusId");
 
-                    b.ToTable("ContractStatuses");
+                    b.ToTable("ContractStatuses", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Invoice", b =>
@@ -386,7 +386,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.InvoiceProgressStatuses", b =>
@@ -422,7 +422,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("ProgressStatusId");
 
-                    b.ToTable("InvoiceProgressStatuses");
+                    b.ToTable("InvoiceProgressStatuses", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Notifications", b =>
@@ -452,7 +452,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Role", b =>
@@ -473,7 +473,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.UserModel", b =>
@@ -523,7 +523,7 @@ namespace MonitoringDokumenGS.Migrations
                     b.HasIndex("VendorId")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.UserRefreshToken", b =>
@@ -558,7 +558,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("RefreshTokenId");
 
-                    b.ToTable("UserRefreshTokens");
+                    b.ToTable("UserRefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.UserRoles", b =>
@@ -588,7 +588,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.Vendor", b =>
@@ -647,7 +647,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasIndex("VendorCategoryId");
 
-                    b.ToTable("Vendors");
+                    b.ToTable("Vendors", (string)null);
                 });
 
             modelBuilder.Entity("MonitoringDokumenGS.Models.VendorCategory", b =>
@@ -679,7 +679,7 @@ namespace MonitoringDokumenGS.Migrations
 
                     b.HasKey("VendorCategoryId");
 
-                    b.ToTable("VendorCategories");
+                    b.ToTable("VendorCategories", (string)null);
                 });
 
             modelBuilder.Entity("TopVendorSpendDto", b =>

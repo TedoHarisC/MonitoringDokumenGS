@@ -4,36 +4,40 @@
 
 @section Styles {
     <style>
-        div.dataTables_wrapper div.dataTables_filter label,
-        div.dataTables_wrapper div.dataTables_length label {
-            margin-bottom: 0;
-        }
+                                        div.dataTables_wrapper div.dataTables_filter label,
+                                        div.dataTables_wrapper div.dataTables_length label {
+                                            margin-bottom: 0;
+                                        }
 
-        div.dataTables_wrapper div.dataTables_filter input {
-            width: 240px;
-        }
+                                        div.dataTables_wrapper div.dataTables_filter input {
+                                            width: 240px;
+                                        }
 
-        table.dataTable>thead>tr>th {
-            white-space: nowrap;
-        }
+                                        table.dataTable>thead>tr>th {
+                                            white-space: nowrap;
+                                        }
 
-        .dataTables_scrollBody {
-            padding-bottom: .5rem;
-        }
+                                        .dataTables_scrollBody {
+                                            padding-bottom: .5rem;
+                                        }
 
-        td.dt-actions {
-            padding-top: .6rem !important;
-            padding-bottom: .6rem !important;
-            overflow: visible !important;
-        }
+                                        td.dt-actions {
+                                            padding-top: .6rem !important;
+                                            padding-bottom: .6rem !important;
+                                            overflow: visible !important;
+                                        }
 
-        .modal {
-            z-index: 2000;
-        }
+                                        .modal {
+                                            z-index: 2000;
+                                        }
 
-        .modal-backdrop {
-            z-index: 1990;
-        }
+                                        .modal-backdrop {
+                                            z-index: 1990;
+                                        }
+
+                                        #vendorCategoriesTable {
+                                            width: 100% !important;
+                                        }
     </style>
 }
 
@@ -69,37 +73,44 @@
                     <ul class="nav nav-tabs" id="masterTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="approval-tab" data-bs-toggle="tab"
-                                data-bs-target="#tab-approval" type="button" role="tab" aria-controls="tab-approval"
-                                aria-selected="true">
+                                    data-bs-target="#tab-approval" type="button" role="tab" aria-controls="tab-approval"
+                                    aria-selected="true">
                                 Approval Status
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="attachment-tab" data-bs-toggle="tab"
-                                data-bs-target="#tab-attachment" type="button" role="tab" aria-controls="tab-attachment"
-                                aria-selected="false">
+                                    data-bs-target="#tab-attachment" type="button" role="tab" aria-controls="tab-attachment"
+                                    aria-selected="false">
                                 Attachment Types
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="contract-tab" data-bs-toggle="tab"
-                                data-bs-target="#tab-contract" type="button" role="tab" aria-controls="tab-contract"
-                                aria-selected="false">
+                                    data-bs-target="#tab-contract" type="button" role="tab" aria-controls="tab-contract"
+                                    aria-selected="false">
                                 Contract Status
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="invoice-progress-tab" data-bs-toggle="tab"
-                                data-bs-target="#tab-invoice-progress" type="button" role="tab"
-                                aria-controls="tab-invoice-progress" aria-selected="false">
+                                    data-bs-target="#tab-invoice-progress" type="button" role="tab"
+                                    aria-controls="tab-invoice-progress" aria-selected="false">
                                 Invoice Progress Status
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="vendor-category-tab" data-bs-toggle="tab"
-                                data-bs-target="#tab-vendor-category" type="button" role="tab"
-                                aria-controls="tab-vendor-category" aria-selected="false">
-                                Vendor Categories
+                            <button class="nav-link" id="coa-text-tab" data-bs-toggle="tab"
+                                    data-bs-target="#tab-coa-text" type="button" role="tab" aria-controls="tab-coa-text"
+                                    aria-selected="false">
+                                COA Text
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="budget-code-tab" data-bs-toggle="tab"
+                                    data-bs-target="#tab-budget-code" type="button" role="tab" aria-controls="tab-budget-code"
+                                    aria-selected="false">
+                                Budget Code
                             </button>
                         </li>
                     </ul>
@@ -107,7 +118,7 @@
                     <div class="tab-content pt-3">
                         <!-- Approval Status -->
                         <div class="tab-pane fade show active" id="tab-approval" role="tabpanel"
-                            aria-labelledby="approval-tab">
+                             aria-labelledby="approval-tab">
                             <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
                                 <div>
                                     <h6 class="mb-0">Approval Status</h6>
@@ -116,18 +127,18 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="dropdown">
                                         <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
-                                            data-bs-offset="0, 10" data-bs-auto-close="outside"
-                                            href="javascript:void(0)">
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
                                             <i class="feather-paperclip"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a id="btnExportApprovalCsv" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-csv me-3"></i>
                                                 <span>CSV</span>
                                             </a>
                                             <a id="btnExportApprovalExcel" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-xls me-3"></i>
                                                 <span>Excel</span>
                                             </a>
@@ -141,7 +152,7 @@
                             </div>
                             <div class="table-responsive">
                                 <table id="approvalStatusesTable"
-                                    class="table table-striped table-bordered table-hover align-middle w-100">
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
                                     <thead>
                                         <tr>
                                             <th>Code</th>
@@ -164,18 +175,18 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="dropdown">
                                         <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
-                                            data-bs-offset="0, 10" data-bs-auto-close="outside"
-                                            href="javascript:void(0)">
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
                                             <i class="feather-paperclip"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a id="btnExportAttachmentCsv" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-csv me-3"></i>
                                                 <span>CSV</span>
                                             </a>
                                             <a id="btnExportAttachmentExcel" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-xls me-3"></i>
                                                 <span>Excel</span>
                                             </a>
@@ -189,7 +200,7 @@
                             </div>
                             <div class="table-responsive">
                                 <table id="attachmentTypesTable"
-                                    class="table table-striped table-bordered table-hover align-middle w-100">
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
                                     <thead>
                                         <tr>
                                             <th>Code</th>
@@ -214,18 +225,18 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="dropdown">
                                         <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
-                                            data-bs-offset="0, 10" data-bs-auto-close="outside"
-                                            href="javascript:void(0)">
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
                                             <i class="feather-paperclip"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a id="btnExportContractCsv" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-csv me-3"></i>
                                                 <span>CSV</span>
                                             </a>
                                             <a id="btnExportContractExcel" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-xls me-3"></i>
                                                 <span>Excel</span>
                                             </a>
@@ -239,7 +250,7 @@
                             </div>
                             <div class="table-responsive">
                                 <table id="contractStatusesTable"
-                                    class="table table-striped table-bordered table-hover align-middle w-100">
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
                                     <thead>
                                         <tr>
                                             <th>Code</th>
@@ -254,7 +265,7 @@
 
                         <!-- Invoice Progress Status -->
                         <div class="tab-pane fade" id="tab-invoice-progress" role="tabpanel"
-                            aria-labelledby="invoice-progress-tab">
+                             aria-labelledby="invoice-progress-tab">
                             <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
                                 <div>
                                     <h6 class="mb-0">Invoice Progress Status</h6>
@@ -263,18 +274,18 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="dropdown">
                                         <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
-                                            data-bs-offset="0, 10" data-bs-auto-close="outside"
-                                            href="javascript:void(0)">
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
                                             <i class="feather-paperclip"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a id="btnExportInvoiceProgressCsv" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-csv me-3"></i>
                                                 <span>CSV</span>
                                             </a>
                                             <a id="btnExportInvoiceProgressExcel" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-xls me-3"></i>
                                                 <span>Excel</span>
                                             </a>
@@ -288,7 +299,7 @@
                             </div>
                             <div class="table-responsive">
                                 <table id="invoiceProgressStatusesTable"
-                                    class="table table-striped table-bordered table-hover align-middle w-100">
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
                                     <thead>
                                         <tr>
                                             <th>Code</th>
@@ -302,28 +313,28 @@
                         </div>
 
                         <!-- Vendor Categories -->
-                        <div class="tab-pane fade" id="tab-vendor-category" role="tabpanel"
-                            aria-labelledby="vendor-category-tab">
+                        <div class="tab-pane fade" id="tab-coa-text" role="tabpanel"
+                             aria-labelledby="vendor-category-tab">
                             <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
                                 <div>
                                     <h6 class="mb-0">Vendor Categories</h6>
-                                    <small class="text-muted">Name</small>
+                                    <small class="text-muted">No COA + Name</small>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="dropdown">
                                         <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
-                                            data-bs-offset="0, 10" data-bs-auto-close="outside"
-                                            href="javascript:void(0)">
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
                                             <i class="feather-paperclip"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a id="btnExportVendorCategoryCsv" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-csv me-3"></i>
                                                 <span>CSV</span>
                                             </a>
                                             <a id="btnExportVendorCategoryExcel" href="javascript:void(0);"
-                                                class="dropdown-item">
+                                                   class="dropdown-item">
                                                 <i class="bi bi-filetype-xls me-3"></i>
                                                 <span>Excel</span>
                                             </a>
@@ -337,10 +348,61 @@
                             </div>
                             <div class="table-responsive">
                                 <table id="vendorCategoriesTable"
-                                    class="table table-striped table-bordered table-hover align-middle w-100">
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
                                     <thead>
                                         <tr>
+                                            <th>No COA</th>
+                                            <th>Budget Code</th>
                                             <th>Name</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Budget Code -->
+                        <div class="tab-pane fade" id="tab-budget-code" role="tabpanel"
+                             aria-labelledby="budget-code-tab">
+                            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                                <div>
+                                    <h6 class="mb-0">Budget Code</h6>
+                                    <small class="text-muted">Code + Description</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="dropdown">
+                                        <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown"
+                                               data-bs-offset="0, 10" data-bs-auto-close="outside"
+                                               href="javascript:void(0)">
+                                            <i class="feather-paperclip"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a id="btnExportBudgetCodeCsv" href="javascript:void(0);"
+                                                   class="dropdown-item">
+                                                <i class="bi bi-filetype-csv me-3"></i>
+                                                <span>CSV</span>
+                                            </a>
+                                            <a id="btnExportBudgetCodeExcel" href="javascript:void(0);"
+                                                   class="dropdown-item">
+                                                <i class="bi bi-filetype-xls me-3"></i>
+                                                <span>Excel</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <button id="btnCreateBudgetCode" type="button" class="btn btn-primary">
+                                        <i class="feather-plus me-2"></i>
+                                        <span>Create</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="budgetCodesTable"
+                                       class="table table-striped table-bordered table-hover align-middle w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Description</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
                                     </thead>
@@ -408,7 +470,7 @@
                         <div class="col-md-8">
                             <label class="form-label">Applies To</label>
                             <input id="attachmentAppliesTo" class="form-control"
-                                placeholder="e.g. Contract / Invoice" />
+                                   placeholder="e.g. Contract / Invoice" />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label d-block">Apakah Wajib ?</label>
@@ -494,9 +556,47 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="vendorCategoryId" />
+                    <div class="mb-3">
+                        <label class="form-label">No COA</label>
+                        <input id="vendorCategoryNoCoa" class="form-control" placeholder="Contoh: 123456" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Budget Code</label>
+                        <select id="vendorCategoryBudgetCode" class="form-select">
+                            <option value="">-- Pilih Budget Code --</option>
+                        </select>
+                    </div>
                     <div class="mb-0">
                         <label class="form-label">Name</label>
                         <input id="vendorCategoryName" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="budgetCodeModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="budgetCodeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="budgetCodeModalLabel">Create Budget Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="budgetCodeId" />
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input id="budgetCodeCode" class="form-control" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Description</label>
+                        <input id="budgetCodeDescription" class="form-control" />
                     </div>
                 </div>
                 <div class="modal-footer">
