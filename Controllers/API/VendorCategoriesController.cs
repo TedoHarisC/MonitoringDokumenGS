@@ -33,6 +33,14 @@ namespace MonitoringDokumenGS.Controllers.API
             return Ok(item);
         }
 
+        [HttpGet("by-budget-code/{budgetCodeId:guid}")]
+        public async Task<IActionResult> GetByBudgetCode(Guid budgetCodeId)
+        {
+            var all = await _service.GetAllAsync();
+            var filtered = all.Where(x => x.ParentBudgetCodeId == budgetCodeId);
+            return Ok(filtered);
+        }
+
         [HttpPost]
         [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] VendorCategoryDto dto)

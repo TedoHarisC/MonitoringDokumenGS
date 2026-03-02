@@ -33,10 +33,8 @@ namespace MonitoringDokumenGS.Controllers.Web
 
         // GET: /Master/Budget
         [Authorize(Roles = "SUPER_ADMIN,ADMIN")]
-        public async Task<IActionResult> Budget()
+        public IActionResult Budget()
         {
-            var vendorCategories = await _vendorCategoryService.GetAllAsync();
-            ViewBag.VendorCategories = vendorCategories;
             return View();
         }
     }

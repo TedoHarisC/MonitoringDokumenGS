@@ -12,7 +12,10 @@ public static class BudgetMappings
         {
             BudgetId = x.BudgetId,
             Year = x.Year,
+            BudgetCodeId = x.BudgetCodeId,
+            NoCoa = x.NoCoa,
             TypeBudget = x.TypeBudget,
+            Activity = x.Activity,
             TotalBudget = x.TotalBudget,
             MonthlyBudget = x.MonthlyBudget,
             CreatedAt = x.CreatedAt,
@@ -25,7 +28,10 @@ public static class BudgetMappings
         {
             BudgetId = x.BudgetId,
             Year = x.Year,
+            BudgetCodeId = x.BudgetCodeId,
+            NoCoa = x.NoCoa,
             TypeBudget = x.TypeBudget,
+            Activity = x.Activity,
             TotalBudget = x.TotalBudget,
             MonthlyBudget = x.MonthlyBudget,
             CreatedAt = x.CreatedAt,

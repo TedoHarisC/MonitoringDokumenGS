@@ -24,7 +24,24 @@ namespace MonitoringDokumenGS.Services.Master
         public async Task<IEnumerable<BudgetDto>> GetAllAsync()
         {
             return await _context.MST_Budget
-                .Select(BudgetMappings.ToDtoExpr)
+                .Select(x => new BudgetDto
+                {
+                    BudgetId = x.BudgetId,
+                    Year = x.Year,
+                    BudgetCodeId = x.BudgetCodeId,
+                    BudgetCodeLabel = x.BudgetCodeId == null ? null :
+                        _context.BudgetCode
+                            .Where(b => b.BudgetCodeId == x.BudgetCodeId)
+                            .Select(b => b.Code + " - " + b.Description)
+                            .FirstOrDefault(),
+                    NoCoa = x.NoCoa,
+                    TypeBudget = x.TypeBudget,
+                    Activity = x.Activity,
+                    TotalBudget = x.TotalBudget,
+                    MonthlyBudget = x.MonthlyBudget,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy
+                })
                 .ToListAsync();
         }
 
@@ -33,7 +50,24 @@ namespace MonitoringDokumenGS.Services.Master
         {
             return await _context.MST_Budget
                 .OrderByDescending(x => x.Year)
-                .Select(BudgetMappings.ToDtoExpr)
+                .Select(x => new BudgetDto
+                {
+                    BudgetId = x.BudgetId,
+                    Year = x.Year,
+                    BudgetCodeId = x.BudgetCodeId,
+                    BudgetCodeLabel = x.BudgetCodeId == null ? null :
+                        _context.BudgetCode
+                            .Where(b => b.BudgetCodeId == x.BudgetCodeId)
+                            .Select(b => b.Code + " - " + b.Description)
+                            .FirstOrDefault(),
+                    NoCoa = x.NoCoa,
+                    TypeBudget = x.TypeBudget,
+                    Activity = x.Activity,
+                    TotalBudget = x.TotalBudget,
+                    MonthlyBudget = x.MonthlyBudget,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy
+                })
                 .ToPagedResponseAsync(page, pageSize);
         }
 
@@ -42,7 +76,24 @@ namespace MonitoringDokumenGS.Services.Master
         {
             return await _context.MST_Budget
                 .Where(x => x.BudgetId == id)
-                .Select(BudgetMappings.ToDtoExpr)
+                .Select(x => new BudgetDto
+                {
+                    BudgetId = x.BudgetId,
+                    Year = x.Year,
+                    BudgetCodeId = x.BudgetCodeId,
+                    BudgetCodeLabel = x.BudgetCodeId == null ? null :
+                        _context.BudgetCode
+                            .Where(b => b.BudgetCodeId == x.BudgetCodeId)
+                            .Select(b => b.Code + " - " + b.Description)
+                            .FirstOrDefault(),
+                    NoCoa = x.NoCoa,
+                    TypeBudget = x.TypeBudget,
+                    Activity = x.Activity,
+                    TotalBudget = x.TotalBudget,
+                    MonthlyBudget = x.MonthlyBudget,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy
+                })
                 .FirstOrDefaultAsync();
         }
 
@@ -53,7 +104,10 @@ namespace MonitoringDokumenGS.Services.Master
             {
                 BudgetId = Guid.NewGuid(),
                 Year = dto.Year,
+                BudgetCodeId = dto.BudgetCodeId,
+                NoCoa = dto.NoCoa,
                 TypeBudget = dto.TypeBudget,
+                Activity = dto.Activity,
                 TotalBudget = dto.TotalBudget,
                 MonthlyBudget = dto.MonthlyBudget,
                 CreatedAt = DateTime.UtcNow,
@@ -81,7 +135,10 @@ namespace MonitoringDokumenGS.Services.Master
             var old = entity.ToDto();
 
             entity.Year = dto.Year;
+            entity.BudgetCodeId = dto.BudgetCodeId;
+            entity.NoCoa = dto.NoCoa;
             entity.TypeBudget = dto.TypeBudget;
+            entity.Activity = dto.Activity;
             entity.TotalBudget = dto.TotalBudget;
             entity.MonthlyBudget = dto.MonthlyBudget;
 
