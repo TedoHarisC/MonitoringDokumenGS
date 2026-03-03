@@ -204,7 +204,29 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    // API routes return JSON errors; web routes redirect to the error page.
+    app.UseExceptionHandler(errApp =>
+    {
+        errApp.Run(async context =>
+        {
+            var exHandler = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+            var ex = exHandler?.Error;
+
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                var message = ex is InvalidOperationException or ArgumentException
+                    ? ex.Message
+                    : "An unexpected error occurred. Please try again.";
+                await context.Response.WriteAsJsonAsync(new { message });
+            }
+            else
+            {
+                context.Response.Redirect("/Home/Error");
+            }
+        });
+    });
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }

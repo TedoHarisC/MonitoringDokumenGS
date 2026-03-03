@@ -15,9 +15,7 @@
             const err = await res.json().catch(() => ({ message: 'Request failed' }))
             throw err
         }
-        return res.json()
-    }
-
+    return res.json().catch(() => null)
     function formatTimeAgo(dateStr) {
         const now = new Date()
         const date = new Date(dateStr)

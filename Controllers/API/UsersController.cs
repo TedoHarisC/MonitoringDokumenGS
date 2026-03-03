@@ -87,76 +87,102 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserDto dto)
     {
-        var created = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.UserId }, created);
+        try
+        {
+            var created = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.UserId }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // Used by Master Users page (create with password + role)
     [HttpPost("admin-create")]
     public async Task<IActionResult> AdminCreate([FromBody] AdminCreateUserRequestDto request)
     {
-        if (request == null) return BadRequest();
-        if (string.IsNullOrWhiteSpace(request.Username))
-            return BadRequest(new { message = "Username is required" });
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(new { message = "Email is required" });
-        if (string.IsNullOrWhiteSpace(request.Password))
-            return BadRequest(new { message = "Password is required" });
-        if (request.RoleId <= 0)
-            return BadRequest(new { message = "Role is required" });
-
-        // Ditambahkan isDeleted check untuk menghindari pembuatan user duplikat jika user sebelumnya dihapus secara soft delete
-        var exists = await _context.Users.AnyAsync(u => (u.Username == request.Username || u.Email == request.Email) && !u.isDeleted);
-        if (exists)
-            return Conflict(new { message = "Username or email already exists" });
-
-        var roleExists = await _context.Roles.AnyAsync(r => r.RoleId == request.RoleId);
-        if (!roleExists)
-            return BadRequest(new { message = "Role not found" });
-
-        var vendorId = request.VendorId ?? Guid.Empty;
-        if (vendorId != Guid.Empty)
+        try
         {
-            var vendorExists = await _context.Vendors.AnyAsync(v => v.VendorId == vendorId && !v.IsDeleted);
-            if (!vendorExists)
-                return BadRequest(new { message = "Vendor not found" });
+            if (request == null) return BadRequest(new { message = "Invalid request" });
+            if (string.IsNullOrWhiteSpace(request.Username))
+                return BadRequest(new { message = "Username is required" });
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required" });
+            if (string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest(new { message = "Password is required" });
+            if (request.RoleId <= 0)
+                return BadRequest(new { message = "Role is required" });
+
+            // Check for existing username or email
+            var existsUsername = await _context.Users.AnyAsync(u => u.Username == request.Username && !u.isDeleted);
+            if (existsUsername)
+                return Conflict(new { message = $"Username '{request.Username}' sudah terdaftar. Gunakan username lain." });
+
+            var existsEmail = await _context.Users.AnyAsync(u => u.Email == request.Email && !u.isDeleted);
+            if (existsEmail)
+                return Conflict(new { message = $"Email '{request.Email}' sudah terdaftar. Gunakan email lain." });
+
+            var roleExists = await _context.Roles.AnyAsync(r => r.RoleId == request.RoleId);
+            if (!roleExists)
+                return BadRequest(new { message = "Role not found" });
+
+            var vendorId = request.VendorId ?? Guid.Empty;
+            if (vendorId != Guid.Empty)
+            {
+                var vendorExists = await _context.Vendors.AnyAsync(v => v.VendorId == vendorId && !v.IsDeleted);
+                if (!vendorExists)
+                    return BadRequest(new { message = "Vendor not found" });
+            }
+
+            var newUserId = Guid.NewGuid();
+
+            var user = new UserModel
+            {
+                UserId = newUserId,
+                VendorId = vendorId,
+                Username = request.Username.Trim(),
+                Email = request.Email.Trim(),
+                PasswordHash = BCryptNet.HashPassword(request.Password),
+                isActive = request.IsActive,
+                isDeleted = false,
+                CreatedBy = newUserId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // IMPORTANT: ensure Users row exists before inserting UserRoles.
+            // Without explicit relationships configured in EF, insert order can cause FK violation.
+            await using var trx = await _context.Database.BeginTransactionAsync();
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            _context.UserRoles.Add(new UserRoles
+            {
+                UserId = user.UserId,
+                RoleId = request.RoleId,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = newUserId
+            });
+
+            await _context.SaveChangesAsync();
+            await trx.CommitAsync();
+            return Ok(new { userId = user.UserId });
         }
-
-        var newUserId = Guid.NewGuid();
-
-        var user = new UserModel
+        catch (InvalidOperationException ex)
         {
-            UserId = newUserId,
-            VendorId = vendorId,
-            Username = request.Username.Trim(),
-            Email = request.Email.Trim(),
-            PasswordHash = BCryptNet.HashPassword(request.Password),
-            isActive = request.IsActive,
-            isDeleted = false,
-            CreatedBy = newUserId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        // IMPORTANT: ensure Users row exists before inserting UserRoles.
-        // Without explicit relationships configured in EF, insert order can cause FK violation.
-        await using var trx = await _context.Database.BeginTransactionAsync();
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        _context.UserRoles.Add(new UserRoles
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception)
         {
-            UserId = user.UserId,
-            RoleId = request.RoleId,
-            IsDeleted = false,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = newUserId
-        });
-
-        await _context.SaveChangesAsync();
-        await trx.CommitAsync();
-        return Ok(new { userId = user.UserId });
+            return StatusCode(500, new { message = "Gagal membuat user. Silakan coba lagi." });
+        }
     }
 
     [HttpPut("{id:guid}")]
@@ -171,68 +197,83 @@ public class UsersController : ControllerBase
     [HttpPut("admin-update/{id:guid}")]
     public async Task<IActionResult> AdminUpdate([FromRoute] Guid id, [FromBody] AdminUpdateUserRequestDto request)
     {
-        if (request == null) return BadRequest();
-        if (string.IsNullOrWhiteSpace(request.Username))
-            return BadRequest(new { message = "Username is required" });
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(new { message = "Email is required" });
-        if (request.RoleId <= 0)
-            return BadRequest(new { message = "Role is required" });
-
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
-        if (user == null) return NotFound();
-
-        var dup = await _context.Users.AnyAsync(u => u.UserId != id && (u.Username == request.Username || u.Email == request.Email) && !u.isDeleted);
-        if (dup)
-            return Conflict(new { message = "Username or email already exists" });
-
-        var roleExists = await _context.Roles.AnyAsync(r => r.RoleId == request.RoleId);
-        if (!roleExists)
-            return BadRequest(new { message = "Role not found" });
-
-        var vendorId = request.VendorId ?? Guid.Empty;
-        if (vendorId != Guid.Empty)
+        try
         {
-            var vendorExists = await _context.Vendors.AnyAsync(v => v.VendorId == vendorId && !v.IsDeleted);
-            if (!vendorExists)
-                return BadRequest(new { message = "Vendor not found" });
-        }
+            if (request == null) return BadRequest(new { message = "Invalid request" });
+            if (string.IsNullOrWhiteSpace(request.Username))
+                return BadRequest(new { message = "Username is required" });
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required" });
+            if (request.RoleId <= 0)
+                return BadRequest(new { message = "Role is required" });
 
-        user.Username = request.Username.Trim();
-        user.Email = request.Email.Trim();
-        user.VendorId = vendorId;
-        user.isActive = request.IsActive;
-        user.UpdatedAt = DateTime.UtcNow;
-        if (!string.IsNullOrWhiteSpace(request.Password))
-            user.PasswordHash = BCryptNet.HashPassword(request.Password);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null) return NotFound();
 
-        // Make role assignment single-select: soft-delete existing then add selected
-        var existing = await _context.UserRoles
-            .Where(ur => ur.UserId == id && !ur.IsDeleted)
-            .ToListAsync();
+            var dupUsername = await _context.Users.AnyAsync(u => u.UserId != id && u.Username == request.Username && !u.isDeleted);
+            if (dupUsername)
+                return Conflict(new { message = $"Username '{request.Username}' sudah terdaftar. Gunakan username lain." });
 
-        foreach (var ur in existing)
-        {
-            if (ur.RoleId == request.RoleId) continue;
-            ur.IsDeleted = true;
-            ur.UpdatedAt = DateTime.UtcNow;
-        }
+            var dupEmail = await _context.Users.AnyAsync(u => u.UserId != id && u.Email == request.Email && !u.isDeleted);
+            if (dupEmail)
+                return Conflict(new { message = $"Email '{request.Email}' sudah terdaftar. Gunakan email lain." });
 
-        var hasSelected = existing.Any(ur => ur.RoleId == request.RoleId && !ur.IsDeleted);
-        if (!hasSelected)
-        {
-            _context.UserRoles.Add(new UserRoles
+            var roleExists = await _context.Roles.AnyAsync(r => r.RoleId == request.RoleId);
+            if (!roleExists)
+                return BadRequest(new { message = "Role not found" });
+
+            var vendorId = request.VendorId ?? Guid.Empty;
+            if (vendorId != Guid.Empty)
             {
-                UserId = id,
-                RoleId = request.RoleId,
-                IsDeleted = false,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = id
-            });
-        }
+                var vendorExists = await _context.Vendors.AnyAsync(v => v.VendorId == vendorId && !v.IsDeleted);
+                if (!vendorExists)
+                    return BadRequest(new { message = "Vendor not found" });
+            }
 
-        await _context.SaveChangesAsync();
-        return NoContent();
+            user.Username = request.Username.Trim();
+            user.Email = request.Email.Trim();
+            user.VendorId = vendorId;
+            user.isActive = request.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+            if (!string.IsNullOrWhiteSpace(request.Password))
+                user.PasswordHash = BCryptNet.HashPassword(request.Password);
+
+            // Make role assignment single-select: soft-delete existing then add selected
+            var existing = await _context.UserRoles
+                .Where(ur => ur.UserId == id && !ur.IsDeleted)
+                .ToListAsync();
+
+            foreach (var ur in existing)
+            {
+                if (ur.RoleId == request.RoleId) continue;
+                ur.IsDeleted = true;
+                ur.UpdatedAt = DateTime.UtcNow;
+            }
+
+            var hasSelected = existing.Any(ur => ur.RoleId == request.RoleId && !ur.IsDeleted);
+            if (!hasSelected)
+            {
+                _context.UserRoles.Add(new UserRoles
+                {
+                    UserId = id,
+                    RoleId = request.RoleId,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = id
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Gagal memperbarui user. Silakan coba lagi." });
+        }
     }
 
     [HttpDelete("{id:guid}")]

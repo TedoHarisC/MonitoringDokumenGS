@@ -49,6 +49,18 @@
     Swal.fire(title || "Error", message, "error");
   }
 
+  function safeRejectJson(r) {
+    return r.text().then((text) => {
+      let b;
+      try {
+        b = JSON.parse(text);
+      } catch {
+        b = { message: `Request failed (${r.status})` };
+      }
+      return Promise.reject(b);
+    });
+  }
+
   function confirmDelete(label) {
     return Swal.fire({
       title: `Delete ${label}?`,
@@ -278,7 +290,7 @@
           authFetch(`${apis.approval}/${id}`, { method: "DELETE" })
             .then((r) => {
               if (r.status === 204 || r.ok) return;
-              return r.json().then((b) => Promise.reject(b));
+              return safeRejectJson(r);
             })
             .then(() => {
               approvalTable.ajax.reload(null, false);
@@ -307,7 +319,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("approvalModal");
@@ -410,7 +422,7 @@
           authFetch(`${apis.attachment}/${id}`, { method: "DELETE" })
             .then((r) => {
               if (r.status === 204 || r.ok) return;
-              return r.json().then((b) => Promise.reject(b));
+              return safeRejectJson(r);
             })
             .then(() => {
               attachmentTable.ajax.reload(null, false);
@@ -441,7 +453,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("attachmentModal");
@@ -536,7 +548,7 @@
           authFetch(`${apis.contract}/${id}`, { method: "DELETE" })
             .then((r) => {
               if (r.status === 204 || r.ok) return;
-              return r.json().then((b) => Promise.reject(b));
+              return safeRejectJson(r);
             })
             .then(() => {
               contractTable.ajax.reload(null, false);
@@ -565,7 +577,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("contractModal");
@@ -664,7 +676,7 @@
           authFetch(`${apis.invoiceProgress}/${id}`, { method: "DELETE" })
             .then((r) => {
               if (r.status === 204 || r.ok) return;
-              return r.json().then((b) => Promise.reject(b));
+              return safeRejectJson(r);
             })
             .then(() => {
               invoiceProgressTable.ajax.reload(null, false);
@@ -697,7 +709,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("invoiceProgressModal");
@@ -854,7 +866,7 @@
           authFetch(`${apis.vendorCategory}/${id}`, { method: "DELETE" })
             .then((r) => {
               if (r.status === 204 || r.ok) return;
-              return r.json().then((b) => Promise.reject(b));
+              return safeRejectJson(r);
             })
             .then(() => {
               vendorCategoryTable.ajax.reload(null, false);
@@ -885,7 +897,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("vendorCategoryModal");
@@ -973,7 +985,7 @@
         authFetch(`${apis.budgetCode}/${id}`, { method: "DELETE" })
           .then((r) => {
             if (r.status === 204 || r.ok) return;
-            return r.json().then((b) => Promise.reject(b));
+            return safeRejectJson(r);
           })
           .then(() => {
             budgetCodeTable.ajax.reload(null, false);
@@ -1001,7 +1013,7 @@
         .then((r) => {
           if (r.status === 201 || r.status === 204 || r.ok)
             return r.json().catch(() => ({}));
-          return r.json().then((b) => Promise.reject(b));
+          return safeRejectJson(r);
         })
         .then(() => {
           hideModal("budgetCodeModal");
