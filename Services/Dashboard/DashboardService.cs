@@ -85,18 +85,15 @@ public class DashboardService : IDashboard
             })
             .ToListAsync();
 
-        // Create budget lookup by category
-        var budgetByCategory = budgets.ToDictionary(
-            b => b.TypeBudget ?? "",
-            b => b.TotalBudget
-        );
+        // Create budget lookup by category — use ToLookup to handle duplicate TypeBudget safely
+        var budgetByCategory = budgets
+            .GroupBy(b => (b.TypeBudget ?? "").Trim())
+            .ToDictionary(g => g.Key, g => g.Sum(b => b.TotalBudget));
 
         var result = vendorRealisasi.Select(v =>
         {
             // Get budget for this vendor's category
-            var categoryBudget = budgetByCategory.ContainsKey(v.CategoryName ?? "")
-                ? budgetByCategory[v.CategoryName ?? ""]
-                : 0;
+            var categoryBudget = budgetByCategory.TryGetValue(v.CategoryName ?? "", out var cb) ? cb : 0;
 
             // Count vendors in same category for budget allocation
             var vendorsInCategory = vendorRealisasi.Count(x => x.CategoryName == v.CategoryName);
