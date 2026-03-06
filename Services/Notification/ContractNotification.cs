@@ -226,7 +226,7 @@ public class ContractNotificationJob : IContractNotificationJob
                     endDate: endDate.ToString("MMMM dd, yyyy"),
                     daysLeft: daysLeft.ToString(),
                     actionLink: $"{_appUrl}/Contract/Detail/{contractId}",
-                    language: "en"
+                    language: "id"
                 );
 
                 await _email.SendAsync(
@@ -284,7 +284,7 @@ public class ContractNotificationJob : IContractNotificationJob
                             endDate: endDate.ToString("MMMM dd, yyyy"),
                             daysLeft: daysLeft.ToString(),
                             actionLink: $"{_appUrl}/Contract/Detail/{contractId}",
-                            language: "en"
+                            language: "id"
                         );
 
                         await _email.SendAsync(
