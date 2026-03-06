@@ -52,6 +52,11 @@ namespace MonitoringDokumenGS.Services.Master
         // ========================= CREATE =========================
         public async Task<BudgetCodeDto> CreateAsync(BudgetCodeDto dto)
         {
+            var descExists = await _context.BudgetCode
+                .AnyAsync(x => x.Description.ToLower() == dto.Description.ToLower().Trim());
+            if (descExists)
+                throw new InvalidOperationException($"Description '{dto.Description}' sudah terdaftar.");
+
             var entity = new BudgetCode
             {
                 BudgetCodeId = Guid.NewGuid(),
@@ -85,6 +90,11 @@ namespace MonitoringDokumenGS.Services.Master
 
             if (entity == null)
                 return false;
+
+            var descExists = await _context.BudgetCode
+                .AnyAsync(x => x.Description.ToLower() == dto.Description.ToLower().Trim() && x.BudgetCodeId != dto.BudgetCodeId);
+            if (descExists)
+                throw new InvalidOperationException($"Description '{dto.Description}' sudah terdaftar.");
 
             var old = entity.ToDto();
 

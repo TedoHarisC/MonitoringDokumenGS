@@ -834,7 +834,8 @@
       $("#vendorCategoryId").val("");
       $("#vendorCategoryNoCoa").val("");
       $("#vendorCategoryBudgetCode").val("");
-      $("#vendorCategoryName").val("");
+      $("#vendorCategoryName").val("").removeClass("is-invalid");
+      $("#vendorCategoryNameError").addClass("d-none").text("");
       $("#vendorCategoryModalLabel").text("Create Vendor Category");
       showModal("vendorCategoryModal");
     });
@@ -848,7 +849,8 @@
           $("#vendorCategoryId").val(data.vendorCategoryId);
           $("#vendorCategoryNoCoa").val(data.noCoa);
           $("#vendorCategoryBudgetCode").val(data.parentBudgetCodeId || "");
-          $("#vendorCategoryName").val(data.name);
+          $("#vendorCategoryName").val(data.name).removeClass("is-invalid");
+          $("#vendorCategoryNameError").addClass("d-none").text("");
           showModal("vendorCategoryModal");
         })
         .catch(() =>
@@ -877,9 +879,28 @@
       },
     );
 
+    $("#vendorCategoryName").on("input", function () {
+      const currentId = $("#vendorCategoryId").val();
+      const val = ($(this).val() || "").trim().toLowerCase();
+      const $err = $("#vendorCategoryNameError");
+      if (!val) { $(this).removeClass("is-invalid"); $err.addClass("d-none").text(""); return; }
+      const rows = vendorCategoryTable ? vendorCategoryTable.rows().data().toArray() : [];
+      const dup = rows.find(r => r.name && r.name.toLowerCase() === val && String(r.vendorCategoryId) !== String(currentId));
+      if (dup) { $(this).addClass("is-invalid"); $err.removeClass("d-none").text(`Name "${dup.name}" sudah terdaftar.`); }
+      else { $(this).removeClass("is-invalid"); $err.addClass("d-none").text(""); }
+    });
+
     $("#vendorCategoryForm").on("submit", function (e) {
       e.preventDefault();
       const id = $("#vendorCategoryId").val();
+      const nameVal = ($("#vendorCategoryName").val() || "").trim().toLowerCase();
+      const allRows = vendorCategoryTable ? vendorCategoryTable.rows().data().toArray() : [];
+      const dupName = allRows.find(r => r.name && r.name.toLowerCase() === nameVal && String(r.vendorCategoryId) !== String(id));
+      if (dupName) {
+        $("#vendorCategoryName").addClass("is-invalid");
+        $("#vendorCategoryNameError").removeClass("d-none").text(`Name "${dupName.name}" sudah terdaftar.`);
+        return;
+      }
       const budgetCodeId = $("#vendorCategoryBudgetCode").val();
       const payload = {
         vendorCategoryId: id ? Number(id) : undefined,
@@ -957,7 +978,8 @@
     $("#btnCreateBudgetCode").on("click", function () {
       $("#budgetCodeId").val("");
       $("#budgetCodeCode").val("");
-      $("#budgetCodeDescription").val("");
+      $("#budgetCodeDescription").val("").removeClass("is-invalid");
+      $("#budgetCodeDescriptionError").addClass("d-none").text("");
       $("#budgetCodeModalLabel").text("Create Budget Code");
       showModal("budgetCodeModal");
     });
@@ -970,7 +992,8 @@
           $("#budgetCodeModalLabel").text("Edit Budget Code");
           $("#budgetCodeId").val(data.budgetCodeId);
           $("#budgetCodeCode").val(data.code);
-          $("#budgetCodeDescription").val(data.description);
+          $("#budgetCodeDescription").val(data.description).removeClass("is-invalid");
+          $("#budgetCodeDescriptionError").addClass("d-none").text("");
           showModal("budgetCodeModal");
         })
         .catch(() =>
@@ -995,9 +1018,28 @@
       });
     });
 
+    $("#budgetCodeDescription").on("input", function () {
+      const currentId = $("#budgetCodeId").val();
+      const val = ($(this).val() || "").trim().toLowerCase();
+      const $err = $("#budgetCodeDescriptionError");
+      if (!val) { $(this).removeClass("is-invalid"); $err.addClass("d-none").text(""); return; }
+      const rows = budgetCodeTable ? budgetCodeTable.rows().data().toArray() : [];
+      const dup = rows.find(r => r.description && r.description.toLowerCase() === val && String(r.budgetCodeId) !== String(currentId));
+      if (dup) { $(this).addClass("is-invalid"); $err.removeClass("d-none").text(`Description "${dup.description}" sudah terdaftar.`); }
+      else { $(this).removeClass("is-invalid"); $err.addClass("d-none").text(""); }
+    });
+
     $("#budgetCodeForm").on("submit", function (e) {
       e.preventDefault();
       const id = $("#budgetCodeId").val();
+      const descVal = ($("#budgetCodeDescription").val() || "").trim().toLowerCase();
+      const allRows = budgetCodeTable ? budgetCodeTable.rows().data().toArray() : [];
+      const dupDesc = allRows.find(r => r.description && r.description.toLowerCase() === descVal && String(r.budgetCodeId) !== String(id));
+      if (dupDesc) {
+        $("#budgetCodeDescription").addClass("is-invalid");
+        $("#budgetCodeDescriptionError").removeClass("d-none").text(`Description "${dupDesc.description}" sudah terdaftar.`);
+        return;
+      }
       const payload = {
         budgetCodeId: id || undefined,
         code: $("#budgetCodeCode").val(),

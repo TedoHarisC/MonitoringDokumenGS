@@ -101,6 +101,11 @@ namespace MonitoringDokumenGS.Services.Master
         // ========================= CREATE =========================
         public async Task<VendorCategoryDto> CreateAsync(VendorCategoryDto dto)
         {
+            var nameExists = await _context.VendorCategories
+                .AnyAsync(x => !x.IsDeleted && x.Name.ToLower() == dto.Name.ToLower().Trim());
+            if (nameExists)
+                throw new InvalidOperationException($"Name '{dto.Name}' sudah terdaftar.");
+
             var entity = new VendorCategory
             {
                 NoCoa = dto.NoCoa,
@@ -134,6 +139,11 @@ namespace MonitoringDokumenGS.Services.Master
 
             if (entity == null)
                 return false;
+
+            var nameExists = await _context.VendorCategories
+                .AnyAsync(x => !x.IsDeleted && x.Name.ToLower() == dto.Name.ToLower().Trim() && x.VendorCategoryId != dto.VendorCategoryId);
+            if (nameExists)
+                throw new InvalidOperationException($"Name '{dto.Name}' sudah terdaftar.");
 
             var old = entity.ToDto();
 
