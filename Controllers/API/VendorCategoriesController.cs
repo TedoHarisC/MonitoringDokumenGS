@@ -45,32 +45,18 @@ namespace MonitoringDokumenGS.Controllers.API
         [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Create([FromBody] VendorCategoryDto dto)
         {
-            try
-            {
-                var created = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = created.VendorCategoryId }, created);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            var created = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.VendorCategoryId }, created);
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "SUPER_ADMIN, ADMIN")]
         public async Task<IActionResult> Update(int id, [FromBody] VendorCategoryDto dto)
         {
-            try
-            {
-                dto.VendorCategoryId = id;
-                var ok = await _service.UpdateAsync(dto);
-                if (!ok) return NotFound();
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            dto.VendorCategoryId = id;
+            var ok = await _service.UpdateAsync(dto);
+            if (!ok) return NotFound();
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
