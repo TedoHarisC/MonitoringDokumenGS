@@ -53,6 +53,8 @@ namespace MonitoringDokumenGS.Services.Master
         // ========================= CREATE =========================
         public async Task<AttachmentTypeDto> CreateAsync(AttachmentTypeDto dto)
         {
+            Console.WriteLine($"[AttachmentTypeService CREATE] DTO IsRequired: {dto.IsRequired}");
+
             var entity = new AttachmentTypes
             {
                 Code = dto.Code,
@@ -64,8 +66,12 @@ namespace MonitoringDokumenGS.Services.Master
                 IsDeleted = false
             };
 
+            Console.WriteLine($"[AttachmentTypeService CREATE] Entity IsRequired before save: {entity.IsRequired}");
+
             _context.AttachmentTypes.Add(entity);
             await _context.SaveChangesAsync();
+
+            Console.WriteLine($"[AttachmentTypeService CREATE] Entity IsRequired after save: {entity.IsRequired}");
 
             var result = entity.ToDto();
 
@@ -91,6 +97,9 @@ namespace MonitoringDokumenGS.Services.Master
 
             var old = entity.ToDto();
 
+            Console.WriteLine($"[AttachmentTypeService UPDATE] Before - IsRequired: {entity.IsRequired}");
+            Console.WriteLine($"[AttachmentTypeService UPDATE] DTO IsRequired: {dto.IsRequired}");
+
             entity.Code = dto.Code;
             entity.Name = dto.Name;
             entity.IsRequired = dto.IsRequired;
@@ -98,7 +107,11 @@ namespace MonitoringDokumenGS.Services.Master
             entity.UpdatedAt = DateTime.UtcNow;
             entity.UpdatedBy = dto.UpdatedBy;
 
+            Console.WriteLine($"[AttachmentTypeService UPDATE] After - IsRequired: {entity.IsRequired}");
+
             await _context.SaveChangesAsync();
+
+            Console.WriteLine($"[AttachmentTypeService UPDATE] Saved to DB - IsRequired: {entity.IsRequired}");
 
             await _auditLog.LogAsync(
                 "AttachmentType",

@@ -345,6 +345,22 @@
   }
 
   function wireAttachment() {
+    // Function to update label based on checkbox state
+    function updateAttachmentIsRequiredLabel() {
+      const isChecked = $("#attachmentIsRequired").is(":checked");
+      const label = $("#attachmentIsRequiredLabel");
+      if (isChecked) {
+        label.html('<span class="badge bg-success">Wajib</span>');
+      } else {
+        label.html('<span class="badge bg-secondary">Tidak Wajib</span>');
+      }
+    }
+
+    // Listen to checkbox change event
+    $(document).on("change", "#attachmentIsRequired", function () {
+      updateAttachmentIsRequiredLabel();
+    });
+
     attachmentTable = initSimpleTable(
       "#attachmentTypesTable",
       apis.attachment,
@@ -353,8 +369,11 @@
         { data: "name" },
         {
           data: "isRequired",
-          render: function (data) {
-            return data
+          render: function (data, type, row) {
+            // Handle berbagai kemungkinan: true, 1, "true", "True"
+            const isRequired =
+              data === true || data === 1 || data === "true" || data === "True";
+            return isRequired
               ? '<span class="badge bg-success">Wajib</span>'
               : '<span class="badge bg-secondary">Tidak Wajib</span>';
           },
@@ -390,6 +409,7 @@
       $("#attachmentName").val("");
       $("#attachmentAppliesTo").val("");
       $("#attachmentIsRequired").prop("checked", true);
+      updateAttachmentIsRequiredLabel();
       $("#attachmentModalLabel").text("Create Attachment Type");
       showModal("attachmentModal");
     });
@@ -399,12 +419,21 @@
       authFetch(`${apis.attachment}/${id}`)
         .then((r) => (r.ok ? r.json() : Promise.reject(r)))
         .then((data) => {
+          console.log("[DEBUG] Edit Attachment - Loaded data:", data);
+          console.log("[DEBUG] isRequired value:", data.isRequired);
+
           $("#attachmentModalLabel").text("Edit Attachment Type");
           $("#attachmentTypeId").val(data.attachmentTypeId);
           $("#attachmentCode").val(data.code);
           $("#attachmentName").val(data.name);
           $("#attachmentAppliesTo").val(data.appliesTo);
-          $("#attachmentIsRequired").prop("checked", !!data.isRequired);
+
+          // Set checkbox dengan explicit boolean conversion
+          const isReq = data.isRequired === true;
+          $("#attachmentIsRequired").prop("checked", isReq);
+          updateAttachmentIsRequiredLabel();
+
+          console.log("[DEBUG] Checkbox set to:", isReq);
           showModal("attachmentModal");
         })
         .catch(() =>
@@ -436,15 +465,22 @@
     $("#attachmentForm").on("submit", function (e) {
       e.preventDefault();
       const id = $("#attachmentTypeId").val();
+
+      // Get checkbox value explicitly
+      const checkbox = document.getElementById("attachmentIsRequired");
+      const isRequiredValue = checkbox ? checkbox.checked : false;
+
       const payload = {
         attachmentTypeId: id ? Number(id) : undefined,
         code: $("#attachmentCode").val(),
         name: $("#attachmentName").val(),
         appliesTo: $("#attachmentAppliesTo").val(),
-        isRequired: !!$("#attachmentIsRequired").is(":checked"),
+        isRequired: isRequiredValue,
       };
+
       const method = id ? "PUT" : "POST";
       const url = id ? `${apis.attachment}/${id}` : apis.attachment;
+
       authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -460,7 +496,10 @@
           attachmentTable.ajax.reload(null, false);
           Swal.fire("Saved", "Attachment type saved.", "success");
         })
-        .catch((err) => swalError("Error", err));
+        .catch((err) => {
+          console.error("[DEBUG] Error occurred:", err);
+          swalError("Error", err);
+        });
     });
 
     const cols = [
