@@ -1065,44 +1065,14 @@
     });
 
     // Download attachment handler (uses auth token)
-    $(document).on("click", ".btn-download-attachment", async function (e) {
+    $(document).on("click", ".btn-download-attachment", function (e) {
       e.preventDefault();
       const attachmentId = $(this).data("id");
-      const fileName = $(this).data("filename");
+      const token = localStorage.getItem("mdgs_token");
 
-      try {
-        const token = localStorage.getItem("mdgs_token");
-        const headers = {};
-        if (token) {
-          headers["Authorization"] = "Bearer " + token;
-        }
-
-        const res = await fetch(
-          `${apis.attachments}/download/${attachmentId}`,
-          {
-            method: "GET",
-            headers: headers,
-            credentials: "same-origin",
-          },
-        );
-
-        if (!res.ok) {
-          throw new Error("Download failed");
-        }
-
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName || "attachment";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("Download error:", err);
-        Swal.fire("Error", "Failed to download file", "error");
-      }
+      // Open direct download URL with token in query string (works over HTTP)
+      const downloadUrl = `${apis.attachments}/file/${attachmentId}?token=${encodeURIComponent(token)}`;
+      window.open(downloadUrl, "_blank");
     });
 
     // Remove pending file handler

@@ -1,7 +1,10 @@
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MonitoringDokumenGS.Dtos.Transaction;
 using MonitoringDokumenGS.Interfaces;
 
@@ -16,6 +19,7 @@ namespace MonitoringDokumenGS.Controllers.API
         private readonly IFile _fileService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<AttachmentsController> _logger;
+        private readonly IConfiguration _configuration;
         private readonly string _rootPath;
 
         public AttachmentsController(
@@ -23,13 +27,15 @@ namespace MonitoringDokumenGS.Controllers.API
             IFile fileService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<AttachmentsController> logger,
-            IOptions<FileStorageOptions> fileStorageOptions)
+            IOptions<FileStorageOptions> fileStorageOptions,
+            IConfiguration configuration)
         {
             _attachmentService = attachmentService;
             _fileService = fileService;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             _rootPath = fileStorageOptions.Value.RootPath;
+            _configuration = configuration;
         }
 
         // GET: api/attachments/by-reference/{referenceId}
@@ -65,6 +71,70 @@ namespace MonitoringDokumenGS.Controllers.API
                 var contentType = GetContentType(attachment.FileName);
 
                 _logger.LogInformation("Attachment downloaded: {AttachmentId}, {FileName}", id, attachment.FileName);
+
+                return File(fileBytes, contentType, attachment.FileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading attachment {AttachmentId}", id);
+                return StatusCode(500, new { message = "Error downloading file" });
+            }
+        }
+
+        // GET: api/attachments/file/{id}?token=xxx  (for direct browser download over HTTP)
+        [AllowAnonymous]
+        [HttpGet("file/{id:guid}")]
+        public async Task<IActionResult> DownloadWithToken(Guid id, [FromQuery] string token)
+        {
+            // Validate JWT token manually
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized(new { message = "Token is required" });
+            }
+
+            try
+            {
+                var jwtKey = _configuration["Jwt:Key"];
+                var jwtIssuer = _configuration["Jwt:Issuer"];
+                var jwtAudience = _configuration["Jwt:Audience"];
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(jwtKey!);
+
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtAudience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                }, out _);
+            }
+            catch (Exception)
+            {
+                return Unauthorized(new { message = "Invalid or expired token" });
+            }
+
+            try
+            {
+                var attachment = await _attachmentService.GetByIdAsync(id);
+                if (attachment == null)
+                {
+                    return NotFound(new { message = "Attachment not found" });
+                }
+
+                var filePath = Path.Combine(_rootPath, attachment.FilePath);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound(new { message = "File not found on server" });
+                }
+
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                var contentType = GetContentType(attachment.FileName);
 
                 return File(fileBytes, contentType, attachment.FileName);
             }
