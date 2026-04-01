@@ -26,6 +26,11 @@ $(document).ready(function () {
   // Initialize DataTable
   initDataTable();
 
+  // Initialize Select2 on dropdowns after a short delay to ensure DOM is ready
+  setTimeout(function () {
+    initializeSelect2();
+  }, 100);
+
   // Event: Add Budget Button
   $("#btnAddBudget").on("click", function () {
     openAddModal();
@@ -61,12 +66,26 @@ $(document).ready(function () {
       .prop("disabled", true);
     $noCoa.val("");
 
+    // Destroy and reinitialize Select2 for typeBudgetSelect
+    if ($typeBudget.hasClass("select2-hidden-accessible")) {
+      $typeBudget.select2("destroy");
+    }
+
     if (!budgetCodeId) {
       $typeBudget
         .html(
           '<option value="">-- Pilih Budget Code terlebih dahulu --</option>',
         )
         .prop("disabled", true);
+
+      // Reinitialize Select2
+      $typeBudget.select2({
+        theme: "bootstrap-5",
+        placeholder: "-- Search or Select COA Text --",
+        allowClear: true,
+        width: "100%",
+        dropdownParent: $("#budgetModal"),
+      });
       return;
     }
 
@@ -79,11 +98,29 @@ $(document).ready(function () {
           html += `<option value="${vc.vendorCategoryId}" data-nocoa="${vc.noCoa || ""}" data-name="${vc.name || ""}">${vc.name}</option>`;
         });
         $typeBudget.html(html).prop("disabled", false);
+
+        // Reinitialize Select2 after updating options
+        $typeBudget.select2({
+          theme: "bootstrap-5",
+          placeholder: "-- Search or Select COA Text --",
+          allowClear: true,
+          width: "100%",
+          dropdownParent: $("#budgetModal"),
+        });
       })
       .fail(function () {
         $typeBudget
           .html('<option value="">-- Gagal memuat data --</option>')
           .prop("disabled", true);
+
+        // Reinitialize Select2 even on failure
+        $typeBudget.select2({
+          theme: "bootstrap-5",
+          placeholder: "-- Search or Select COA Text --",
+          allowClear: true,
+          width: "100%",
+          dropdownParent: $("#budgetModal"),
+        });
       });
   });
 
@@ -95,6 +132,27 @@ $(document).ready(function () {
   });
 });
 
+// Initialize Select2 on dropdowns for search functionality
+function initializeSelect2() {
+  // Initialize Budget Code dropdown with Select2
+  $("#budgetCodeSelect").select2({
+    theme: "bootstrap-5",
+    placeholder: "-- Search or Select Budget Code --",
+    allowClear: true,
+    width: "100%",
+    dropdownParent: $("#budgetModal"),
+  });
+
+  // Initialize COA Text (Vendor Category) dropdown with Select2
+  $("#typeBudgetSelect").select2({
+    theme: "bootstrap-5",
+    placeholder: "-- Search or Select COA Text --",
+    allowClear: true,
+    width: "100%",
+    dropdownParent: $("#budgetModal"),
+  });
+}
+
 // Load all Budget Codes into the dropdown
 function loadBudgetCodes() {
   authFetchJson("/api/budget-codes?page=1&pageSize=2000")
@@ -105,6 +163,12 @@ function loadBudgetCodes() {
         html += `<option value="${bc.budgetCodeId}">${bc.code} - ${bc.description}</option>`;
       });
       $("#budgetCodeSelect").html(html);
+
+      // Reinitialize Select2 after updating options
+      if ($("#budgetCodeSelect").hasClass("select2-hidden-accessible")) {
+        $("#budgetCodeSelect").select2("destroy");
+      }
+      initializeSelect2();
     })
     .fail(function () {
       console.error("Failed to load budget codes");
@@ -210,10 +274,23 @@ function openAddModal() {
   $("#budgetModalLabel").text("Add Budget");
   $("#budgetForm")[0].reset();
   $("#budgetId").val("");
-  $("#budgetCodeSelect").val("");
+  $("#budgetCodeSelect").val("").trigger("change");
   $("#typeBudgetSelect")
     .html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>')
     .prop("disabled", true);
+
+  // Reinitialize Select2 for clean state
+  if ($("#typeBudgetSelect").hasClass("select2-hidden-accessible")) {
+    $("#typeBudgetSelect").select2("destroy");
+  }
+  $("#typeBudgetSelect").select2({
+    theme: "bootstrap-5",
+    placeholder: "-- Search or Select COA Text --",
+    allowClear: true,
+    width: "100%",
+    dropdownParent: $("#budgetModal"),
+  });
+
   $("#noCoa").val("");
   $("#activity").val("");
   portalModalToBody("budgetModal");
@@ -239,7 +316,7 @@ function editBudget(budgetId) {
 
       // Set Budget Code dropdown and trigger cascade
       if (data.budgetCodeId) {
-        $("#budgetCodeSelect").val(data.budgetCodeId);
+        $("#budgetCodeSelect").val(data.budgetCodeId).trigger("change");
 
         // Load vendor categories for this budget code, then set the selected one
         authFetchJson(
@@ -252,21 +329,45 @@ function editBudget(budgetId) {
           });
           $("#typeBudgetSelect").html(html).prop("disabled", false);
 
+          // Reinitialize Select2 after updating options
+          if ($("#typeBudgetSelect").hasClass("select2-hidden-accessible")) {
+            $("#typeBudgetSelect").select2("destroy");
+          }
+          $("#typeBudgetSelect").select2({
+            theme: "bootstrap-5",
+            placeholder: "-- Search or Select COA Text --",
+            allowClear: true,
+            width: "100%",
+            dropdownParent: $("#budgetModal"),
+          });
+
           // Try to match by typeBudget (Name)
           const matchOption = $("#typeBudgetSelect option").filter(function () {
             return $(this).data("name") === data.typeBudget;
           });
           if (matchOption.length > 0) {
-            $("#typeBudgetSelect").val(matchOption.val());
+            $("#typeBudgetSelect").val(matchOption.val()).trigger("change");
           }
         });
       } else {
-        $("#budgetCodeSelect").val("");
+        $("#budgetCodeSelect").val("").trigger("change");
         $("#typeBudgetSelect")
           .html(
             '<option value="">-- Pilih Budget Code terlebih dahulu --</option>',
           )
           .prop("disabled", true);
+
+        // Reinitialize Select2
+        if ($("#typeBudgetSelect").hasClass("select2-hidden-accessible")) {
+          $("#typeBudgetSelect").select2("destroy");
+        }
+        $("#typeBudgetSelect").select2({
+          theme: "bootstrap-5",
+          placeholder: "-- Search or Select COA Text --",
+          allowClear: true,
+          width: "100%",
+          dropdownParent: $("#budgetModal"),
+        });
       }
 
       portalModalToBody("budgetModal");
