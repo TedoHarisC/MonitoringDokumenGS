@@ -389,6 +389,7 @@
     $("#progressStatusId").val("2");
     $("#progressStatusSelect").val("2");
     $("#invoiceNumber").val("");
+    $("#invoiceDescription").val("");
     $("#invoiceAmount").val("");
     $("#taxAmount").val("");
     $("#invoiceYear").val("");
@@ -480,6 +481,7 @@
       $("#progressStatusId").val(String(data.progressStatusId || ""));
       $("#progressStatusSelect").val(String(data.progressStatusId || ""));
       $("#invoiceNumber").val(data.invoiceNumber || "");
+      $("#invoiceDescription").val(data.invoiceDescription || "");
       $("#invoiceAmount").val(data.invoiceAmount ?? "");
       $("#taxAmount").val(data.taxAmount ?? "");
       $("#invoiceYear").val(data.invoiceYear ?? "");
@@ -524,6 +526,7 @@
       vendorId: vendorId,
       progressStatusId: progressStatusId,
       invoiceNumber: String($("#invoiceNumber").val() || "").trim(),
+      invoiceDescription: String($("#invoiceDescription").val() || "").trim(),
       invoiceAmount: Number($("#invoiceAmount").val() || 0),
       taxAmount: Number($("#taxAmount").val() || 0),
       invoiceYear: toInt($("#invoiceYear").val()),

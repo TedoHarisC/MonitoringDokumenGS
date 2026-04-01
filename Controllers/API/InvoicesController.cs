@@ -286,6 +286,7 @@ namespace MonitoringDokumenGS.Controllers.API
                     VendorId = invoice.VendorId,
                     CreatedByUserId = invoice.CreatedByUserId,
                     InvoiceNumber = invoice.InvoiceNumber,
+                    InvoiceDescription = invoice.InvoiceDescription,
                     ProgressStatusId = request.StatusId, // Update status
                     InvoiceAmount = invoice.InvoiceAmount,
                     TaxAmount = invoice.TaxAmount,

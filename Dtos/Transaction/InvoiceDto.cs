@@ -8,6 +8,7 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public Guid VendorId { get; set; }
         public Guid CreatedByUserId { get; set; }
         public string InvoiceNumber { get; set; } = string.Empty;
+        public string? InvoiceDescription { get; set; }
         public int ProgressStatusId { get; set; }
         public decimal InvoiceAmount { get; set; }
         public decimal TaxAmount { get; set; }
