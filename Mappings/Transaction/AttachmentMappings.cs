@@ -12,6 +12,7 @@ public static class AttachmentMappings
         {
             AttachmentId = x.AttachmentId,
             AttachmentTypeId = x.AttachmentTypeId,
+            AttachmentTypeName = x.AttachmentType != null ? x.AttachmentType.Name : "",
             ReferenceId = x.ReferenceId,
             FileName = x.FileName,
             FilePath = x.FilePath,
@@ -26,6 +27,7 @@ public static class AttachmentMappings
         {
             AttachmentId = x.AttachmentId,
             AttachmentTypeId = x.AttachmentTypeId,
+            AttachmentTypeName = x.AttachmentType?.Name ?? "",
             ReferenceId = x.ReferenceId,
             FileName = x.FileName,
             FilePath = x.FilePath,

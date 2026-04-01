@@ -6,6 +6,7 @@ namespace MonitoringDokumenGS.Dtos.Transaction
     {
         public Guid AttachmentId { get; set; }
         public int AttachmentTypeId { get; set; }
+        public string AttachmentTypeName { get; set; } = string.Empty;
         public Guid ReferenceId { get; set; }
         public string FileName { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;

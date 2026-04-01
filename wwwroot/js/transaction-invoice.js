@@ -6,6 +6,7 @@
     vendors: "/api/vendors?page=1&pageSize=2000",
     progressStatuses: "/api/invoice-progress-statuses?page=1&pageSize=2000",
     attachments: "/api/attachments",
+    attachmentTypes: "/api/attachment-types?page=1&pageSize=2000",
     currentUser: "/api/auth/me",
   };
 
@@ -13,6 +14,7 @@
   let cachedUserVendors = null;
   let cachedVendors = [];
   let cachedStatuses = [];
+  let cachedAttachmentTypes = [];
   let pendingFiles = [];
   let currentUserVendor = null;
 
@@ -235,6 +237,25 @@
     return cachedVendors;
   }
 
+  async function loadAttachmentTypes() {
+    const result = await fetchJson(apis.attachmentTypes);
+    const types = normalizeToArray(result);
+    cachedAttachmentTypes = types.filter((t) => t.appliesTo === "INVOICE");
+    populateAttachmentTypeDropdown();
+    return cachedAttachmentTypes;
+  }
+
+  function populateAttachmentTypeDropdown() {
+    const $select = $("#attachmentTypeSelect");
+    $select.empty();
+    $select.append('<option value="">-- Pilih Tipe Attachment --</option>');
+    cachedAttachmentTypes.forEach((type) => {
+      $select.append(
+        `<option value="${type.attachmentTypeId}">${type.name}</option>`,
+      );
+    });
+  }
+
   function initTable() {
     table = $("#invoicesTable").DataTable({
       dom:
@@ -443,6 +464,9 @@
       $("#progressStatusSection").hide();
     }
 
+    // Populate attachment types
+    populateAttachmentTypeDropdown();
+
     $("#attachmentsSection").show();
     $("#attachmentsList").html(
       '<div class="alert alert-info small">Files will be uploaded after saving the invoice</div>',
@@ -495,6 +519,9 @@
       } else {
         $("#progressStatusSection").hide();
       }
+
+      // Populate attachment types
+      populateAttachmentTypeDropdown();
 
       // Show attachments section and load files
       $("#attachmentsSection").show();
@@ -589,9 +616,25 @@
         body: JSON.stringify(payload),
       });
 
-      // If creating new invoice and have pending files, upload them
-      if (!isEdit && pendingFiles.length > 0 && result.invoiceId) {
-        await uploadPendingFiles(result.invoiceId);
+      console.log("Invoice saved successfully. Result:", result);
+
+      // Upload pending files if any (for both create and edit)
+      const invoiceId = (result && result.invoiceId) || id;
+      console.log("Invoice ID for upload:", invoiceId);
+      console.log("Pending files count:", pendingFiles.length);
+      console.log("Pending files:", pendingFiles);
+
+      if (pendingFiles.length > 0 && invoiceId) {
+        console.log("Starting upload of pending files for invoice:", invoiceId);
+        await uploadPendingFiles(invoiceId);
+        console.log("All pending files uploaded successfully");
+      } else {
+        if (pendingFiles.length === 0) {
+          console.log("No pending files to upload");
+        }
+        if (!invoiceId) {
+          console.error("ERROR: Invoice ID is missing! Cannot upload files.");
+        }
       }
 
       hideModal("invoiceModal");
@@ -694,16 +737,17 @@
 
       attachments.forEach((att) => {
         const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1);
-        const fileUrl = `/api/attachments/download/${att.attachmentId}`;
+        const typeName = att.attachmentTypeName || "";
 
         const item = $(`
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div class="flex-grow-1" style="cursor: pointer;">
-                            <a href="${fileUrl}" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
+                            <a href="#" class="text-decoration-none text-dark d-flex align-items-center btn-download-attachment" data-id="${att.attachmentId}" data-filename="${escapeHtml(att.fileName)}">
                                 <i class="feather-file me-2"></i>
                                 <span class="text-primary">${escapeHtml(att.fileName)}</span>
+                                ${typeName ? `<span class="badge bg-info ms-2">${escapeHtml(typeName)}</span>` : ""}
                                 <small class="text-muted ms-2">(${sizeKB} KB)</small>
-                                <i class="feather-external-link ms-2 text-muted" style="font-size: 14px;"></i>
+                                <i class="feather-download ms-2 text-muted" style="font-size: 14px;"></i>
                             </a>
                         </div>
                         <button type="button" class="btn btn-sm btn-light-danger btn-delete-attachment ms-2" data-id="${att.attachmentId}">
@@ -718,7 +762,7 @@
     }
   }
 
-  async function uploadFile(file, invoiceId) {
+  async function uploadFile(file, invoiceId, typeId = null) {
     // If no invoiceId yet (create mode), add to pending list
     if (!invoiceId) {
       console.log("No invoiceId yet, adding to pending files:", file.name);
@@ -728,25 +772,41 @@
       return;
     }
 
-    console.log("Uploading file:", file.name, "for invoice:", invoiceId);
+    console.log(
+      "Uploading file:",
+      file.name,
+      "for invoice:",
+      invoiceId,
+      "with typeId:",
+      typeId,
+    );
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("module", "Invoices");
-    formData.append("attachmentTypeId", "1"); // Default type, adjust as needed
+    formData.append("attachmentTypeId", typeId || "1");
     formData.append("referenceId", invoiceId);
 
-    console.log("FormData prepared:", {
-      fileName: file.name,
-      module: "Invoices",
-      attachmentTypeId: 1,
-      referenceId: invoiceId,
-    });
+    // Log actual FormData contents
+    console.log("FormData contents:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value);
+    }
 
     try {
       console.log("Sending upload request to:", `${apis.attachments}/upload`);
-      const res = await authFetch(`${apis.attachments}/upload`, {
+
+      // Don't use authFetch - use manual fetch with explicit headers
+      const token = localStorage.getItem("mdgs_token");
+      const headers = {};
+      if (token) {
+        headers["Authorization"] = "Bearer " + token;
+      }
+      // DO NOT set Content-Type - let browser set it automatically for FormData
+
+      const res = await fetch(`${apis.attachments}/upload`, {
         method: "POST",
+        headers: headers,
         body: formData,
         credentials: "same-origin",
       });
@@ -789,12 +849,17 @@
     $list.append(
       '<div class="alert alert-info small mb-2">Files to upload after save:</div>',
     );
-    pendingFiles.forEach((file, index) => {
+    pendingFiles.forEach((pendingFile, index) => {
+      // Handle both old (file object) and new ({file, typeId, typeName}) structure
+      const file = pendingFile.file || pendingFile;
+      const typeName = pendingFile.typeName || "No Type";
       const sizeKb = (file.size / 1024).toFixed(2);
+
       $list.append(`
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>${file.name}</strong>
+                        <span class="badge bg-info ms-2">${typeName}</span>
                         <span class="text-muted small ms-2">(${sizeKb} KB)</span>
                     </div>
                     <button type="button" class="btn btn-sm btn-danger btn-remove-pending" data-index="${index}">
@@ -813,12 +878,50 @@
       invoiceId,
     );
 
-    for (const file of pendingFiles) {
-      console.log("Processing pending file:", file.name);
-      await uploadFile(file, invoiceId);
+    let uploadedCount = 0;
+    let failedCount = 0;
+
+    for (const pendingFile of pendingFiles) {
+      try {
+        // Handle both old (file object) and new ({file, typeId, typeName}) structure
+        const file = pendingFile.file || pendingFile;
+        const typeId = pendingFile.typeId || null;
+
+        console.log(
+          "Processing pending file:",
+          file.name,
+          "with typeId:",
+          typeId,
+        );
+        await uploadFile(file, invoiceId, typeId);
+        uploadedCount++;
+        console.log(
+          `File ${file.name} uploaded successfully (${uploadedCount}/${pendingFiles.length})`,
+        );
+      } catch (err) {
+        failedCount++;
+        console.error(
+          "Failed to upload file:",
+          pendingFile.file?.name || pendingFile.name,
+          "Error:",
+          err,
+        );
+        // Continue uploading other files even if one fails
+      }
     }
+
     pendingFiles = [];
-    console.log("All pending files uploaded");
+    console.log(
+      `Upload complete: ${uploadedCount} succeeded, ${failedCount} failed`,
+    );
+
+    if (failedCount > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Some Files Failed",
+        text: `${uploadedCount} files uploaded successfully, but ${failedCount} files failed to upload.`,
+      });
+    }
   }
 
   async function deleteAttachment(attachmentId, invoiceId) {
@@ -851,7 +954,12 @@
     try {
       // Load current user first (which will populate cachedVendors with user's vendor)
       // Then load statuses. We don't need to load all vendors anymore.
-      await Promise.all([loadCurrentUser(), loadStatuses(), loadVendors()]);
+      await Promise.all([
+        loadCurrentUser(),
+        loadStatuses(),
+        loadVendors(),
+        loadAttachmentTypes(),
+      ]);
     } catch (err) {
       console.error("Initialization error:", err);
       // still allow page to load; table will show IDs
@@ -873,7 +981,74 @@
 
     $("#invoiceForm").on("submit", saveInvoice);
 
-    // File upload handler
+    // Add file with attachment type
+    $("#btnAddFile").on("click", function () {
+      const fileInput = $("#fileUploadInput")[0];
+      const file = fileInput.files[0];
+      const typeId = $("#attachmentTypeSelect").val();
+
+      // Validation
+      if (!file) {
+        Swal.fire({
+          icon: "warning",
+          title: "No File Selected",
+          text: "Please select a file to upload.",
+        });
+        return;
+      }
+
+      if (!typeId) {
+        Swal.fire({
+          icon: "warning",
+          title: "No Type Selected",
+          text: "Please select an attachment type.",
+        });
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "File size must not exceed 10 MB.",
+        });
+        return;
+      }
+
+      // Find type name
+      const type = cachedAttachmentTypes.find(
+        (t) => t.attachmentTypeId == typeId,
+      );
+      const typeName = type ? type.name : "Unknown";
+
+      // Add to pending files
+      const pendingFile = {
+        file: file,
+        typeId: typeId,
+        typeName: typeName,
+        id: Date.now(),
+      };
+
+      console.log("Adding file to pending:", pendingFile);
+      pendingFiles.push(pendingFile);
+      updatePendingFilesList();
+
+      // Clear inputs
+      fileInput.value = "";
+      $("#attachmentTypeSelect").val("");
+
+      Swal.fire({
+        icon: "success",
+        title: "File Added",
+        text: `${file.name} will be uploaded after saving the invoice.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    });
+
+    // File upload handler (kept for backward compatibility if needed)
     $("#fileUpload").on("change", function (e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -887,6 +1062,47 @@
       const attachmentId = $(this).data("id");
       const invoiceId = $("#invoiceId").val();
       deleteAttachment(attachmentId, invoiceId);
+    });
+
+    // Download attachment handler (uses auth token)
+    $(document).on("click", ".btn-download-attachment", async function (e) {
+      e.preventDefault();
+      const attachmentId = $(this).data("id");
+      const fileName = $(this).data("filename");
+
+      try {
+        const token = localStorage.getItem("mdgs_token");
+        const headers = {};
+        if (token) {
+          headers["Authorization"] = "Bearer " + token;
+        }
+
+        const res = await fetch(
+          `${apis.attachments}/download/${attachmentId}`,
+          {
+            method: "GET",
+            headers: headers,
+            credentials: "same-origin",
+          },
+        );
+
+        if (!res.ok) {
+          throw new Error("Download failed");
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName || "attachment";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Download error:", err);
+        Swal.fire("Error", "Failed to download file", "error");
+      }
     });
 
     // Remove pending file handler
