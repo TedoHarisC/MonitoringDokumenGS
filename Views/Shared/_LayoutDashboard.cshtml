@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="zxx">
+<html lang="id">
 
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="" />
-    <meta name="keyword" content="" />
+    <meta name="description"
+          content="Monitoring Dokumen GS - Aplikasi monitoring kontrak, invoice, dan budget perusahaan secara efisien dan real-time." />
+    <meta name="keyword" content="monitoring dokumen, kontrak, invoice, budget, dashboard, vendor" />
     <meta name="author" content="flexilecode" />
     <!--! The above 6 meta tags *must* come first in the head; any other head content must come *after* these tags !-->
     <!--! BEGIN: Apps Title-->
@@ -15,19 +16,34 @@
     <!--! BEGIN: Favicon-->
     <link rel="shortcut icon" type="image/x-icon" href="~/images/logo_small.webp" />
     <!--! END: Favicon-->
+    <!--! BEGIN: Preconnect to CDN -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <!--! END: Preconnect to CDN -->
     <!--! BEGIN: Bootstrap CSS-->
     <link rel="stylesheet" type="text/css" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <!-- ~/lib/templates/css/bootstrap.min.css -->
     <!--! END: Bootstrap CSS-->
     <!--! BEGIN: Vendors CSS-->
-    <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/vendors.min.css" />
-    <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/daterangepicker.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/vendors.min.css" media="print"
+          onload="this.media='all'" />
+    <noscript>
+        <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/vendors.min.css" />
+    </noscript>
+    <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/daterangepicker.min.css" media="print"
+          onload="this.media='all'" />
+    <noscript>
+        <link rel="stylesheet" type="text/css" href="~/lib/templates/vendors/css/daterangepicker.min.css" />
+    </noscript>
     <!--! END: Vendors CSS-->
     <!--! BEGIN: Custom CSS-->
     <link rel="stylesheet" type="text/css" href="~/lib/templates/css/theme.min.css" />
     <!--! END: Custom CSS-->
     <!-- Datatable CSS -->
-    <link rel="stylesheet" href="~/lib/datatables-bs5/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/lib/datatables-bs5/dataTables.bootstrap5.min.css" media="print"
+          onload="this.media='all'" />
+    <noscript>
+        <link rel="stylesheet" href="~/lib/datatables-bs5/dataTables.bootstrap5.min.css" />
+    </noscript>
     <style>
             /* Sticky footer: if content is short, footer stays at bottom of viewport */
             main.nxl-container {
