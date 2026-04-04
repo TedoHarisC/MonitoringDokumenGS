@@ -789,6 +789,15 @@
       })
       .catch(() => {});
 
+    // Initialize Select2 on Budget Code dropdown
+    $("#vendorCategoryBudgetCode").select2({
+      theme: "bootstrap-5",
+      placeholder: "-- Search or Select Budget Code --",
+      allowClear: true,
+      width: "100%",
+      dropdownParent: $("#vendorCategoryModal"),
+    });
+
     vendorCategoryTable = $("#vendorCategoriesTable").DataTable({
       dom:
         "<'row align-items-center g-2 mb-3'" +
@@ -872,7 +881,7 @@
     $("#btnCreateVendorCategory").on("click", function () {
       $("#vendorCategoryId").val("");
       $("#vendorCategoryNoCoa").val("");
-      $("#vendorCategoryBudgetCode").val("");
+      $("#vendorCategoryBudgetCode").val("").trigger("change");
       $("#vendorCategoryName").val("");
       $("#vendorCategoryModalLabel").text("Create Vendor Category");
       showModal("vendorCategoryModal");
@@ -886,7 +895,9 @@
           $("#vendorCategoryModalLabel").text("Edit Vendor Category");
           $("#vendorCategoryId").val(data.vendorCategoryId);
           $("#vendorCategoryNoCoa").val(data.noCoa);
-          $("#vendorCategoryBudgetCode").val(data.parentBudgetCodeId || "");
+          $("#vendorCategoryBudgetCode")
+            .val(data.parentBudgetCodeId || "")
+            .trigger("change");
           $("#vendorCategoryName").val(data.name);
           showModal("vendorCategoryModal");
         })
