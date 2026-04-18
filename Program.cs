@@ -57,6 +57,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IBudget, BudgetService>();
 builder.Services.AddScoped<IBudgetCode, BudgetCodeService>();
 builder.Services.AddScoped<IDashboard, DashboardService>();
+builder.Services.AddScoped<IUangMuka, UangMukaService>();
 
 // Configure Email Options from appsettings.json
 builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(

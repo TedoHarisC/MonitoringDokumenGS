@@ -1,0 +1,107 @@
+using MonitoringDokumenGS.Data;
+using MonitoringDokumenGS.Interfaces;
+using MonitoringDokumenGS.Models.Transaction;
+using Microsoft.EntityFrameworkCore;
+
+namespace MonitoringDokumenGS.Services
+{
+    public class UangMukaService : IUangMuka
+    {
+        private readonly ApplicationDBContext _db;
+        public UangMukaService(ApplicationDBContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<IEnumerable<UangMuka>> GetAllAsync()
+        {
+            var uangMukas = await _db.UangMukas
+                                .AsNoTracking()
+                                .Include(x => x.BudgetCode)
+                                .Include(x => x.RelatedUangMuka)
+                                .Include(x => x.CoaText)
+                                .Where(x => !x.IsDeleted)
+                                .OrderByDescending(x => x.CreatedAt)
+                                .ToListAsync();
+
+            var advancedStatusIds = uangMukas
+                .Where(x => x.Jenis == "Advanced")
+                .Select(x => x.StatusId)
+                .Distinct()
+                .ToList();
+
+            var biayaStatusIds = uangMukas
+                .Where(x => x.Jenis != "Advanced")
+                .Select(x => x.StatusId)
+                .Distinct()
+                .ToList();
+
+            var advancedStatuses = await _db.AdvancedStatuses
+                .AsNoTracking()
+                .Where(x => advancedStatusIds.Contains(x.AdvancedStatusesId))
+                .ToDictionaryAsync(x => x.AdvancedStatusesId, x => x.Name);
+
+            var biayaStatuses = await _db.BiayaRealisasiStatuses
+                .AsNoTracking()
+                .Where(x => biayaStatusIds.Contains(x.BiayaRealisasiStatusesId))
+                .ToDictionaryAsync(x => x.BiayaRealisasiStatusesId, x => x.Name);
+
+            foreach (var item in uangMukas)
+            {
+                if (item.Jenis == "Advanced")
+                {
+                    item.Status = advancedStatuses.TryGetValue(item.StatusId, out var status) ? status : null;
+                }
+                else
+                {
+                    item.Status = biayaStatuses.TryGetValue(item.StatusId, out var status) ? status : null;
+                }
+            }
+
+            return uangMukas;
+        }
+
+        public async Task<UangMuka?> GetByIdAsync(string id)
+        {
+            return await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+        }
+
+        public async Task<UangMuka> CreateAsync(UangMuka model)
+        {
+            model.UangMukaId = Guid.NewGuid().ToString();
+            model.CreatedAt = DateTime.UtcNow;
+            _db.UangMukas.Add(model);
+            await _db.SaveChangesAsync();
+            return model;
+        }
+
+        public async Task<UangMuka> UpdateAsync(string id, UangMuka model)
+        {
+            var existing = await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            if (existing == null) throw new KeyNotFoundException("Uang Muka not found");
+            existing.Jenis = model.Jenis;
+            existing.BudgetCodeId = model.BudgetCodeId;
+            existing.UangMukaRelatedId = model.UangMukaRelatedId;
+            existing.NoSAP = model.NoSAP;
+            existing.Amount = model.Amount;
+            existing.AtasNama = model.AtasNama;
+            existing.Deskripsi = model.Deskripsi;
+            existing.StartDate = model.StartDate;
+            existing.EndDate = model.EndDate;
+            existing.StatusId = model.StatusId;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = model.UpdatedBy;
+            await _db.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task<bool> DeleteAsync(string id)
+        {
+            var existing = await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            if (existing == null) return false;
+            existing.IsDeleted = true;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+    }
+}

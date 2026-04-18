@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonitoringDokumenGS.Models;
 using MonitoringDokumenGS.Models.Infrastructure;
 using MonitoringDokumenGS.Models.Master;
+using MonitoringDokumenGS.Models.Transaction;
 
 namespace MonitoringDokumenGS.Data
 {
@@ -24,6 +25,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<VendorCategory> VendorCategories { get; set; }
         public DbSet<VendorPics> VendorPics { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<UangMuka> UangMukas { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<ApprovalStatus> ApprovalStatuses { get; set; }
@@ -103,6 +105,12 @@ namespace MonitoringDokumenGS.Data
             modelBuilder.Entity<TopVendorSpendDto>()
                 .HasNoKey()
                 .ToView("V_TopVendorSpend");
+
+            modelBuilder.Entity<UangMuka>()
+                .HasOne(x => x.CoaText)
+                .WithMany()
+                .HasForeignKey(x => x.CoaTextId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }
