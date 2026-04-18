@@ -1,3 +1,282 @@
+  const apis = {
+    approval: "/api/approval-statuses",
+    attachment: "/api/attachment-types",
+    contract: "/api/contract-statuses",
+    invoiceProgress: "/api/invoice-progress-statuses",
+    vendorCategory: "/api/vendor-categories",
+    budgetCode: "/api/budget-codes",
+    advancedStatus: "/api/advanced-statuses",
+    biayaRealisasiStatus: "/api/biaya-realisasi-statuses",
+  };
+  let advancedStatusTable;
+  let biayaRealisasiStatusTable;
+  function wireAdvancedStatus() {
+    advancedStatusTable = $("#advancedStatusesTable").DataTable({
+      dom:
+        "<'row align-items-center g-2 mb-3'" +
+        "<'col-sm-12 col-md-6' l>" +
+        "<'col-sm-12 col-md-6 d-flex justify-content-md-end' f>" +
+        ">" +
+        "<'row'<'col-12'tr>>" +
+        "<'row align-items-center g-2 mt-3'" +
+        "<'col-sm-12 col-md-5' i>" +
+        "<'col-sm-12 col-md-7 d-flex justify-content-md-end' p>" +
+        ">",
+      ajax: {
+        url: `${apis.advancedStatus}?page=1&pageSize=2000`,
+        dataSrc: function (json) { return normalizeToArray(json); },
+      },
+      columns: [
+        { data: "code" },
+        { data: "name" },
+        {
+          data: null,
+          orderable: false,
+          searchable: false,
+          render: function (data, type, row) {
+            return `
+              <div class="hstack gap-1 justify-content-center flex-nowrap">
+                <button type="button" class="btn btn-sm btn-light-brand btn-advancedstatus-edit" data-id="${row.advancedStatusId}">
+                  <i class="feather-edit-2 me-1"></i> Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-light-danger btn-advancedstatus-delete" data-id="${row.advancedStatusId}">
+                  <i class="feather-trash-2 me-1"></i> Delete
+                </button>
+              </div>
+            `;
+          },
+        },
+      ],
+      pageLength: 10,
+      lengthMenu: [10, 20, 50, 100, 200],
+      pagingType: "simple_numbers",
+      scrollX: false,
+      autoWidth: false,
+      language: {
+        search: "",
+        searchPlaceholder: "Search advanced statuses... ",
+        lengthMenu: "_MENU_ / page",
+        info: "Showing _START_ to _END_ of _TOTAL_ advanced statuses",
+        infoEmpty: "No items found",
+        zeroRecords: "No matching items",
+        paginate: {
+          previous: '<i class="feather-chevron-left"></i>',
+          next: '<i class="feather-chevron-right"></i>',
+        },
+      },
+      columnDefs: [
+        { targets: -1, className: "text-center text-nowrap dt-actions" },
+      ],
+    });
+
+    $("#btnCreateAdvancedStatus").on("click", function () {
+      $("#advancedStatusId").val("");
+      $("#advancedStatusCode").val("");
+      $("#advancedStatusName").val("");
+      $("#advancedStatusModalLabel").text("Create Advanced Status");
+      showModal("advancedStatusModal");
+    });
+
+    $("#advancedStatusesTable").on("click", ".btn-advancedstatus-edit", function () {
+      const id = $(this).data("id");
+      authFetch(`${apis.advancedStatus}/${id}`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+        .then((data) => {
+          $("#advancedStatusModalLabel").text("Edit Advanced Status");
+          $("#advancedStatusId").val(data.advancedStatusId);
+          $("#advancedStatusCode").val(data.code);
+          $("#advancedStatusName").val(data.name);
+          showModal("advancedStatusModal");
+        })
+        .catch(() => swalError("Error", { message: "Unable to load advanced status." }));
+    });
+
+    $("#advancedStatusesTable").on("click", ".btn-advancedstatus-delete", function () {
+      const id = $(this).data("id");
+      confirmDelete("advanced status").then((result) => {
+        if (!result.isConfirmed) return;
+        authFetch(`${apis.advancedStatus}/${id}`, { method: "DELETE" })
+          .then((r) => {
+            if (r.status === 204 || r.ok) return;
+            return safeRejectJson(r);
+          })
+          .then(() => {
+            advancedStatusTable.ajax.reload(null, false);
+            Swal.fire("Deleted", "Advanced status deleted.", "success");
+          })
+          .catch((err) => swalError("Error", err));
+      });
+    });
+
+    $("#advancedStatusForm").on("submit", function (e) {
+      e.preventDefault();
+      const id = $("#advancedStatusId").val();
+      const code = $("#advancedStatusCode").val();
+      const name = $("#advancedStatusName").val();
+      if (!code || !name) {
+        swalError("Validation", { message: "Code dan Name wajib diisi." });
+        return;
+      }
+      const payload = {
+        advancedStatusId: id ? Number(id) : null,
+        code,
+        name,
+      };
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${apis.advancedStatus}/${id}` : apis.advancedStatus;
+      // Pastikan payload benar-benar { dto: {...} }
+      authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then((r) => {
+          if (r.status === 201 || r.status === 204 || r.ok)
+            return r.json().catch(() => ({}));
+          return safeRejectJson(r);
+        })
+        .then(() => {
+          hideModal("advancedStatusModal");
+          advancedStatusTable.ajax.reload(null, false);
+          Swal.fire("Saved", "Advanced status saved.", "success");
+        })
+        .catch((err) => swalError("Error", err));
+    });
+  }
+
+  function wireBiayaRealisasiStatus() {
+    biayaRealisasiStatusTable = $("#biayaRealisasiStatusesTable").DataTable({
+      dom:
+        "<'row align-items-center g-2 mb-3'" +
+        "<'col-sm-12 col-md-6' l>" +
+        "<'col-sm-12 col-md-6 d-flex justify-content-md-end' f>" +
+        ">" +
+        "<'row'<'col-12'tr>>" +
+        "<'row align-items-center g-2 mt-3'" +
+        "<'col-sm-12 col-md-5' i>" +
+        "<'col-sm-12 col-md-7 d-flex justify-content-md-end' p>" +
+        ">",
+      ajax: {
+        url: `${apis.biayaRealisasiStatus}?page=1&pageSize=2000`,
+        dataSrc: function (json) { return normalizeToArray(json); },
+      },
+      columns: [
+        { data: "code" },
+        { data: "name" },
+        {
+          data: null,
+          orderable: false,
+          searchable: false,
+          render: function (data, type, row) {
+            return `
+              <div class="hstack gap-1 justify-content-center flex-nowrap">
+                <button type="button" class="btn btn-sm btn-light-brand btn-biayarealisasistatus-edit" data-id="${row.biayaRealisasiStatusId}">
+                  <i class="feather-edit-2 me-1"></i> Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-light-danger btn-biayarealisasistatus-delete" data-id="${row.biayaRealisasiStatusId}">
+                  <i class="feather-trash-2 me-1"></i> Delete
+                </button>
+              </div>
+            `;
+          },
+        },
+      ],
+      pageLength: 10,
+      lengthMenu: [10, 20, 50, 100, 200],
+      pagingType: "simple_numbers",
+      scrollX: false,
+      autoWidth: false,
+      language: {
+        search: "",
+        searchPlaceholder: "Search biaya realisasi statuses... ",
+        lengthMenu: "_MENU_ / page",
+        info: "Showing _START_ to _END_ of _TOTAL_ biaya realisasi statuses",
+        infoEmpty: "No items found",
+        zeroRecords: "No matching items",
+        paginate: {
+          previous: '<i class="feather-chevron-left"></i>',
+          next: '<i class="feather-chevron-right"></i>',
+        },
+      },
+      columnDefs: [
+        { targets: -1, className: "text-center text-nowrap dt-actions" },
+      ],
+    });
+
+    $("#btnCreateBiayaRealisasiStatus").on("click", function () {
+      $("#biayaRealisasiStatusId").val("");
+      $("#biayaRealisasiStatusCode").val("");
+      $("#biayaRealisasiStatusName").val("");
+      $("#biayaRealisasiStatusModalLabel").text("Create Biaya Realisasi Status");
+      showModal("biayaRealisasiStatusModal");
+    });
+
+    $("#biayaRealisasiStatusesTable").on("click", ".btn-biayarealisasistatus-edit", function () {
+      const id = $(this).data("id");
+      authFetch(`${apis.biayaRealisasiStatus}/${id}`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+        .then((data) => {
+          $("#biayaRealisasiStatusModalLabel").text("Edit Biaya Realisasi Status");
+          $("#biayaRealisasiStatusId").val(data.biayaRealisasiStatusId);
+          $("#biayaRealisasiStatusCode").val(data.code);
+          $("#biayaRealisasiStatusName").val(data.name);
+          showModal("biayaRealisasiStatusModal");
+        })
+        .catch(() => swalError("Error", { message: "Unable to load biaya realisasi status." }));
+    });
+
+    $("#biayaRealisasiStatusesTable").on("click", ".btn-biayarealisasistatus-delete", function () {
+      const id = $(this).data("id");
+      confirmDelete("biaya realisasi status").then((result) => {
+        if (!result.isConfirmed) return;
+        authFetch(`${apis.biayaRealisasiStatus}/${id}`, { method: "DELETE" })
+          .then((r) => {
+            if (r.status === 204 || r.ok) return;
+            return safeRejectJson(r);
+          })
+          .then(() => {
+            biayaRealisasiStatusTable.ajax.reload(null, false);
+            Swal.fire("Deleted", "Biaya realisasi status deleted.", "success");
+          })
+          .catch((err) => swalError("Error", err));
+      });
+    });
+
+    $("#biayaRealisasiStatusForm").on("submit", function (e) {
+      e.preventDefault();
+      const id = $("#biayaRealisasiStatusId").val();
+      const code = $("#biayaRealisasiStatusCode").val();
+      const name = $("#biayaRealisasiStatusName").val();
+      if (!code || !name) {
+        swalError("Validation", { message: "Code dan Name wajib diisi." });
+        return;
+      }
+      const payload = {
+        biayaRealisasiStatusId: id ? Number(id) : null,
+        code,
+        name,
+      };
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${apis.biayaRealisasiStatus}/${id}` : apis.biayaRealisasiStatus;
+      // Pastikan payload benar-benar { dto: {...} }
+      authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then((r) => {
+          if (r.status === 201 || r.status === 204 || r.ok)
+            return r.json().catch(() => ({}));
+          return safeRejectJson(r);
+        })
+        .then(() => {
+          hideModal("biayaRealisasiStatusModal");
+          biayaRealisasiStatusTable.ajax.reload(null, false);
+          Swal.fire("Saved", "Biaya realisasi status saved.", "success");
+        })
+        .catch((err) => swalError("Error", err));
+    });
+  }
 /* master-index.js
    One-page CRUD for Master data (except Vendor)
    Uses API endpoints:
@@ -8,38 +287,40 @@
    - /api/vendor-categories
 */
 
+
 (function ($) {
   "use strict";
 
-  function normalizeToArray(json) {
+  // --- Helper Functions (Global Scope) ---
+  window.normalizeToArray = function (json) {
     if (!json) return [];
     if (Array.isArray(json)) return json;
     if (Array.isArray(json.items)) return json.items;
     if (Array.isArray(json.data)) return json.data;
     return [];
-  }
+  };
 
-  function portalModalToBody(modalId) {
+  window.portalModalToBody = function (modalId) {
     const el = document.getElementById(modalId);
     if (!el) return;
     if (el.parentElement !== document.body) document.body.appendChild(el);
-  }
+  };
 
-  function showModal(modalId) {
+  window.showModal = function (modalId) {
     const el = document.getElementById(modalId);
     if (!el) return;
     const modal = new bootstrap.Modal(el);
     modal.show();
-  }
+  };
 
-  function hideModal(modalId) {
+  window.hideModal = function (modalId) {
     const el = document.getElementById(modalId);
     if (!el) return;
     const modal = bootstrap.Modal.getInstance(el);
     if (modal) modal.hide();
-  }
+  };
 
-  function swalError(title, err) {
+  window.swalError = function (title, err) {
     const message =
       (err && (err.message || err.title)) ||
       (err && err.errors && Array.isArray(err.errors)
@@ -47,9 +328,9 @@
         : null) ||
       "Something went wrong.";
     Swal.fire(title || "Error", message, "error");
-  }
+  };
 
-  function safeRejectJson(r) {
+  window.safeRejectJson = function (r) {
     return r.text().then((text) => {
       let b;
       try {
@@ -59,9 +340,9 @@
       }
       return Promise.reject(b);
     });
-  }
+  };
 
-  function confirmDelete(label) {
+  window.confirmDelete = function (label) {
     return Swal.fire({
       title: `Delete ${label}?`,
       text: "This action cannot be undone.",
@@ -70,7 +351,7 @@
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
     });
-  }
+  };
 
   function pad2(n) {
     return String(n).padStart(2, "0");
@@ -1167,6 +1448,8 @@
     portalModalToBody("attachmentModal");
     portalModalToBody("contractModal");
     portalModalToBody("invoiceProgressModal");
+    portalModalToBody("advancedStatusModal");
+    portalModalToBody("biayaRealisasiStatusModal");
     portalModalToBody("vendorCategoryModal");
     portalModalToBody("budgetCodeModal");
 
@@ -1174,6 +1457,8 @@
     wireAttachment();
     wireContract();
     wireInvoiceProgress();
+    wireAdvancedStatus();
+    wireBiayaRealisasiStatus();
     wireVendorCategory();
     wireBudgetCode();
     wireTabAdjustments();

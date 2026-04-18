@@ -166,14 +166,33 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         // POST: api/attachments/upload
+        /// <summary>
+        /// Upload file attachment (Invoices/Contracts)
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/attachments/upload
+        ///     Content-Type: multipart/form-data
+        /// </remarks>
+        /// <param name="file">File to upload</param>
+        /// <param name="module">Module name (Invoices/Contracts)</param>
+        /// <param name="attachmentTypeId">Attachment type ID</param>
+        /// <param name="referenceId">Reference ID (Guid)</param>
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Upload(
-            [FromForm] IFormFile file,
-            [FromForm] string module,           // "Invoices" or "Contracts"
-            [FromForm] int attachmentTypeId,
-            [FromForm] Guid referenceId)
+        // public async Task<IActionResult> Upload(
+        //     [FromForm] IFormFile file,
+        //     [FromForm] string module,
+        //     [FromForm] int attachmentTypeId,
+        //     [FromForm] Guid referenceId)
+        public async Task<IActionResult> Upload([FromForm] UploadAttachmentRequest request)
         {
+            var file = request.File;
+            var module = request.Module;
+            var attachmentTypeId = request.AttachmentTypeId;
+            var referenceId = request.ReferenceId;
+
             _logger.LogInformation("Upload request received - Module: {Module}, ReferenceId: {ReferenceId}, File: {FileName}",
                 module, referenceId, file?.FileName);
 

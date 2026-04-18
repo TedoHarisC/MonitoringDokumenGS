@@ -14,4 +14,12 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public DateTime CreatedAt { get; set; }
         public Guid CreatedBy { get; set; }
     }
+
+    public class UploadAttachmentRequest
+    {
+        public IFormFile File { get; set; } = null!;
+        public string Module { get; set; } = null!;
+        public int AttachmentTypeId { get; set; }
+        public Guid ReferenceId { get; set; }
+    }
 }

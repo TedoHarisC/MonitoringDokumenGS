@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonitoringDokumenGS.Models;
 using MonitoringDokumenGS.Models.Infrastructure;
+using MonitoringDokumenGS.Models.Master;
 
 namespace MonitoringDokumenGS.Data
 {
@@ -27,6 +28,8 @@ namespace MonitoringDokumenGS.Data
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<ApprovalStatus> ApprovalStatuses { get; set; }
         public DbSet<ContractStatus> ContractStatuses { get; set; }
+        public DbSet<AdvancedStatus> AdvancedStatuses { get; set; }
+        public DbSet<BiayaRealisasiStatus> BiayaRealisasiStatuses { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<Budget> MST_Budget { get; set; }

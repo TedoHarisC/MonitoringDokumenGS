@@ -45,6 +45,9 @@ builder.Services.AddScoped<IApprovalStatus, ApprovalStatusService>();
 builder.Services.AddScoped<IAttachmentTypes, AttachmentTypeService>();
 builder.Services.AddScoped<IContractStatus, ContractStatusService>();
 builder.Services.AddScoped<IInvoiceProgressStatuses, InvoiceProgressStatusService>();
+
+builder.Services.AddScoped<IAdvancedStatus, AdvancedStatusService>();
+builder.Services.AddScoped<IBiayaRealisasiStatus, BiayaRealisasiStatusService>();
 builder.Services.AddScoped<IInvoice, InvoiceService>();
 builder.Services.AddScoped<IContract, ContractService>();
 builder.Services.AddScoped<IAttachment, AttachmentService>();
