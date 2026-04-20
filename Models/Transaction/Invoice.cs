@@ -21,6 +21,7 @@ namespace MonitoringDokumenGS.Models
         public int InvoiceMonth { get; set; }
         public bool IsOnTime { get; set; }
         public string? InvoiceDescription { get; set; }
+        public string? NoSAP { get; set; }
 
         // Navigation properties
         public Vendor Vendor { get; set; } = default!;

@@ -77,6 +77,7 @@ namespace MonitoringDokumenGS.Services.Transaction
                 CreatedByUserId = dto.CreatedByUserId,
                 InvoiceNumber = dto.InvoiceNumber,
                 InvoiceDescription = dto.InvoiceDescription,
+                NoSAP = dto.NoSAP,
                 ProgressStatusId = dto.ProgressStatusId,
                 InvoiceAmount = dto.InvoiceAmount,
                 TaxAmount = dto.TaxAmount,
@@ -182,6 +183,7 @@ namespace MonitoringDokumenGS.Services.Transaction
             entity.CreatedByUserId = dto.CreatedByUserId;
             entity.InvoiceNumber = dto.InvoiceNumber;
             entity.InvoiceDescription = dto.InvoiceDescription;
+            entity.NoSAP = dto.NoSAP;
             entity.ProgressStatusId = dto.ProgressStatusId;
             entity.InvoiceAmount = dto.InvoiceAmount;
             entity.TaxAmount = dto.TaxAmount;

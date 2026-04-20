@@ -25,6 +25,7 @@ public static class InvoiceMappings
             IsDeleted = x.IsDeleted,
             InvoiceYear = x.InvoiceYear,
             InvoiceMonth = x.InvoiceMonth,
+            NoSAP = x.NoSAP,
             // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
             IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };
@@ -48,6 +49,7 @@ public static class InvoiceMappings
             IsDeleted = x.IsDeleted,
             InvoiceYear = x.InvoiceYear,
             InvoiceMonth = x.InvoiceMonth,
+            NoSAP = x.NoSAP,
             // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
             IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };
