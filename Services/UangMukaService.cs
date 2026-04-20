@@ -63,7 +63,12 @@ namespace MonitoringDokumenGS.Services
 
         public async Task<UangMuka?> GetByIdAsync(string id)
         {
-            var item = await _db.UangMukas.AsNoTracking().FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            var item = await _db.UangMukas
+                .AsNoTracking()
+                .Include(x => x.BudgetCode)
+                .Include(x => x.CoaText)
+                .Include(x => x.RelatedUangMuka)
+                .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (item == null) return null;
 
             // Ambil nama status

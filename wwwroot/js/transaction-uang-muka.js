@@ -199,6 +199,7 @@ $(function () {
 
     // ─── Init DataTable ───────────────────────────────────────────────────────
     uangMukaTable = $("#unagMukasTable").DataTable({
+        autoWidth: false,
         ajax: {
             url: apiBase,
             dataSrc: function (json) {
@@ -228,8 +229,12 @@ $(function () {
                 orderable: false,
                 searchable: false,
                 className: "dt-actions text-center",
+                width: "400px",
                 render: function (data, type, row) {
                     return `
+                        <button class="btn btn-sm btn-light-info btn-detail" data-id="${row.uangMukaId}">
+                            <i class="feather-eye me-1"></i>Detail
+                        </button>
                         <button class="btn btn-sm btn-light-brand btn-edit" data-id="${row.uangMukaId}">
                             <i class="feather-edit-2 me-1"></i>Edit
                         </button>

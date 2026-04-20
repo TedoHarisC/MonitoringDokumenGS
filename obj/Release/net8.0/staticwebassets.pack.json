@@ -93,6 +93,14 @@
       "PackagePath": "staticwebassets/js/transaction-invoice.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/transaction-uang-muka-attachment.js",
+      "PackagePath": "staticwebassets/js/transaction-uang-muka-attachment.js"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/transaction-uang-muka-detail.js",
+      "PackagePath": "staticwebassets/js/transaction-uang-muka-detail.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/transaction-uang-muka.js",
       "PackagePath": "staticwebassets/js/transaction-uang-muka.js"
     },

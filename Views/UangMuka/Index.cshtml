@@ -45,6 +45,10 @@
             perspective: none !important;
             will-change: auto !important;
         }
+
+        .bg-primary-soft {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
     </style>
 }
 
@@ -114,6 +118,27 @@
     </div>
 </div>
 <!-- [ Main Content ] end -->
+
+<!-- Detail Modal Uang Muka -->
+<div class="modal fade" id="uangMukaDetailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="uangMukaDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uangMukaDetailModalLabel">Detail Uang Muka</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="uangMukaDetailContent">
+                    <!-- Dynamic content loaded by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Create/Edit Modal Uang Muka -->
 <div class="modal fade" id="uangMukaModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -204,5 +229,5 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="/js/transaction-uang-muka.js?v=@DateTime.Now.Ticks"></script>
     <script src="/js/transaction-uang-muka-attachment.js?v=@DateTime.Now.Ticks"></script>
-
+    <script src="/js/transaction-uang-muka-detail.js?v=@DateTime.Now.Ticks"></script>
 }
