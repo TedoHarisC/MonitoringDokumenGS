@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "/dFTRsKWh6NfAwxNJ3AB/b89ZC1cqwzFqqrQuQgBL+4=",
+  "Hash": "Hpj203AQ1o/KhJB25a+9ZeRu9Hwr8ZZtT+cWDkeCQzo=",
   "Source": "MonitoringDokumenGS",
   "BasePath": "_content/MonitoringDokumenGS",
   "Mode": "Default",
@@ -471,6 +471,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/js/transaction-invoice.js"
+    },
+    {
+      "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/transaction-uang-muka.js",
+      "SourceId": "MonitoringDokumenGS",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/",
+      "BasePath": "_content/MonitoringDokumenGS",
+      "RelativePath": "js/transaction-uang-muka.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/transaction-uang-muka.js"
     },
     {
       "Identity": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/lib/bootstrap/css/bootstrap-grid.css",

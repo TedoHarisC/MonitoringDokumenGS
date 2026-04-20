@@ -145,6 +145,10 @@
                             <label class="form-label">COA Text</label>
                             <select id="coaTextId" class="form-control" required></select>
                         </div>
+                        <div class="col-md-12" id="UangMukaRelatedIdWrapper" style="display:none;">
+                            <label class="form-label">Advanced yang di realisasikan (Optional)</label>
+                            <select id="UangMukaRelatedId" class="form-control"></select>
+                        </div>
                         <div class="col-md-12">
                             <label class="form-label">Atas Nama</label>
                             <input id="atasNama" class="form-control" required />
@@ -173,6 +177,18 @@
                             <label class="form-label">Deskripsi</label>
                             <textarea id="deskripsi" class="form-control" rows="2"></textarea>
                         </div>
+                        <!-- Attachments Section (only for Edit mode) -->
+                        <div id="attachmentsSection" class="mt-4">
+                            <hr />
+                            <h6 class="mb-3">Attachments</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Upload File</label>
+                                <input type="file" id="fileUpload" class="form-control"
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                                <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                            </div>
+                            <div id="attachmentsList" class="list-group"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -187,4 +203,6 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="/js/transaction-uang-muka.js?v=@DateTime.Now.Ticks"></script>
+    <script src="/js/transaction-uang-muka-attachment.js?v=@DateTime.Now.Ticks"></script>
+
 }

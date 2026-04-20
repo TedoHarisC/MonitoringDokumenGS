@@ -1,10 +1,97 @@
+// ─── Load Advanced yang di realisasikan (UangMukaRelatedId) Select2 ─────
+function initUangMukaRelatedSelect(selectedId, selectedText) {
+    const $sel = $('#UangMukaRelatedId');
+    $sel.select2('destroy');
+    $sel.empty();
+    $sel.select2({
+        theme: 'bootstrap-5',
+        placeholder: '-- Pilih Advanced --',
+        allowClear: true,
+        ajax: {
+            url: '/api/uang-muka/advanced-for-realisasi',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return { search: params.term };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.map(function (item) {
+                        return {
+                            id: item.id,
+                            text: item.atasNama + ' - ' + item.amount + ' - ' + item.budgetCode
+                        };
+                    })
+                };
+            },
+            cache: true
+        },
+        width: '100%',
+        dropdownParent: $('#uangMukaModal')
+    });
+    if (selectedId && selectedText) {
+        var option = new Option(selectedText, selectedId, true, true);
+        $sel.append(option).trigger('change');
+    }
+}
+
+// Initialize Select2 for UangMukaRelatedId (initial)
+$('#UangMukaRelatedId').select2({
+    theme: 'bootstrap-5',
+    placeholder: '-- Pilih Advanced --',
+    allowClear: true,
+    ajax: {
+        url: '/api/uang-muka/advanced-for-realisasi',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+            return { search: params.term };
+        },
+        processResults: function (data) {
+            return {
+                results: data.map(function (item) {
+                    return {
+                        id: item.id,
+                        text: item.atasNama + ' - ' + item.amount + ' - ' + item.budgetCode
+                    };
+                })
+            };
+        },
+        cache: true
+    },
+    width: '100%'
+});
+
+// Show/hide field based on Jenis selection
+$('#jenis').on('change', function () {
+    if ($(this).val() === 'Realisasi') {
+        $('#UangMukaRelatedIdWrapper').show();
+    } else {
+        $('#UangMukaRelatedIdWrapper').hide();
+        $('#UangMukaRelatedId').val(null).trigger('change');
+    }
+});
+
+// ─── KEY FIX: Hanya trigger jenis change saat modal CREATE (bukan Edit) ──────
+$('#uangMukaModal').on('shown.bs.modal', function () {
+    if (!$("#uangMukaId").val()) {
+        $('#jenis').trigger('change');
+    }
+});
+
+// If editing, set value for Select2
+window.setUangMukaRelatedId = function (id, text) {
+    if (id && text) {
+        var option = new Option(text, id, true, true);
+        $('#UangMukaRelatedId').append(option).trigger('change');
+    }
+}
+
 $(function () {
     const apiBase = "/api/uang-muka";
     let uangMukaTable;
-    let modalInstance = null;
 
-    // ─── KEY FIX: Pindahkan modal langsung ke document.body ──────────────────
-    // Ini yang membuat modal Invoice tidak kena overlay — salin teknik yang sama
+    // ─── Pindahkan modal langsung ke document.body ────────────────────────────
     function portalModalToBody(modalId) {
         const el = document.getElementById(modalId);
         if (!el) return;
@@ -43,11 +130,11 @@ $(function () {
         return $.getJSON("/api/budget-codes?page=1&pageSize=2000").then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             const $sel = $("#budgetCodeId");
+            if ($sel.hasClass("select2-hidden-accessible")) $sel.select2("destroy");
             $sel.empty().append('<option value="">-- Pilih Budget Code --</option>');
             items.forEach(function (b) {
                 $sel.append(`<option value="${b.budgetCodeId}">${b.code} - ${b.description}</option>`);
             });
-            // Inisialisasi Select2 setelah isi option
             $sel.select2({
                 theme: "bootstrap-5",
                 placeholder: "-- Pilih Budget Code --",
@@ -63,6 +150,7 @@ $(function () {
         return $.getJSON("/api/vendor-categories?page=1&pageSize=2000").then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             const $sel = $("#coaTextId");
+            if ($sel.hasClass("select2-hidden-accessible")) $sel.select2("destroy");
             $sel.empty().append('<option value="">-- Pilih COA Text --</option>');
             items.forEach(function (v) {
                 $sel.append(`<option value="${v.vendorCategoryId}">${v.parentBudgetCodeLabel || "-"} - ${v.name}</option>`);
@@ -76,6 +164,8 @@ $(function () {
             });
         });
     }
+
+    // ─── Load Status Options — hanya isi <option>, TANPA init Select2 ─────────
     function loadStatusOptions(jenis) {
         const url = jenis === "Advanced"
             ? "/api/advanced-statuses?page=1&pageSize=2000"
@@ -84,11 +174,18 @@ $(function () {
         return $.getJSON(url).then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             const $sel = $("#statusId");
+
+            // Destroy Select2 dulu sebelum manipulasi options
+            if ($sel.hasClass("select2-hidden-accessible")) {
+                $sel.select2("destroy");
+            }
+
             $sel.empty().append('<option value="">-- Pilih Status --</option>');
             items.forEach(function (s) {
                 const id = jenis === "Advanced" ? s.advancedStatusId : s.biayaRealisasiStatusId;
                 $sel.append(`<option value="${id}">${s.code} - ${s.name}</option>`);
             });
+            // Tidak init Select2 di sini
         });
     }
 
@@ -105,7 +202,6 @@ $(function () {
         ajax: {
             url: apiBase,
             dataSrc: function (json) {
-                //console.log("Raw API Response:", json);
                 return Array.isArray(json) ? json : (json.items || json.data || []);
             }
         },
@@ -185,17 +281,32 @@ $(function () {
             loadStatusOptions("Advanced")
         ]).then(function () {
             $("#jenis").val("");
-            $("#statusId").val("");
+            $("#statusId")[0].value = "";
             $("#budgetCodeId").val("").trigger("change");
             $("#coaTextId").val("").trigger("change");
+            $('#UangMukaRelatedIdWrapper').hide();
+            $('#UangMukaRelatedId').val(null).trigger('change');
             showModal();
         });
     });
 
-    // ─── Event: Jenis berubah → reload status ────────────────────────────────
+    // ─── Event: Jenis berubah → reload status & show/hide Advanced Realisasi ──
+    // Hanya untuk interaksi user di form, bukan saat edit load
     $("#jenis").on("change", function () {
         const val = $(this).val();
-        if (val) loadStatusOptions(val);
+        if (!val) return;
+
+        loadStatusOptions(val).then(function () {
+            $("#statusId")[0].value = "";
+        });
+
+        if (val === "Realisasi") {
+            $('#UangMukaRelatedIdWrapper').show();
+            initUangMukaRelatedSelect();
+        } else {
+            $('#UangMukaRelatedIdWrapper').hide();
+            $('#UangMukaRelatedId').val(null).trigger('change');
+        }
     });
 
     // ─── Event: Tombol Edit ───────────────────────────────────────────────────
@@ -203,8 +314,9 @@ $(function () {
         const id = $(this).data("id");
         $.get(`${apiBase}/${id}`).done(function (data) {
             portalModalToBody('uangMukaModal');
+
+            // Isi semua field biasa
             $("#uangMukaId").val(data.uangMukaId);
-            $("#jenis").val(data.jenis);
             $("#atasNama").val(data.atasNama);
             $("#amount").val(data.amount);
             $("#startDate").val(data.startDate ? data.startDate.split("T")[0] : "");
@@ -213,6 +325,16 @@ $(function () {
             $("#deskripsi").val(data.deskripsi || "");
             $("#uangMukaModalLabel").text("Edit Uang Muka");
 
+            // ─── Set jenis TANPA trigger change ───────────────────────────────
+            $("#jenis").val(data.jenis);
+
+            // Show/hide wrapper manual — tidak lewat trigger change
+            if (data.jenis === "Realisasi") {
+                $('#UangMukaRelatedIdWrapper').show();
+            } else {
+                $('#UangMukaRelatedIdWrapper').hide();
+            }
+
             Promise.all([
                 loadBudgetCodes(),
                 loadCoaTexts(),
@@ -220,7 +342,34 @@ $(function () {
             ]).then(function () {
                 $("#budgetCodeId").val(data.budgetCodeId).trigger("change");
                 $("#coaTextId").val(data.coaTextId).trigger("change");
-                $("#statusId").val(data.statusId);
+
+                // ─── KEY FIX: Set statusId pakai native select — tanpa Select2 ──
+                // Ini menghindari semua timing & re-init issue Select2
+                const $status = $("#statusId");
+                if ($status.hasClass("select2-hidden-accessible")) {
+                    $status.select2("destroy");
+                }
+                $status[0].value = data.statusId;
+                console.log('DEBUG statusId:', data.statusId, '→ result:', $status[0].value);
+
+                // Advanced Realisasi
+                if (data.jenis === "Realisasi") {
+                    $('#UangMukaRelatedIdWrapper').show();
+                    let advText = data.uangMukaRelatedText || '';
+                    if (!advText && data.uangMukaRelatedId) {
+                        $.get(`/api/uang-muka/${data.uangMukaRelatedId}`).done(function (adv) {
+                            advText = adv.atasNama + ' - ' + adv.amount + ' - ' + (adv.budgetCode?.description || '');
+                            initUangMukaRelatedSelect(data.uangMukaRelatedId, advText);
+                        });
+                    } else {
+                        initUangMukaRelatedSelect(data.uangMukaRelatedId, advText);
+                    }
+                } else {
+                    $('#UangMukaRelatedIdWrapper').hide();
+                    $('#UangMukaRelatedId').val(null).trigger('change');
+                }
+
+                // showModal SATU KALI di akhir
                 showModal();
             });
         }).fail(function () {
@@ -257,9 +406,10 @@ $(function () {
         e.preventDefault();
 
         const id = $("#uangMukaId").val();
+        const jenis = $("#jenis").val();
         const payload = {
             uangMukaId: id || undefined,
-            jenis: $("#jenis").val(),
+            jenis: jenis,
             budgetCodeId: $("#budgetCodeId").val(),
             coaTextId: $("#coaTextId").val(),
             atasNama: $("#atasNama").val(),
@@ -268,7 +418,8 @@ $(function () {
             endDate: $("#endDate").val(),
             statusId: $("#statusId").val(),
             noSAP: $("#noSAP").val(),
-            deskripsi: $("#deskripsi").val()
+            deskripsi: $("#deskripsi").val(),
+            uangMukaRelatedId: (jenis === "Realisasi" ? $("#UangMukaRelatedId").val() : null)
         };
 
         const method = id ? "PUT" : "POST";
@@ -279,7 +430,15 @@ $(function () {
             method: method,
             contentType: "application/json",
             data: JSON.stringify(payload)
-        }).done(function () {
+        }).done(async function (res) {
+            // If Add (POST), get new ID from response and upload attachments before closing modal
+            let newId = id;
+            if (!id && res && (res.uangMukaId || res.id)) {
+                newId = res.uangMukaId || res.id;
+            }
+            if (newId && typeof window.uploadPendingFiles === 'function') {
+                await window.uploadPendingFiles(newId);
+            }
             hideModal();
             reloadTable();
             Swal.fire("Saved", "Uang Muka berhasil disimpan.", "success");

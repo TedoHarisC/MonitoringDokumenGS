@@ -63,7 +63,21 @@ namespace MonitoringDokumenGS.Services
 
         public async Task<UangMuka?> GetByIdAsync(string id)
         {
-            return await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            var item = await _db.UangMukas.AsNoTracking().FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            if (item == null) return null;
+
+            // Ambil nama status
+            if (item.Jenis == "Advanced")
+            {
+                var advStatus = await _db.AdvancedStatuses.AsNoTracking().FirstOrDefaultAsync(x => x.AdvancedStatusesId == item.StatusId);
+                item.Status = advStatus?.Name;
+            }
+            else
+            {
+                var biayaStatus = await _db.BiayaRealisasiStatuses.AsNoTracking().FirstOrDefaultAsync(x => x.BiayaRealisasiStatusesId == item.StatusId);
+                item.Status = biayaStatus?.Name;
+            }
+            return item;
         }
 
         public async Task<UangMuka> CreateAsync(UangMuka model)
