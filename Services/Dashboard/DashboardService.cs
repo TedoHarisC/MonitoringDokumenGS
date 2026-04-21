@@ -445,4 +445,40 @@ public class DashboardService : IDashboard
 
         return contracts;
     }
+
+    public async Task<InvoiceStatusSummaryDto> GetInvoiceStatusSummaryAsync()
+    {
+        // Ambil semua status dari master
+        var allStatuses = await _context.InvoiceProgressStatuses
+            .Where(i => !i.IsDeleted)
+            .OrderBy(s => s.ProgressStatusId)
+            .ToListAsync();
+
+        // Hitung total invoice per status
+        var invoiceCounts = await _context.Invoices
+            .Where(i => !i.IsDeleted)
+            .GroupBy(i => i.ProgressStatusId)
+            .Select(g => new { ProgressStatusId = g.Key, Total = g.Count() })
+            .ToListAsync();
+
+        // Gabungkan, pastikan semua status muncul
+        var statusCounts = allStatuses
+            .GroupJoin(
+                invoiceCounts,
+                status => status.ProgressStatusId,
+                count => count.ProgressStatusId,
+                (status, counts) => new InvoiceStatusCountDto
+                {
+                    ProgressStatusId = status.ProgressStatusId,
+                    ProgressStatusName = status.Name,
+                    Total = counts.FirstOrDefault()?.Total ?? 0
+                })
+            .OrderBy(x => x.ProgressStatusId)
+            .ToList();
+
+        return new InvoiceStatusSummaryDto
+        {
+            StatusCounts = statusCounts
+        };
+    }
 }

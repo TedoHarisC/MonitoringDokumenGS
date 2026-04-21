@@ -95,4 +95,11 @@ public class DashboardController : ControllerBase
             return StatusCode(500, new { success = false, message = ex.Message });
         }
     }
+
+    [HttpGet("invoice-status-summary")]
+    public async Task<IActionResult> GetInvoiceStatusSummary()
+    {
+        var data = await _dashboard.GetInvoiceStatusSummaryAsync();
+        return Ok(data);
+    }
 }

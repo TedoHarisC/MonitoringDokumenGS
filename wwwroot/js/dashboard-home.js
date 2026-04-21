@@ -1,9 +1,85 @@
 // ==============================
+// Invoice Total by Status (for #invoice_by_status_area)
+// ==============================
+function loadInvoiceByStatusArea() {
+    $.ajax({
+        url: '/api/dashboard/invoice-status-summary',
+        method: 'GET',
+        success: function (data) {
+            const area = $('#invoice_by_status_area');
+            area.empty();
+            // Ambil semua status dari API (selalu muncul semua status meski 0)
+            let statusList = [];
+            if (data && data.statusCounts) {
+                statusList = data.statusCounts;
+            }
+            if (!statusList || statusList.length === 0) {
+                area.html('<div class="col-12 text-center text-muted py-4">No status data available</div>');
+                return;
+            }
+            // Bungkus card dalam row dan center jika kurang dari 6
+            let html = '<div class="row justify-content-center">';
+            statusList.forEach(function (item) {
+                let color = 'secondary';
+                let icon = 'feather-info';
+                switch (item.progressStatusName) {
+                    case 'Verifikasi GS': color = 'info'; icon = 'feather-info'; break;
+                    case 'Done': color = 'success'; icon = 'feather-check-circle'; break;
+                    case 'Approved by HCGS Dept': color = 'warning'; icon = 'feather-thumbs-up'; break;
+                    case 'Approved by KTT': color = 'primary'; icon = 'feather-thumbs-up'; break;
+                    case 'Validasi & Pembayaran FA': color = 'secondary'; icon = 'feather-dollar-sign'; break;
+                    case 'Approved': color = 'primary'; icon = 'feather-thumbs-up'; break;
+                    case 'Rejected': color = 'danger'; icon = 'feather-x-circle'; break;
+                }
+
+                let progressStatusName = (item.progressStatusName == 'Validasi & Pembayaran FA') ? 'Pembayaran' : (item.progressStatusName == 'Approved by HCGS Dept') ? 'Approved by HCGS' : item.progressStatusName;
+                html += `
+                <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-3">
+                    <div class="p-3 border border-dashed rounded invoice-status-card" 
+                         data-status="${item.progressStatusName}">
+                        <div class="fs-12 text-muted mb-1">${progressStatusName}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="fw-bold text-${color} mb-0">${item.total}</h3>
+                            <span class="badge bg-${color}-subtle text-${color}">
+                                <i class="${icon}"></i>
+                            </span>
+                        </div>
+                        <div class="fs-11 text-muted mt-1">Total</div>
+                    </div>
+                </div>
+                `;
+            });
+            html += `
+                <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Rejected</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold text-danger mb-0" id="activeContractsCount">0</h3>
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="feather-x-circle"></i>
+                                    </span>
+                                </div>
+                                <div class="fs-11 text-muted mt-1">Total</div>
+                            </div>
+                        </div>
+            `;
+            html += '</div>';
+            area.html(html);
+        },
+        error: function () {
+            $('#invoice_by_status_area').html('<div class="col-12 text-center text-danger py-4">Failed to load data</div>');
+        }
+    });
+}
+// ==============================
 // Dashboard Home Charts
 // ==============================
 
 // Visitors Overview Statistics Chart
 function initVisitorsOverviewChart() {
+    // Guard: jangan render jika elemen tidak ada di DOM
+    if (!document.querySelector("#visitors-overview-statistics-chart")) return;
+
     const visitorsOverviewOptions = {
         series: [{
             name: 'Visitors',
@@ -52,6 +128,9 @@ function initVisitorsOverviewChart() {
 
 // Social Radar Chart
 function initSocialRadarChart() {
+    // Guard: jangan render jika elemen tidak ada di DOM
+    if (!document.querySelector("#social-radar-chart")) return;
+
     const socialRadarOptions = {
         series: [{
             name: 'Engagement',
@@ -181,8 +260,173 @@ function loadTopVendorChart() {
 
 // Initialize all charts on page load
 $(document).ready(function () {
+        // Bind click event for dynamically rendered status cards (delegated)
+        $(document).on('click', '.invoice-status-card', function () {
+            const status = $(this).data('status');
+            showInvoicesByStatusModal(status);
+        });
+
+        // Saat modal terbuka: fokus ke modal-body bukan close button
+        $('#invoiceStatusModal').on('shown.bs.modal', function () {
+            $(this).find('.modal-body').attr('tabindex', '-1').trigger('focus');
+        });
+
+        // Saat modal AKAN ditutup: blur dulu sebelum aria-hidden ditambahkan
+        $('#invoiceStatusModal').on('hide.bs.modal', function () {
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+
+        // Saat modal sudah tertutup: cleanup DataTable
+        $('#invoiceStatusModal').on('hidden.bs.modal', function () {
+            if ($.fn.DataTable.isDataTable('#modalInvoicesTable')) {
+                $('#modalInvoicesTable').DataTable().clear().destroy();
+            }
+            $('#modalInvoicesTable tbody').empty();
+        });
+
+    });
+
+    // Show modal and load invoices by status
+    function showInvoicesByStatusModal(status) {
+        // Set modal title
+        $('#invoiceStatusModalLabel').text('Invoice List - ' + status);
+        // Show modal
+        var modal = new bootstrap.Modal(document.getElementById('invoiceStatusModal'));
+        modal.show();
+
+        // Fetch invoices by status
+        $.ajax({
+            url: '/api/invoices/filter-by-status?status=' + encodeURIComponent(status),
+            method: 'GET',
+            success: function (data) {
+                let rows = '';
+                let isEmpty = !data || data.length === 0;
+
+                //console.log(data);
+
+                if (!isEmpty) {
+                    const monthNames = [
+                        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                    ];
+                    data.forEach(function (inv) {
+                        // Pastikan field yang dipakai sesuai API
+                        const invoiceAmount = (inv.invoiceAmount !== undefined && inv.invoiceAmount !== null)
+                            ? inv.invoiceAmount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                            : '';
+                        const taxAmount = (inv.taxAmount !== undefined && inv.taxAmount !== null)
+                            ? inv.taxAmount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                            : '';
+                        const year = inv.invoiceYear || '';
+                        const monthNum = inv.invoiceMonth || 0;
+                        const month = monthNames[monthNum] || inv.invoiceMonth || '';
+                        rows += `<tr>
+                            <td>${inv.invoiceNumber || ''}</td>
+                            <td>${inv.vendorName || ''}</td>
+                            <td>${inv.progressStatusName || ''}</td>
+                            <td class="text-end">${invoiceAmount}</td>
+                            <td class="text-end">${taxAmount}</td>
+                            <td class="text-center">${year}</td>
+                            <td class="text-center">${month}</td>
+                            <td class="text-center">${inv.isOnTime ? 'On Time' : 'Late'}</td>
+                            <td>${inv.createdAt ? new Date(inv.createdAt).toLocaleString('id-ID') : ''}</td>
+                            <td class="text-center">
+                                <a href="/Invoice/Details/${inv.invoiceId || inv.id}" class="btn btn-sm btn-info">Detail</a>
+                            </td>
+                        </tr>`;
+                    });
+                }
+
+                // Destroy DataTable if exists
+                if ($.fn.DataTable.isDataTable('#modalInvoicesTable')) {
+                    $('#modalInvoicesTable').DataTable().destroy();
+                }
+
+                // Kosongkan tbody, lalu isi jika ada data
+                $('#modalInvoicesTable tbody').html(isEmpty ? '' : rows);
+
+                // Pastikan DataTables Buttons sudah dimuat
+                function ensureDataTablesButtons(callback) {
+                    if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+                        callback();
+                        return;
+                    }
+                    // Load loader script jika belum ada
+                    if (!window._dtButtonsLoaderInjected) {
+                        var s = document.createElement('script');
+                        s.src = '/js/datatables-buttons-loader.js';
+                        document.head.appendChild(s);
+                        window._dtButtonsLoaderInjected = true;
+                    }
+                    var tryCount = 0;
+                    function waitForButtons() {
+                        if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+                            callback();
+                        } else if (tryCount < 20) {
+                            tryCount++;
+                            setTimeout(waitForButtons, 150);
+                        } else {
+                            callback(); // fallback: tetap inisialisasi tanpa export
+                        }
+                    }
+                    waitForButtons();
+                }
+
+                ensureDataTablesButtons(function() {
+                    $('#modalInvoicesTable').DataTable({
+                        responsive: true,
+                        order: [],
+                        autoWidth: false,
+                        searching: false,
+                        paging: false,
+                        info: false,
+                        language: {
+                            emptyTable: "No invoices found for this status."
+                        },
+                        dom: 'Bfrtip',
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="feather-download"></i> Export Excel',
+                                className: 'btn btn-success btn-sm',
+                                title: 'Invoice List - ' + status,
+                                exportOptions: {
+                                    columns: ':visible:not(:last-child)'
+                                }
+                            }
+                        ]
+                    });
+                });
+            },
+            error: function () {
+                if ($.fn.DataTable.isDataTable('#modalInvoicesTable')) {
+                    $('#modalInvoicesTable').DataTable().destroy();
+                }
+                $('#modalInvoicesTable tbody').html('');
+                $('#modalInvoicesTable').DataTable({
+                    responsive: true,
+                    order: [],
+                    autoWidth: false,
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    language: {
+                        emptyTable: "Failed to load invoices."
+                    }
+                });
+            }
+        });
+}
+
+// Document ready block
+$(document).ready(function () {
     // Load Dashboard Statistics (Contracts & Invoices)
     loadDashboardStats();
+
+    // Load Invoice By Status Area
+    loadInvoiceByStatusArea();
 
     // Load Budget KPI Dashboard
     const currentYear = new Date().getFullYear();
@@ -742,12 +986,12 @@ let contractsCurrentPage = 1;
 const contractsPerPage = 5;
 
 function loadContractsExpiring(days = 30) {
-    console.log('Loading contracts expiring in', days, 'days');
+    //console.log('Loading contracts expiring in', days, 'days');
     $.ajax({
         url: `/api/dashboard/contracts-expiring?days=${days}`,
         method: 'GET',
         success: function(response) {
-            console.log('Contracts response:', response);
+            //console.log('Contracts response:', response);
             if (response.success) {
                 contractsData = response.data || [];
                 contractsCurrentPage = 1;
@@ -784,7 +1028,7 @@ function loadContractsExpiring(days = 30) {
 }
 
 function updateContractsExpiringTable() {
-    console.log('Updating table with contracts:', contractsData);
+    //console.log('Updating table with contracts:', contractsData);
     const $tbody = $('#contractsExpiringTableBody');
     $tbody.empty();
     

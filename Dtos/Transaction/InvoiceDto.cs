@@ -11,6 +11,8 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public string? InvoiceDescription { get; set; }
         public string? NoSAP { get; set; }
         public int ProgressStatusId { get; set; }
+        public string? ProgressStatusName { get; set; } // Nama status progress
+        public string? VendorName { get; set; } // Nama vendor
         public decimal InvoiceAmount { get; set; }
         public decimal TaxAmount { get; set; }
         public DateTime CreatedAt { get; set; }

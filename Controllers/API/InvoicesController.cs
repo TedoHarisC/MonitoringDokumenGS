@@ -108,6 +108,57 @@ namespace MonitoringDokumenGS.Controllers.API
             }
         }
 
+
+        /// <summary>
+        /// Get invoices filtered by status name (case-insensitive)
+        /// GET /api/invoices/filter-by-status?status=StatusName
+        /// </summary>
+        [HttpGet("filter-by-status")]
+        public async Task<IActionResult> GetByStatus([FromQuery] string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return BadRequest(new { message = "Status is required" });
+
+            try
+            {
+                // Get current user's role and vendor
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { message = "User not authenticated" });
+                }
+
+                var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+                var isSuperAdminOrAdmin = userRoles.Contains("SUPER_ADMIN") || userRoles.Contains("ADMIN");
+
+                IEnumerable<InvoiceDto> result;
+                if (isSuperAdminOrAdmin)
+                {
+                    result = await _service.GetAllAsync();
+                }
+                else
+                {
+                    var user = await _userService.GetByIdAsync(userId);
+                    if (user == null || user.VendorId == Guid.Empty)
+                    {
+                        return Ok(new List<InvoiceDto>());
+                    }
+                    result = await _service.GetAllByVendorAsync(user.VendorId);
+                }
+
+                // Filter by status name (case-insensitive, trims)
+                var filtered = result.Where(x => (x.GetType().GetProperty("ProgressStatusName") != null
+                    ? ((x.ProgressStatusName ?? "").Trim().Equals(status.Trim(), StringComparison.OrdinalIgnoreCase))
+                    : false)).ToList();
+                return Ok(filtered);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error filtering invoices by status");
+                return StatusCode(500, new { message = "An error occurred while filtering invoices" });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] InvoiceDto dto)
         {
