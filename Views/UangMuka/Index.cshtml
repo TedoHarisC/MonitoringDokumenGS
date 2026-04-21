@@ -163,71 +163,90 @@
                             </select>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">Budget Code</label>
-                            <select id="budgetCodeId" class="form-control" required></select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">COA Text</label>
-                            <select id="coaTextId" class="form-control" required></select>
-                        </div>
-                        <div class="col-md-12" id="UangMukaRelatedIdWrapper" style="display:none;">
-                            <label class="form-label">Advanced yang di realisasikan (Optional)</label>
-                            <select id="UangMukaRelatedId" class="form-control"></select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Atas Nama</label>
-                            <input id="atasNama" class="form-control" required />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Amount</label>
-                            <input id="amount" type="number" class="form-control" required min="0" step="0.01" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Start Date</label>
-                            <input id="startDate" type="date" class="form-control" required />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">End Date</label>
-                            <input id="endDate" type="date" class="form-control" required />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select id="statusId" class="form-control" required></select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">No SAP</label>
-                            <input id="noSAP" class="form-control" />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Deskripsi</label>
-                            <textarea id="deskripsi" class="form-control" rows="2"></textarea>
-                        </div>
-                        <!-- Attachments Section (only for Edit mode) -->
-                        <div id="attachmentsSection" class="mt-4">
-                            <hr />
-                            <h6 class="mb-3">Attachments</h6>
-                            <div class="mb-3">
-                                <label class="form-label">Upload File</label>
-                                <input type="file" id="fileUpload" class="form-control"
-                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
-                                <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                            <label class="form-label">Budget Code <span id="budgetCodeOptional" class="text-muted small"
+                                                                            style="display:none;">(Optional)</span></label>
+                                <select id="budgetCodeId" class="form-control"></select>
                             </div>
-                            <div id="attachmentsList" class="list-group"></div>
+                            <div class="col-md-12">
+                                <label class="form-label">COA Text <span id="coaTextOptional" class="text-muted small"
+                                                                             style="display:none;">(Optional)</span></label>
+                                    <select id="coaTextId" class="form-control"></select>
+                                </div>
+                                <div class="col-md-12" id="UangMukaRelatedIdWrapper" style="display:none;">
+                                    <label class="form-label">Advanced yang di realisasikan (Optional)</label>
+                                    <select id="UangMukaRelatedId" class="form-control"></select>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Atas Nama</label>
+                                    <input id="atasNama" class="form-control" required />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Amount</label>
+                                    <input id="amount" type="number" class="form-control" required min="0" step="0.01" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Date</label>
+                                    <input id="startDate" type="date" class="form-control" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">End Date</label>
+                                    <input id="endDate" type="date" class="form-control" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select id="statusId" class="form-control" required></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">No SAP</label>
+                                    <input id="noSAP" class="form-control" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea id="deskripsi" class="form-control" rows="2"></textarea>
+                                </div>
+                                <!-- Attachments Section (only for Edit mode) -->
+                                <div id="attachmentsSection" class="mt-4">
+                                    <hr />
+                                    <h6 class="mb-3">Attachments</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload File</label>
+                                        <input type="file" id="fileUpload" class="form-control"
+                                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                                        <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                                    </div>
+                                    <div id="attachmentsList" class="list-group"></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="/js/transaction-uang-muka.js?v=@DateTime.Now.Ticks"></script>
-    <script src="/js/transaction-uang-muka-attachment.js?v=@DateTime.Now.Ticks"></script>
-    <script src="/js/transaction-uang-muka-detail.js?v=@DateTime.Now.Ticks"></script>
-}
+        @section Scripts {
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            <script src="/js/transaction-uang-muka.js?v=@DateTime.Now.Ticks"></script>
+            <script src="/js/transaction-uang-muka-attachment.js?v=@DateTime.Now.Ticks"></script>
+            <script src="/js/transaction-uang-muka-detail.js?v=@DateTime.Now.Ticks"></script>
+            <script>
+                $(function () {
+                function toggleOptionalLabel() {
+                var jenis = $('#jenis').val();
+                if (jenis === 'Advanced') {
+                $('#budgetCodeOptional').show();
+                $('#coaTextOptional').show();
+                } else {
+                $('#budgetCodeOptional').hide();
+                $('#coaTextOptional').hide();
+                }
+                }
+                $('#jenis').on('change', toggleOptionalLabel);
+                // Trigger saat modal dibuka (untuk edit)
+                $('#uangMukaModal').on('shown.bs.modal', toggleOptionalLabel);
+                });
+            </script>
+        }

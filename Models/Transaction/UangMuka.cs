@@ -8,8 +8,8 @@ namespace MonitoringDokumenGS.Models.Transaction
         [Key]
         public string UangMukaId { get; set; } = string.Empty;
         public required string Jenis { get; set; }
-        public required Guid BudgetCodeId { get; set; }
-        public required int CoaTextId { get; set; }
+        public Guid? BudgetCodeId { get; set; }
+        public int? CoaTextId { get; set; }
         public string? UangMukaRelatedId { get; set; }
         public string? NoSAP { get; set; }
         public decimal Amount { get; set; }

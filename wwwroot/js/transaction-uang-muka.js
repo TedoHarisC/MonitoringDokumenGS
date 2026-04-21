@@ -415,8 +415,8 @@ $(function () {
         const payload = {
             uangMukaId: id || undefined,
             jenis: jenis,
-            budgetCodeId: $("#budgetCodeId").val(),
-            coaTextId: $("#coaTextId").val(),
+            budgetCodeId: $("#budgetCodeId").val() || null,
+            coaTextId: $("#coaTextId").val() || null,
             atasNama: $("#atasNama").val(),
             amount: parseFloat($("#amount").val()),
             startDate: $("#startDate").val(),

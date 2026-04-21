@@ -89,6 +89,9 @@ namespace MonitoringDokumenGS.Services
         {
             model.UangMukaId = Guid.NewGuid().ToString();
             model.CreatedAt = DateTime.UtcNow;
+            // Pastikan null diterima
+            if (model.BudgetCodeId == Guid.Empty) model.BudgetCodeId = null;
+            if (model.CoaTextId == 0) model.CoaTextId = null;
             _db.UangMukas.Add(model);
             await _db.SaveChangesAsync();
             return model;
@@ -99,7 +102,8 @@ namespace MonitoringDokumenGS.Services
             var existing = await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (existing == null) throw new KeyNotFoundException("Uang Muka not found");
             existing.Jenis = model.Jenis;
-            existing.BudgetCodeId = model.BudgetCodeId;
+            existing.BudgetCodeId = (model.BudgetCodeId == Guid.Empty) ? null : model.BudgetCodeId;
+            existing.CoaTextId = (model.CoaTextId == 0) ? null : model.CoaTextId;
             existing.UangMukaRelatedId = model.UangMukaRelatedId;
             existing.NoSAP = model.NoSAP;
             existing.Amount = model.Amount;
