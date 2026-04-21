@@ -16,13 +16,13 @@ namespace MonitoringDokumenGS.Services
         public async Task<IEnumerable<UangMuka>> GetAllAsync()
         {
             var uangMukas = await _db.UangMukas
-                                .AsNoTracking()
-                                .Include(x => x.BudgetCode)
-                                .Include(x => x.RelatedUangMuka)
-                                .Include(x => x.CoaText)
-                                .Where(x => !x.IsDeleted)
-                                .OrderByDescending(x => x.CreatedAt)
-                                .ToListAsync();
+                .AsNoTracking()
+                .Include(x => x.UangMukaBudgetCodes).ThenInclude(bc => bc.BudgetCode)
+                .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
+                .Include(x => x.RelatedUangMuka)
+                .Where(x => !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
 
             var advancedStatusIds = uangMukas
                 .Where(x => x.Jenis == "Advanced")
@@ -65,8 +65,8 @@ namespace MonitoringDokumenGS.Services
         {
             var item = await _db.UangMukas
                 .AsNoTracking()
-                .Include(x => x.BudgetCode)
-                .Include(x => x.CoaText)
+                .Include(x => x.UangMukaBudgetCodes).ThenInclude(bc => bc.BudgetCode)
+                .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
                 .Include(x => x.RelatedUangMuka)
                 .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (item == null) return null;
@@ -89,21 +89,37 @@ namespace MonitoringDokumenGS.Services
         {
             model.UangMukaId = Guid.NewGuid().ToString();
             model.CreatedAt = DateTime.UtcNow;
-            // Pastikan null diterima
-            if (model.BudgetCodeId == Guid.Empty) model.BudgetCodeId = null;
-            if (model.CoaTextId == 0) model.CoaTextId = null;
             _db.UangMukas.Add(model);
+            await _db.SaveChangesAsync();
+            // Insert ke junction table jika ada
+            if (model.UangMukaBudgetCodes != null && model.UangMukaBudgetCodes.Any())
+            {
+                foreach (var bc in model.UangMukaBudgetCodes)
+                {
+                    bc.UangMukaId = model.UangMukaId;
+                    _db.UangMukaBudgetCode.Add(bc);
+                }
+            }
+            if (model.UangMukaCoaTexts != null && model.UangMukaCoaTexts.Any())
+            {
+                foreach (var ct in model.UangMukaCoaTexts)
+                {
+                    ct.UangMukaId = model.UangMukaId;
+                    _db.UangMukaCoaText.Add(ct);
+                }
+            }
             await _db.SaveChangesAsync();
             return model;
         }
 
         public async Task<UangMuka> UpdateAsync(string id, UangMuka model)
         {
-            var existing = await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            var existing = await _db.UangMukas
+                .Include(x => x.UangMukaBudgetCodes).ThenInclude(bc => bc.BudgetCode)
+                .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
+                .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (existing == null) throw new KeyNotFoundException("Uang Muka not found");
             existing.Jenis = model.Jenis;
-            existing.BudgetCodeId = (model.BudgetCodeId == Guid.Empty) ? null : model.BudgetCodeId;
-            existing.CoaTextId = (model.CoaTextId == 0) ? null : model.CoaTextId;
             existing.UangMukaRelatedId = model.UangMukaRelatedId;
             existing.NoSAP = model.NoSAP;
             existing.Amount = model.Amount;
@@ -114,14 +130,41 @@ namespace MonitoringDokumenGS.Services
             existing.StatusId = model.StatusId;
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = model.UpdatedBy;
+            // Update junction table
+            // Remove old
+            _db.UangMukaBudgetCode.RemoveRange(existing.UangMukaBudgetCodes ?? new List<UangMukaBudgetCode>());
+            _db.UangMukaCoaText.RemoveRange(existing.UangMukaCoaTexts ?? new List<UangMukaCoaText>());
+            // Add new
+            if (model.UangMukaBudgetCodes != null && model.UangMukaBudgetCodes.Any())
+            {
+                foreach (var bc in model.UangMukaBudgetCodes)
+                {
+                    bc.UangMukaId = existing.UangMukaId;
+                    _db.UangMukaBudgetCode.Add(bc);
+                }
+            }
+            if (model.UangMukaCoaTexts != null && model.UangMukaCoaTexts.Any())
+            {
+                foreach (var ct in model.UangMukaCoaTexts)
+                {
+                    ct.UangMukaId = existing.UangMukaId;
+                    _db.UangMukaCoaText.Add(ct);
+                }
+            }
             await _db.SaveChangesAsync();
             return existing;
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
-            var existing = await _db.UangMukas.FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
+            var existing = await _db.UangMukas
+                .Include(x => x.UangMukaBudgetCodes).ThenInclude(bc => bc.BudgetCode)
+                .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
+                .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (existing == null) return false;
+            // Remove related junctions
+            _db.UangMukaBudgetCode.RemoveRange(existing.UangMukaBudgetCodes ?? new List<UangMukaBudgetCode>());
+            _db.UangMukaCoaText.RemoveRange(existing.UangMukaCoaTexts ?? new List<UangMukaCoaText>());
             existing.IsDeleted = true;
             await _db.SaveChangesAsync();
             return true;

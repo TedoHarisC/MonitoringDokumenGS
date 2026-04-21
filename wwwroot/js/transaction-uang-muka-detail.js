@@ -110,11 +110,19 @@ $(function () {
                                     <div class="row g-2 mb-2">
                                         <div class="col-6">
                                             <div class="text-muted small">Budget Code</div>
-                                            <div class="fw-bold">${data.budgetCode?.description || '-'}</div>
+                                            <div class="fw-bold">
+                                                ${Array.isArray(data.budgetCodes) && data.budgetCodes.length > 0
+                                                    ? data.budgetCodes.map(b => b?.description || "").filter(Boolean).join(", ")
+                                                    : (data.budgetCode?.description || '-')}
+                                            </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="text-muted small">COA Text</div>
-                                            <div class="fw-bold">${data.coaText?.name || '-'}</div>
+                                            <div class="fw-bold">
+                                                ${Array.isArray(data.coaTexts) && data.coaTexts.length > 0
+                                                    ? data.coaTexts.map(c => c?.name || "").filter(Boolean).join(", ")
+                                                    : (data.coaText?.name || '-')}
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row g-2 mb-2">

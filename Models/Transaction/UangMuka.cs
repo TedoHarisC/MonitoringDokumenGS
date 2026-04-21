@@ -33,5 +33,9 @@ namespace MonitoringDokumenGS.Models.Transaction
         public UangMuka? RelatedUangMuka { get; set; }
         [ForeignKey("CoaTextId")]
         public VendorCategory? CoaText { get; set; }
+
+        // Many-to-many navigation
+        public ICollection<UangMukaBudgetCode> UangMukaBudgetCodes { get; set; } = new List<UangMukaBudgetCode>();
+        public ICollection<UangMukaCoaText> UangMukaCoaTexts { get; set; } = new List<UangMukaCoaText>();
     }
 }

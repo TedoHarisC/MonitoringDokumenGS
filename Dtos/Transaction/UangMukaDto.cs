@@ -6,8 +6,8 @@ namespace MonitoringDokumenGS.Dtos.Transaction
     {
         public string? UangMukaId { get; set; }
         public string? Jenis { get; set; }
-        public Guid? BudgetCodeId { get; set; }
-        public int? CoaTextId { get; set; }
+        public List<Guid>? BudgetCodeIds { get; set; } // Multiple
+        public List<int>? CoaTextIds { get; set; } // Multiple
         public string? UangMukaRelatedId { get; set; }
         public string? NoSAP { get; set; }
         public decimal Amount { get; set; }
@@ -22,5 +22,23 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+
+        // Tambahan untuk penampilan
+        public List<SimpleBudgetCodeDto>? BudgetCodes { get; set; }
+        public List<SimpleCoaTextDto>? CoaTexts { get; set; }
+    }
+
+    public class SimpleBudgetCodeDto
+    {
+        public Guid BudgetCodeId { get; set; }
+        public string? Code { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class SimpleCoaTextDto
+    {
+        public int CoaTextId { get; set; }
+        public string? Name { get; set; }
+        public string? ParentBudgetCodeLabel { get; set; }
     }
 }

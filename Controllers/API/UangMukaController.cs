@@ -36,42 +36,15 @@ namespace MonitoringDokumenGS.Controllers.API
                 query = query.Where(x => (x.Status ?? "").Contains(status));
             if (!string.IsNullOrEmpty(atasNama))
                 query = query.Where(x => x.AtasNama.Contains(atasNama));
-            if (!string.IsNullOrEmpty(budgetCode))
-                query = query.Where(x => (x.BudgetCode != null && x.BudgetCode.Code.Contains(budgetCode)));
+            // Filtering by BudgetCodeId (now many-to-many)
+            if (!string.IsNullOrEmpty(budgetCode) && Guid.TryParse(budgetCode, out var budgetCodeGuid))
+                query = query.Where(x => (x.UangMukaBudgetCodes ?? new List<Models.Transaction.UangMukaBudgetCode>()).Any(bc => bc.BudgetCodeId == budgetCodeGuid));
             if (!string.IsNullOrEmpty(search))
-                query = query.Where(x => x.AtasNama.Contains(search) || (x.BudgetCode != null && x.BudgetCode.Code.Contains(search)));
+                query = query.Where(x => x.AtasNama.Contains(search));
             var result = query
                 .OrderByDescending(x => x.CreatedAt)
                 .Take(30)
-                .Select(x => new
-                {
-                    uangMukaId = x.UangMukaId,
-                    atasNama = x.AtasNama,
-                    amount = x.Amount,
-                    jenis = x.Jenis,
-                    status = x.Status,
-                    startDate = x.StartDate,
-                    endDate = x.EndDate,
-                    budgetCode = x.BudgetCode == null ? null : new
-                    {
-                        code = x.BudgetCode.Code,
-                        description = x.BudgetCode.Description,
-                        budgetCodeId = x.BudgetCode.BudgetCodeId
-                    },
-                    coaText = x.CoaText == null ? null : new
-                    {
-                        vendorCategoryId = x.CoaText.VendorCategoryId,
-                        name = x.CoaText.Name,
-                        parentBudgetCodeLabel = x.CoaText.Name
-                    },
-                    relatedUangMuka = x.RelatedUangMuka == null ? null : new
-                    {
-                        id = x.RelatedUangMuka.UangMukaId,
-                        atasNama = x.RelatedUangMuka.AtasNama,
-                        amount = x.RelatedUangMuka.Amount,
-                        jenis = x.RelatedUangMuka.Jenis
-                    }
-                })
+                .Select(x => Mappings.Transaction.UangMukaMappings.ToDto(x))
                 .ToList();
             return Ok(result);
         }
@@ -85,17 +58,11 @@ namespace MonitoringDokumenGS.Controllers.API
             var all = await _service.GetAllAsync();
             var query = all.Where(x => x.Jenis == "Advanced" && (x.Status ?? "") == "Butuh Realisasi");
             if (!string.IsNullOrEmpty(search))
-                query = query.Where(x => x.AtasNama.Contains(search) || (x.BudgetCode != null && x.BudgetCode.Code.Contains(search)));
+                query = query.Where(x => x.AtasNama.Contains(search));
             var result = query
                 .OrderByDescending(x => x.CreatedAt)
                 .Take(30)
-                .Select(x => new
-                {
-                    id = x.UangMukaId,
-                    atasNama = x.AtasNama,
-                    amount = x.Amount,
-                    budgetCode = x.BudgetCode != null ? x.BudgetCode.Code : null
-                })
+                .Select(x => Mappings.Transaction.UangMukaMappings.ToDto(x))
                 .ToList();
             return Ok(result);
         }
@@ -103,25 +70,62 @@ namespace MonitoringDokumenGS.Controllers.API
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            var entity = await _service.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+            var dto = Mappings.Transaction.UangMukaMappings.ToDto(entity);
+            return Ok(dto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] UangMuka model)
+        public async Task<IActionResult> Create([FromBody] Dtos.Transaction.UangMukaDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var created = await _service.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = created.UangMukaId }, created);
+            // Map DTO to entity
+            var entity = new Models.Transaction.UangMuka
+            {
+                Jenis = model.Jenis ?? string.Empty,
+                UangMukaRelatedId = model.UangMukaRelatedId,
+                NoSAP = model.NoSAP,
+                Amount = model.Amount,
+                AtasNama = model.AtasNama ?? string.Empty,
+                Deskripsi = model.Deskripsi ?? string.Empty,
+                StartDate = model.StartDate,
+                EndDate = model.EndDate,
+                StatusId = model.StatusId ?? string.Empty,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = model.CreatedBy,
+                UangMukaBudgetCodes = (model.BudgetCodeIds ?? new List<Guid>()).Select(bc => new Models.Transaction.UangMukaBudgetCode { BudgetCodeId = bc }).ToList(),
+                UangMukaCoaTexts = (model.CoaTextIds ?? new List<int>()).Select(ct => new Models.Transaction.UangMukaCoaText { CoaTextId = ct }).ToList()
+            };
+            var created = await _service.CreateAsync(entity);
+            var dto = Mappings.Transaction.UangMukaMappings.ToDto(created);
+            return CreatedAtAction(nameof(GetById), new { id = dto.UangMukaId }, dto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UangMuka model)
+        public async Task<IActionResult> Update(string id, [FromBody] Dtos.Transaction.UangMukaDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var updated = await _service.UpdateAsync(id, model);
-            return Ok(updated);
+            // Map DTO to entity
+            var entity = new Models.Transaction.UangMuka
+            {
+                Jenis = model.Jenis ?? string.Empty,
+                UangMukaRelatedId = model.UangMukaRelatedId,
+                NoSAP = model.NoSAP,
+                Amount = model.Amount,
+                AtasNama = model.AtasNama ?? string.Empty,
+                Deskripsi = model.Deskripsi ?? string.Empty,
+                StartDate = model.StartDate,
+                EndDate = model.EndDate,
+                StatusId = model.StatusId ?? string.Empty,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = model.UpdatedBy,
+                UangMukaBudgetCodes = (model.BudgetCodeIds ?? new List<Guid>()).Select(bc => new Models.Transaction.UangMukaBudgetCode { BudgetCodeId = bc }).ToList(),
+                UangMukaCoaTexts = (model.CoaTextIds ?? new List<int>()).Select(ct => new Models.Transaction.UangMukaCoaText { CoaTextId = ct }).ToList()
+            };
+            var updated = await _service.UpdateAsync(id, entity);
+            var dto = Mappings.Transaction.UangMukaMappings.ToDto(updated);
+            return Ok(dto);
         }
 
         [HttpDelete("{id}")]

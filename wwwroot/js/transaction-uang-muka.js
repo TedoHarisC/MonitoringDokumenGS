@@ -126,42 +126,72 @@ $(function () {
     }
 
     // ─── Load Budget Codes + Select2 ─────────────────────────────────────────
-    function loadBudgetCodes() {
+    function loadBudgetCodes(jenis) {
         return $.getJSON("/api/budget-codes?page=1&pageSize=2000").then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             const $sel = $("#budgetCodeId");
             if ($sel.hasClass("select2-hidden-accessible")) $sel.select2("destroy");
-            $sel.empty().append('<option value="">-- Pilih Budget Code --</option>');
+            $sel.empty();
+            // Tambahkan placeholder hanya jika single select
+            if (jenis === 'Advanced') {
+                $sel.append('<option value="">-- Pilih Budget Code --</option>');
+            }
             items.forEach(function (b) {
                 $sel.append(`<option value="${b.budgetCodeId}">${b.code} - ${b.description}</option>`);
             });
+            // Multiple select jika bukan Advanced
+            $sel.prop('multiple', jenis !== 'Advanced');
             $sel.select2({
                 theme: "bootstrap-5",
                 placeholder: "-- Pilih Budget Code --",
                 allowClear: true,
                 width: "100%",
-                dropdownParent: $("#uangMukaModal")
+                dropdownParent: $("#uangMukaModal"),
+                closeOnSelect: jenis === 'Advanced',
+                // Remove placeholder from selection
+                templateSelection: function (data, container) {
+                    if (data.id === "") return '';
+                    return data.text;
+                }
             });
+            // Fix overlapping/tumpang tindih
+            setTimeout(function() {
+                $sel.next('.select2-container').css('min-width', '100%');
+                $sel.next('.select2-container').find('.select2-selection--multiple').css({'min-height':'38px','padding':'4px 8px'});
+            }, 100);
         });
     }
 
     // ─── Load COA Text (Vendor Categories) + Select2 ─────────────────────────
-    function loadCoaTexts() {
+    function loadCoaTexts(jenis) {
         return $.getJSON("/api/vendor-categories?page=1&pageSize=2000").then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             const $sel = $("#coaTextId");
             if ($sel.hasClass("select2-hidden-accessible")) $sel.select2("destroy");
-            $sel.empty().append('<option value="">-- Pilih COA Text --</option>');
+            $sel.empty();
+            if (jenis === 'Advanced') {
+                $sel.append('<option value="">-- Pilih COA Text --</option>');
+            }
             items.forEach(function (v) {
                 $sel.append(`<option value="${v.vendorCategoryId}">${v.parentBudgetCodeLabel || "-"} - ${v.name}</option>`);
             });
+            $sel.prop('multiple', jenis !== 'Advanced');
             $sel.select2({
                 theme: "bootstrap-5",
                 placeholder: "-- Pilih COA Text --",
                 allowClear: true,
                 width: "100%",
-                dropdownParent: $("#uangMukaModal")
+                dropdownParent: $("#uangMukaModal"),
+                closeOnSelect: jenis === 'Advanced',
+                templateSelection: function (data, container) {
+                    if (data.id === "") return '';
+                    return data.text;
+                }
             });
+            setTimeout(function() {
+                $sel.next('.select2-container').css('min-width', '100%');
+                $sel.next('.select2-container').find('.select2-selection--multiple').css({'min-height':'38px','padding':'4px 8px'});
+            }, 100);
         });
     }
 
@@ -203,6 +233,7 @@ $(function () {
         ajax: {
             url: apiBase,
             dataSrc: function (json) {
+                console.log('DEBUG DataTable AJAX response:', json);
                 return Array.isArray(json) ? json : (json.items || json.data || []);
             }
         },
@@ -213,8 +244,33 @@ $(function () {
                 data: "amount",
                 render: $.fn.dataTable.render.number(',', '.', 2, '')
             },
-            { data: "budgetCode.description", defaultContent: "-" },
-            { data: "coaText.name", defaultContent: "-" },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    // Tampilkan semua deskripsi jika array, fallback ke properti tunggal jika ada
+                    if (Array.isArray(row.budgetCodes) && row.budgetCodes.length > 0) {
+                        return row.budgetCodes.map(b => b?.description || "").filter(Boolean).join(", ");
+                    }
+                    if (row.budgetCode && row.budgetCode.description) {
+                        return row.budgetCode.description;
+                    }
+                    return "-";
+                },
+                defaultContent: "-"
+            },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    if (Array.isArray(row.coaTexts) && row.coaTexts.length > 0) {
+                        return row.coaTexts.map(c => c?.name || "").filter(Boolean).join(", ");
+                    }
+                    if (row.coaText && row.coaText.name) {
+                        return row.coaText.name;
+                    }
+                    return "-";
+                },
+                defaultContent: "-"
+            },
             {
                 data: "startDate",
                 render: function (d) { return d ? d.split("T")[0] : "-"; }
@@ -341,12 +397,33 @@ $(function () {
             }
 
             Promise.all([
-                loadBudgetCodes(),
-                loadCoaTexts(),
+                loadBudgetCodes(data.jenis),
+                loadCoaTexts(data.jenis),
                 loadStatusOptions(data.jenis)
             ]).then(function () {
-                $("#budgetCodeId").val(data.budgetCodeId).trigger("change");
-                $("#coaTextId").val(data.coaTextId).trigger("change");
+                // Set value: jika array, set multiple; jika single, set satu
+                if (data.jenis === "Advanced") {
+                    // Single select
+                    let bc = Array.isArray(data.budgetCodeIds) ? data.budgetCodeIds[0] : (data.budgetCodeId || "");
+                    let ct = Array.isArray(data.coaTextIds) ? data.coaTextIds[0] : (data.coaTextId || "");
+                    $("#budgetCodeId").val(bc ? [bc] : [""]).trigger("change");
+                    $("#coaTextId").val(ct ? [ct] : [""]).trigger("change");
+                } else {
+                    if (Array.isArray(data.budgetCodeIds)) {
+                        $("#budgetCodeId").val(data.budgetCodeIds).trigger("change");
+                    } else if (data.budgetCodeId) {
+                        $("#budgetCodeId").val([data.budgetCodeId]).trigger("change");
+                    } else {
+                        $("#budgetCodeId").val("").trigger("change");
+                    }
+                    if (Array.isArray(data.coaTextIds)) {
+                        $("#coaTextId").val(data.coaTextIds).trigger("change");
+                    } else if (data.coaTextId) {
+                        $("#coaTextId").val([data.coaTextId]).trigger("change");
+                    } else {
+                        $("#coaTextId").val("").trigger("change");
+                    }
+                }
 
                 // ─── KEY FIX: Set statusId pakai native select — tanpa Select2 ──
                 // Ini menghindari semua timing & re-init issue Select2
@@ -412,11 +489,13 @@ $(function () {
 
         const id = $("#uangMukaId").val();
         const jenis = $("#jenis").val();
-        const payload = {
+        // Ambil value BudgetCode dan COA Text
+        let budgetCodeVal = $("#budgetCodeId").val();
+        let coaTextVal = $("#coaTextId").val();
+        // Untuk Advanced: single, untuk lain: array
+        let payload = {
             uangMukaId: id || undefined,
             jenis: jenis,
-            budgetCodeId: $("#budgetCodeId").val() || null,
-            coaTextId: $("#coaTextId").val() || null,
             atasNama: $("#atasNama").val(),
             amount: parseFloat($("#amount").val()),
             startDate: $("#startDate").val(),
@@ -426,6 +505,15 @@ $(function () {
             deskripsi: $("#deskripsi").val(),
             uangMukaRelatedId: (jenis === "Realisasi" ? $("#UangMukaRelatedId").val() : null)
         };
+        if (jenis === "Advanced") {
+            // Single select, kirim array berisi satu (atau null)
+            payload.budgetCodeIds = budgetCodeVal && budgetCodeVal !== "" ? [budgetCodeVal] : [];
+            payload.coaTextIds = coaTextVal && coaTextVal !== "" ? [coaTextVal] : [];
+        } else {
+            // Multiple select
+            payload.budgetCodeIds = Array.isArray(budgetCodeVal) ? budgetCodeVal : (budgetCodeVal ? [budgetCodeVal] : []);
+            payload.coaTextIds = Array.isArray(coaTextVal) ? coaTextVal : (coaTextVal ? [coaTextVal] : []);
+        }
 
         const method = id ? "PUT" : "POST";
         const url = id ? `${apiBase}/${id}` : apiBase;
