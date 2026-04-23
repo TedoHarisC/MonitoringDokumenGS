@@ -64,14 +64,17 @@ builder.Services.Configure<MonitoringDokumenGS.Models.EmailOptions>(
     builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
+
 // Notification Jobs
 builder.Services.AddScoped<IContractNotificationJob, ContractNotificationJob>();
 builder.Services.AddScoped<IBudgetNotificationJob, MonitoringDokumenGS.Services.Notification.BudgetNotificationJob>();
 builder.Services.AddScoped<INotificationLog, NotificationLogService>();
+builder.Services.AddScoped<IInvoiceNotificationJob, InvoiceNotificationJob>();
 
 // Background Services for scheduled notifications
 builder.Services.AddHostedService<MonitoringDokumenGS.Services.Notification.BudgetCheckBackgroundService>();
 builder.Services.AddHostedService<MonitoringDokumenGS.Services.Notification.ContractExpiringBackgroundService>();
+builder.Services.AddHostedService<InvoiceNotificationBackgroundService>();
 
 builder.Services.AddAuthorization();
 

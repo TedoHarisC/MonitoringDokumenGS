@@ -20,6 +20,9 @@ namespace MonitoringDokumenGS.Services.Infrastructure
             _context = context;
         }
 
+        // Tambahan: Untuk DI registration InvoiceNotificationJob
+        // (Tidak mengganggu kode notifikasi lain)
+
         public async Task<IEnumerable<NotificationDto>> GetForUserAsync(Guid userId)
         {
             return await _context.Notifications
