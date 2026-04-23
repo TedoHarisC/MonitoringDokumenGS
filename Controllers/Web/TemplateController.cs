@@ -10,5 +10,10 @@ namespace MonitoringDokumenGS.Controllers.Web
         {
             return View();
         }
+
+        public IActionResult UserPage()
+        {
+            return View();
+        }
     }
 }

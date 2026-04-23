@@ -1,23 +1,3 @@
-<!-- Modal Detail Template -->
-<div class="modal fade" id="templateDetailModal" tabindex="-1" aria-labelledby="templateDetailModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="templateDetailModalLabel">Detail Template</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="templateDetailContent">
-                    <!-- Dynamic content loaded by JS -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
 @{
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
 }
@@ -188,6 +168,27 @@
                     <button id="btnSaveTemplate" type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Template -->
+<div class="modal fade" id="templateDetailModal" tabindex="-1" aria-labelledby="templateDetailModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="templateDetailModalLabel">Detail Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="templateDetailContent">
+                    <!-- Dynamic content loaded by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
