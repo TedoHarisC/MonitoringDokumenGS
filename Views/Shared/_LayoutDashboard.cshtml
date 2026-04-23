@@ -178,11 +178,15 @@
                                     </li>
                                     <li class="nxl-item"><a class="nxl-link"
                                                                 href="@Url.Action("Index", "Contract")">Contracts</a></li>
-                                        <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Index", "UangMuka")">Uang
-                                            Muka</a></li>
+                                        @if (User != null && (User.IsInRole("SUPER_ADMIN") || User.IsInRole("ADMIN")))
+                                        {
+                                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Index", "UangMuka")">Uang
+                                                Muka</a></li>
+                                            }
                                         </ul>
                                     </li>
 
+                                    
                                     <!-- Master Menu - ADMIN & SUPER ADMIN ONLY -->
                                     @if (User != null && (User.IsInRole("SUPER_ADMIN") || User.IsInRole("ADMIN")))
                                     {

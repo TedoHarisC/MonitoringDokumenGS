@@ -411,15 +411,18 @@
           render: function (data, type, row) {
             const id = row.contractId || row.ContractId;
             return `
-                            <div class="hstack gap-1 justify-content-center flex-nowrap">
-                                <button type="button" class="btn btn-sm btn-light-brand btn-edit" data-id="${escapeHtml(id)}">
-                                    <i class="feather-edit-2 me-1"></i> Edit
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light-danger btn-delete" data-id="${escapeHtml(id)}">
-                                    <i class="feather-trash-2 me-1"></i> Delete
-                                </button>
-                            </div>
-                        `;
+                <div class="hstack gap-1 justify-content-center flex-nowrap">
+                    <button type="button" class="btn btn-sm btn-light-info btn-detail" data-id="${escapeHtml(id)}">
+                        <i class="feather-eye me-1"></i> Detail
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light-brand btn-edit" data-id="${escapeHtml(id)}">
+                        <i class="feather-edit-2 me-1"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light-danger btn-delete" data-id="${escapeHtml(id)}">
+                        <i class="feather-trash-2 me-1"></i> Delete
+                    </button>
+                </div>
+            `;
           },
         },
       ],
@@ -838,5 +841,38 @@
     });
 
     $("#contractForm").on("submit", saveContract);
+  });
+
+  // Handler untuk tombol detail contract
+  $(document).on('click', '.btn-detail', function () {
+    portalModalToBody('contractDetailModal');
+    var id = $(this).data('id');
+    $.get('/api/contracts/' + id, function (data) {
+      var html = '';
+      html += '<div class="mb-2"><strong>Contract Number:</strong> ' + (data.contractNumber || '-') + '</div>';
+      html += '<div class="mb-2"><strong>Vendor:</strong> ' + (data.vendorName || '-') + '</div>';
+      html += '<div class="mb-2"><strong>Description:</strong> ' + (data.contractDescription || '-') + '</div>';
+      html += '<div class="mb-2"><strong>Start Date:</strong> ' + (data.startDate ? new Date(data.startDate).toLocaleDateString('id-ID') : '-') + '</div>';
+      html += '<div class="mb-2"><strong>End Date:</strong> ' + (data.endDate ? new Date(data.endDate).toLocaleDateString('id-ID') : '-') + '</div>';
+      html += '<hr/>';
+      html += '<div class="mb-2"><strong>Attachments:</strong></div>';
+      $.get('/api/attachments/by-reference/' + id, function (atts) {
+        if (atts && atts.length > 0) {
+          html += '<ul class="list-group mb-2">';
+          atts.forEach(function (att) {
+            var size = att.fileSize ? (att.fileSize / 1024).toFixed(1) + ' KB' : '-';
+            html += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+            html += '<span><i class="feather-file me-2"></i>' + att.fileName + ' <span class="text-muted small">(' + size + ')</span></span>';
+            html += '<a href="/api/attachments/download/' + att.attachmentId + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="feather-download"></i> Download</a>';
+            html += '</li>';
+          });
+          html += '</ul>';
+        } else {
+          html += '<div class="text-muted">No attachments.</div>';
+        }
+        $('#contractDetailContent').html(html);
+        showModal('contractDetailModal');
+      });
+    });
   });
 })(jQuery);

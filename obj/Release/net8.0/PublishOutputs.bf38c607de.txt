@@ -9,10 +9,14 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/ContractCreated.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/ContractExpiring.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/InvoiceCreated.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/InvoiceReminderDay1.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/InvoiceReminderDay5.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/Notification.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/PasswordReset.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/en/Welcome.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/id/ContractExpiring.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/id/InvoiceReminderDay1.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/EmailTemplates/id/InvoiceReminderDay5.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS.dll
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS.runtimeconfig.json
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS.pdb

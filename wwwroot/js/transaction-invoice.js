@@ -360,15 +360,18 @@
           render: function (data, type, row) {
             const id = row.invoiceId || row.InvoiceId;
             return `
-                            <div class="hstack gap-1 justify-content-center flex-nowrap">
-                                <button type="button" class="btn btn-sm btn-light-brand btn-edit" data-id="${escapeHtml(id)}">
-                                    <i class="feather-edit-2 me-1"></i> Edit
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light-danger btn-delete" data-id="${escapeHtml(id)}">
-                                    <i class="feather-trash-2 me-1"></i> Delete
-                                </button>
-                            </div>
-                        `;
+              <div class="hstack gap-1 justify-content-center flex-nowrap">
+                  <button type="button" class="btn btn-sm btn-light-info btn-detail" data-id="${escapeHtml(id)}">
+                      <i class="feather-eye me-1"></i> Detail
+                  </button>
+                  <button type="button" class="btn btn-sm btn-light-brand btn-edit" data-id="${escapeHtml(id)}">
+                      <i class="feather-edit-2 me-1"></i> Edit
+                  </button>
+                  <button type="button" class="btn btn-sm btn-light-danger btn-delete" data-id="${escapeHtml(id)}">
+                      <i class="feather-trash-2 me-1"></i> Delete
+                  </button>
+              </div>
+            `;
           },
         },
       ],
@@ -951,138 +954,248 @@
     }
   }
 
-  $(async function () {
-    portalModalToBody("invoiceModal");
+    $(async function () {
+      portalModalToBody("invoiceModal");
 
-    try {
-      // Load current user first (which will populate cachedVendors with user's vendor)
-      // Then load statuses. We don't need to load all vendors anymore.
-      await Promise.all([
-        loadCurrentUser(),
-        loadStatuses(),
-        loadVendors(),
-        loadAttachmentTypes(),
-      ]);
-    } catch (err) {
-      console.error("Initialization error:", err);
-      // still allow page to load; table will show IDs
-    }
-
-    initTable();
-
-    $("#btnCreateInvoice").on("click", openCreate);
-
-    $("#invoicesTable").on("click", ".btn-edit", function () {
-      const id = $(this).data("id");
-      openEdit(id);
-    });
-
-    $("#invoicesTable").on("click", ".btn-delete", function () {
-      const id = $(this).data("id");
-      deleteInvoice(id);
-    });
-
-    $("#invoiceForm").on("submit", saveInvoice);
-
-    // Add file with attachment type
-    $("#btnAddFile").on("click", function () {
-      const fileInput = $("#fileUploadInput")[0];
-      const file = fileInput.files[0];
-      const typeId = $("#attachmentTypeSelect").val();
-
-      // Validation
-      if (!file) {
-        Swal.fire({
-          icon: "warning",
-          title: "No File Selected",
-          text: "Please select a file to upload.",
-        });
-        return;
+      try {
+        await Promise.all([
+          loadCurrentUser(),
+          loadStatuses(),
+          loadVendors(),
+          loadAttachmentTypes(),  
+        ]);
+      } catch (err) {
+        console.error("Initialization error:", err);
       }
 
-      if (!typeId) {
-        Swal.fire({
-          icon: "warning",
-          title: "No Type Selected",
-          text: "Please select an attachment type.",
-        });
-        return;
-      }
+      initTable();
 
-      // Validate file size (max 10MB)
-      const maxSize = 10 * 1024 * 1024;
-      if (file.size > maxSize) {
-        Swal.fire({
-          icon: "error",
-          title: "File Too Large",
-          text: "File size must not exceed 10 MB.",
-        });
-        return;
-      }
+      $("#btnCreateInvoice").on("click", openCreate);
 
-      // Find type name
-      const type = cachedAttachmentTypes.find(
-        (t) => t.attachmentTypeId == typeId,
-      );
-      const typeName = type ? type.name : "Unknown";
-
-      // Add to pending files
-      const pendingFile = {
-        file: file,
-        typeId: typeId,
-        typeName: typeName,
-        id: Date.now(),
-      };
-
-      console.log("Adding file to pending:", pendingFile);
-      pendingFiles.push(pendingFile);
-      updatePendingFilesList();
-
-      // Clear inputs
-      fileInput.value = "";
-      $("#attachmentTypeSelect").val("");
-
-      Swal.fire({
-        icon: "success",
-        title: "File Added",
-        text: `${file.name} will be uploaded after saving the invoice.`,
-        timer: 2000,
-        showConfirmButton: false,
+      $("#invoicesTable").on("click", ".btn-edit", function () {
+        const id = $(this).data("id");
+        openEdit(id);
       });
+
+      $("#invoicesTable").on("click", ".btn-delete", function () {
+        const id = $(this).data("id");
+        deleteInvoice(id);
+      });
+
+      $("#invoiceForm").on("submit", saveInvoice);
+
+      // Add file with attachment type
+      $("#btnAddFile").on("click", function () {
+        const fileInput = $("#fileUploadInput")[0];
+        const file = fileInput.files[0];
+        const typeId = $("#attachmentTypeSelect").val();
+
+        // Validation
+        if (!file) {
+          Swal.fire({
+            icon: "warning",
+            title: "No File Selected",
+            text: "Please select a file to upload.",
+          });
+          return;
+        }
+
+        if (!typeId) {
+          Swal.fire({
+            icon: "warning",
+            title: "No Type Selected",
+            text: "Please select an attachment type.",
+          });
+          return;
+        }
+
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          Swal.fire({
+            icon: "error",
+            title: "File Too Large",
+            text: "File size must not exceed 10 MB.",
+          });
+          return;
+        }
+
+        // Find type name
+        const type = cachedAttachmentTypes.find(
+          (t) => t.attachmentTypeId == typeId,
+        );
+        const typeName = type ? type.name : "Unknown";
+
+        // Add to pending files
+        const pendingFile = {
+          file: file,
+          typeId: typeId,
+          typeName: typeName,
+          id: Date.now(),
+        };
+
+        console.log("Adding file to pending:", pendingFile);
+        pendingFiles.push(pendingFile);
+        updatePendingFilesList();
+
+        // Clear inputs
+        fileInput.value = "";
+        $("#attachmentTypeSelect").val("");
+
+        Swal.fire({
+          icon: "success",
+          title: "File Added",
+          text: `${file.name} will be uploaded after saving the invoice.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      });
+
+      // File upload handler (kept for backward compatibility if needed)
+      $("#fileUpload").on("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const invoiceId = $("#invoiceId").val();
+        uploadFile(file, invoiceId);
+      });
+
+      // Delete attachment handler
+      $(document).on("click", ".btn-delete-attachment", function () {
+        const attachmentId = $(this).data("id");
+        const invoiceId = $("#invoiceId").val();
+        deleteAttachment(attachmentId, invoiceId);
+      });
+
+      // Download attachment handler (uses auth token)
+      $(document).on("click", ".btn-download-attachment", function (e) {
+        e.preventDefault();
+        const attachmentId = $(this).data("id");
+        const token = localStorage.getItem("mdgs_token");
+
+        // Open direct download URL with token in query string (works over HTTP)
+        const downloadUrl = `${apis.attachments}/file/${attachmentId}?token=${encodeURIComponent(token)}`;
+        window.open(downloadUrl, "_blank");
+      });
+
+      // Remove pending file handler
+      $(document).on("click", ".btn-remove-pending", function () {
+        const index = $(this).data("index");
+        pendingFiles.splice(index, 1);
+        updatePendingFilesList();
+      });
+
+      // ===================== INVOICE DETAIL HANDLER =====================
+      // Add detail button to table actions (patch DataTable render)
+      // Or use delegated event for detail button
+      $("#invoicesTable").on("click", ".btn-detail", function () {
+        const id = $(this).data("id");
+        openInvoiceDetail(id);
+      });
+
+      // Patch DataTable actions column to add Detail button
+      // (Monkey patch, since DataTable is already initialized)
+      if (table) {
+        const oldRender = table.column(-1).settings()[0].aoColumns[9].mRender;
+        table.column(-1).settings()[0].aoColumns[9].mRender = function (data, type, row) {
+          const id = row.invoiceId || row.InvoiceId;
+          return `
+            <div class="hstack gap-1 justify-content-center flex-nowrap">
+                <button type="button" class="btn btn-sm btn-light-info btn-detail" data-id="${escapeHtml(id)}">
+                    <i class="feather-eye me-1"></i> Detail
+                </button>
+                <button type="button" class="btn btn-sm btn-light-brand btn-edit" data-id="${escapeHtml(id)}">
+                    <i class="feather-edit-2 me-1"></i> Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-light-danger btn-delete" data-id="${escapeHtml(id)}">
+                    <i class="feather-trash-2 me-1"></i> Delete
+                </button>
+            </div>
+          `;
+        };
+        table.draw(false);
+      }
+
+      // Handler for detail modal
+      async function openInvoiceDetail(id) {
+        portalModalToBody("invoiceDetailModal");
+        $("#invoiceDetailContent").html('<div class="text-center py-4"><div class="spinner-border"></div></div>');
+        showModal("invoiceDetailModal");
+
+        try {
+          // Fetch invoice data
+          const data = await fetchJson(`${apis.invoices}/${id}`);
+          // Fetch attachments
+          const attachments = await fetchJson(`${apis.attachments}/by-reference/${id}`);
+
+          // Render detail content
+          let html = `<div class="mb-3">
+            <div class="fw-bold mb-1">Invoice Number:</div>
+            <div>${escapeHtml(data.invoiceNumber)}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Vendor:</div>
+            <div>${escapeHtml(vendorNameById(data.vendorId) || data.vendorId)}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Status:</div>
+            <div>${escapeHtml(statusNameById(data.progressStatusId) || data.progressStatusId)}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Invoice Amount:</div>
+            <div>${escapeHtml(formatMoney(data.invoiceAmount))}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Tax Amount:</div>
+            <div>${escapeHtml(formatMoney(data.taxAmount))}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Year / Month:</div>
+            <div>${escapeHtml(data.invoiceYear)} / ${escapeHtml(data.invoiceMonth)}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Description:</div>
+            <div>${escapeHtml(data.invoiceDescription)}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">Created At:</div>
+            <div>${escapeHtml(formatDate(data.createdAt))}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-1">On-Time Status:</div>
+            <div>${data.isOnTime ? '<span class="badge bg-success">Tepat Waktu</span>' : '<span class="badge bg-danger">Terlambat</span>'}</div>
+          </div>`;
+
+          // Attachments
+          html += `<div class="mb-3">
+            <div class="fw-bold mb-2">Attachments:</div>`;
+          if (attachments && attachments.length > 0) {
+            html += '<ul class="list-group">';
+            attachments.forEach(att => {
+              const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1);
+              html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <i class="feather-file me-2"></i>
+                  <span>${escapeHtml(att.fileName)}</span>
+                  <span class="badge bg-info ms-2">${escapeHtml(att.attachmentTypeName || "")}</span>
+                  <small class="text-muted ms-2">(${sizeKB} KB)</small>
+                </div>
+                <a href="${apis.attachments}/download/${att.attachmentId}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">
+                  <i class="feather-download"></i> Download
+                </a>
+              </li>`;
+            });
+            html += '</ul>';
+          } else {
+            html += '<div class="text-muted">Belum ada dokumen yang diupload oleh GS</div>';
+          }
+          html += '</div>';
+
+          $("#invoiceDetailContent").html(html);
+        } catch (err) {
+          $("#invoiceDetailContent").html('<div class="text-danger">Gagal memuat detail invoice.</div>');
+        }
+      }
+      // ===================== END INVOICE DETAIL HANDLER =====================
     });
-
-    // File upload handler (kept for backward compatibility if needed)
-    $("#fileUpload").on("change", function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const invoiceId = $("#invoiceId").val();
-      uploadFile(file, invoiceId);
-    });
-
-    // Delete attachment handler
-    $(document).on("click", ".btn-delete-attachment", function () {
-      const attachmentId = $(this).data("id");
-      const invoiceId = $("#invoiceId").val();
-      deleteAttachment(attachmentId, invoiceId);
-    });
-
-    // Download attachment handler (uses auth token)
-    $(document).on("click", ".btn-download-attachment", function (e) {
-      e.preventDefault();
-      const attachmentId = $(this).data("id");
-      const token = localStorage.getItem("mdgs_token");
-
-      // Open direct download URL with token in query string (works over HTTP)
-      const downloadUrl = `${apis.attachments}/file/${attachmentId}?token=${encodeURIComponent(token)}`;
-      window.open(downloadUrl, "_blank");
-    });
-
-    // Remove pending file handler
-    $(document).on("click", ".btn-remove-pending", function () {
-      const index = $(this).data("index");
-      pendingFiles.splice(index, 1);
-      updatePendingFilesList();
-    });
-  });
 })(jQuery);

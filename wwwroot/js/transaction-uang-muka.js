@@ -232,6 +232,14 @@ $(function () {
         autoWidth: false,
         ajax: {
             url: apiBase,
+            data: function (d) {
+                // Filtering: only send userId if NOT admin (biar backend tahu)
+                const userId = (typeof currentUserId === 'function' ? currentUserId() : $("#currentUserId").val()) || "";
+                const isAdmin = (typeof isCurrentUserAdmin === 'function' ? isCurrentUserAdmin() : $("#currentUserIsAdmin").val() === "true");
+                if (!isAdmin && userId) {
+                    d.userId = userId;
+                }
+            },
             dataSrc: function (json) {
                 console.log('DEBUG DataTable AJAX response:', json);
                 return Array.isArray(json) ? json : (json.items || json.data || []);

@@ -32,11 +32,11 @@
         }
 
         .modal {
-            z-index: 2000;
+            z-index: 2000 !important;
         }
 
         .modal-backdrop {
-            z-index: 1990;
+            z-index: 1990 !important;
         }
     </style>
 }
@@ -84,7 +84,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table id="contractsTable"
-                            class="table table-striped table-bordered table-hover align-middle w-100">
+                               class="table table-striped table-bordered table-hover align-middle w-100">
                             <thead>
                                 <tr>
                                     <th>Contract Number</th>
@@ -164,7 +164,7 @@
                         <div class="mb-3">
                             <label class="form-label">Upload File</label>
                             <input type="file" id="fileUpload" class="form-control"
-                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
                             <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
                         </div>
                         <div id="attachmentsList" class="list-group"></div>
@@ -175,6 +175,27 @@
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Contract -->
+<div class="modal fade" id="contractDetailModal" tabindex="-1" aria-labelledby="contractDetailModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contractDetailModalLabel">Detail Contract</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="contractDetailContent">
+                    <!-- Dynamic content loaded by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

@@ -229,4 +229,5 @@
 
         @section Scripts {
             <script src="/js/transaction-invoice.js?v=@DateTime.Now.Ticks"></script>
+            @await Html.PartialAsync("_InvoiceDetailModalPartial")
         }

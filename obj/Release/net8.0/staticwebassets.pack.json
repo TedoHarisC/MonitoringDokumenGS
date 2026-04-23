@@ -49,6 +49,10 @@
       "PackagePath": "staticwebassets/js/datatables-buttons-loader.js"
     },
     {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/document-template.js",
+      "PackagePath": "staticwebassets/js/document-template.js"
+    },
+    {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/layout-logout.js",
       "PackagePath": "staticwebassets/js/layout-logout.js"
     },
@@ -107,6 +111,10 @@
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/transaction-uang-muka.js",
       "PackagePath": "staticwebassets/js/transaction-uang-muka.js"
+    },
+    {
+      "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/js/user-template.js",
+      "PackagePath": "staticwebassets/js/user-template.js"
     },
     {
       "Id": "/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/wwwroot/lib/bootstrap/LICENSE",

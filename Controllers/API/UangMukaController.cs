@@ -30,6 +30,16 @@ namespace MonitoringDokumenGS.Controllers.API
         {
             var all = await _service.GetAllAsync();
             var query = all.AsQueryable();
+
+            // --- Filtering by user role ---
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            bool isAdmin = roleClaim == "SUPER_ADMIN" || roleClaim == "ADMIN";
+            if (!isAdmin && Guid.TryParse(userIdClaim, out var userId))
+            {
+                query = query.Where(x => x.CreatedBy == userId);
+            }
+
             if (!string.IsNullOrEmpty(jenis))
                 query = query.Where(x => x.Jenis == jenis);
             if (!string.IsNullOrEmpty(status))

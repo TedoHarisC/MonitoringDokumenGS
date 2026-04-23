@@ -166,3 +166,7 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/obj/Release/net8.0/MonitoringDokumenGS.pdb
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/obj/Release/net8.0/MonitoringDokumenGS.genruntimeconfig.cache
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/obj/Release/net8.0/ref/MonitoringDokumenGS.dll
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/en/InvoiceReminderDay1.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/en/InvoiceReminderDay5.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/id/InvoiceReminderDay1.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/id/InvoiceReminderDay5.html
