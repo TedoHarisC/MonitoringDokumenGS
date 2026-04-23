@@ -39,6 +39,7 @@ namespace MonitoringDokumenGS.Data
         public DbSet<NotificationLog> SYS_NotificationLog { get; set; }
         public DbSet<UangMukaBudgetCode> UangMukaBudgetCode { get; set; }
         public DbSet<UangMukaCoaText> UangMukaCoaText { get; set; }
+        public DbSet<TemplateFile> TemplateFile { get; set; }
 
         // View
         public DbSet<DashboardBudgetMonthlyDto> V_Dashboard_Budget_Monthly { get; set; }
