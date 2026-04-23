@@ -351,16 +351,18 @@ $(function () {
         });
     });
 
-    // ─── Event: Jenis berubah → reload status & show/hide Advanced Realisasi ──
+    // ─── Event: Jenis berubah → reload status & show/hide Advanced Realisasi + handle select2 single/multiple ──
     // Hanya untuk interaksi user di form, bukan saat edit load
     $("#jenis").on("change", function () {
         const val = $(this).val();
         if (!val) return;
 
+        // Reload status options
         loadStatusOptions(val).then(function () {
             $("#statusId")[0].value = "";
         });
 
+        // Handle UangMukaRelatedId tampil hanya untuk Realisasi
         if (val === "Realisasi") {
             $('#UangMukaRelatedIdWrapper').show();
             initUangMukaRelatedSelect();
@@ -368,6 +370,42 @@ $(function () {
             $('#UangMukaRelatedIdWrapper').hide();
             $('#UangMukaRelatedId').val(null).trigger('change');
         }
+
+        // --- FIX: Budget Code & COA Text single/multiple select2 ---
+        // Destroy select2 dulu
+        if ($('#budgetCodeId').hasClass('select2-hidden-accessible')) $('#budgetCodeId').select2('destroy');
+        if ($('#coaTextId').hasClass('select2-hidden-accessible')) $('#coaTextId').select2('destroy');
+
+        // Set attribute multiple sesuai jenis
+        if (val === 'Biaya' || val === 'Realisasi') {
+            $('#budgetCodeId').attr('multiple', 'multiple');
+            $('#coaTextId').attr('multiple', 'multiple');
+        } else {
+            $('#budgetCodeId').removeAttr('multiple');
+            $('#coaTextId').removeAttr('multiple');
+        }
+
+        // Clear value setiap ganti jenis
+        $('#budgetCodeId').val(null);
+        $('#coaTextId').val(null);
+
+        // Re-init select2
+        $('#budgetCodeId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            dropdownParent: $('#uangMukaModal'),
+            placeholder: '-- Pilih Budget Code --',
+            allowClear: true,
+            closeOnSelect: val === 'Advanced'
+        });
+        $('#coaTextId').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            dropdownParent: $('#uangMukaModal'),
+            placeholder: '-- Pilih COA Text --',
+            allowClear: true,
+            closeOnSelect: val === 'Advanced'
+        });
     });
 
     // ─── Event: Tombol Edit ───────────────────────────────────────────────────
