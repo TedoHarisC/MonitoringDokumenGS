@@ -1,7 +1,14 @@
 // Notification Page JavaScript
 
+
 let allNotifications = [];
 let currentFilter = 'all';
+// Pagination state per filter
+const notificationPagination = {
+    all: { page: 1, pageSize: 10 },
+    unread: { page: 1, pageSize: 10 },
+    read: { page: 1, pageSize: 10 }
+};
 
 $(document).ready(function () {
     console.log('Notification Page Initialized');
@@ -9,9 +16,12 @@ $(document).ready(function () {
     // Load notifications on page load
     loadNotifications();
 
+
     // Tab change handler
     $('#notificationTabs button').on('click', function (e) {
         currentFilter = $(this).attr('id').replace('-tab', '');
+        // Reset page to 1 when tab changes
+        notificationPagination[currentFilter].page = 1;
         renderNotifications();
     });
 
@@ -52,7 +62,6 @@ function loadNotifications() {
 // Render notifications based on current filter
 function renderNotifications() {
     let filteredNotifications = allNotifications;
-
     if (currentFilter === 'unread') {
         filteredNotifications = allNotifications.filter(n => !n.isRead);
     } else if (currentFilter === 'read') {
@@ -62,27 +71,74 @@ function renderNotifications() {
     const containerId = currentFilter === 'all' ? '#allNotifications' : 
                         currentFilter === 'unread' ? '#unreadNotifications' : 
                         '#readNotifications';
-
     const container = $(containerId);
     container.empty();
 
-    if (filteredNotifications.length === 0) {
+    // Pagination logic
+    const { page, pageSize } = notificationPagination[currentFilter];
+    const total = filteredNotifications.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    let currentPage = Math.min(page, totalPages);
+    notificationPagination[currentFilter].page = currentPage; // keep in sync
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+    const pageNotifications = filteredNotifications.slice(startIdx, endIdx);
+
+    if (total === 0) {
         container.html(`
             <div class="text-center py-5">
                 <i class="feather-bell text-muted" style="font-size: 48px;"></i>
                 <p class="text-muted mt-3">No ${currentFilter === 'all' ? '' : currentFilter} notifications</p>
             </div>
         `);
+        // Remove pagination if present
+        $(`#${currentFilter}NotificationsPagination`).remove();
         return;
     }
 
-    filteredNotifications.forEach(notification => {
+    pageNotifications.forEach(notification => {
         const notificationHtml = createNotificationItem(notification);
         container.append(notificationHtml);
     });
 
+    // Pagination controls
+    let paginationHtml = `
+        <nav aria-label="Notification pagination" class="mt-3">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item${currentPage === 1 ? ' disabled' : ''}">
+              <a class="page-link" href="#" id="${currentFilter}PrevPage">Previous</a>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">Page ${currentPage} of ${totalPages}</span>
+            </li>
+            <li class="page-item${currentPage === totalPages ? ' disabled' : ''}">
+              <a class="page-link" href="#" id="${currentFilter}NextPage">Next</a>
+            </li>
+          </ul>
+        </nav>
+    `;
+    // Remove old pagination if exists, then add new
+    $(`#${currentFilter}NotificationsPagination`).remove();
+    container.after(`<div id="${currentFilter}NotificationsPagination">${paginationHtml}</div>`);
+
     // Attach event handlers
     attachEventHandlers();
+
+    // Pagination button handlers
+    $(`#${currentFilter}PrevPage`).off('click').on('click', function(e) {
+        e.preventDefault();
+        if (notificationPagination[currentFilter].page > 1) {
+            notificationPagination[currentFilter].page--;
+            renderNotifications();
+        }
+    });
+    $(`#${currentFilter}NextPage`).off('click').on('click', function(e) {
+        e.preventDefault();
+        if (notificationPagination[currentFilter].page < totalPages) {
+            notificationPagination[currentFilter].page++;
+            renderNotifications();
+        }
+    });
 }
 
 // Create notification item HTML

@@ -543,365 +543,315 @@
                                                                                                     </div>
                                                                                                 </div>
                                                                                             </div>
-                                                                                            <div class="dropdown nxl-h-item nxl-header-language d-none d-sm-flex">
-                                                                                                <a href="javascript:void(0);" class="nxl-head-link me-0 nxl-language-link"
-                                                                                                       data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                                                                                    <img src="~/lib/templates/vendors/img/flags/4x3/us.svg" alt="" class="img-fluid wd-20" />
+                                                                                            
+                                                                                            <div class="nxl-h-item d-none d-sm-flex">
+                                                                                                <div class="full-screen-switcher">
+                                                                                                    <a href="javascript:void(0);" class="nxl-head-link me-0"
+                                                                                                           onclick="$('body').fullScreenHelper('toggle');">
+                                                                                                        <i class="feather-maximize maximize"></i>
+                                                                                                        <i class="feather-minimize minimize"></i>
+                                                                                                    </a>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="nxl-h-item dark-light-theme">
+                                                                                                <a href="javascript:void(0);" class="nxl-head-link me-0 dark-button">
+                                                                                                    <i class="feather-moon"></i>
                                                                                                 </a>
-                                                                                                <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-language-dropdown">
-                                                                                                    <div class="dropdown-divider mt-0"></div>
-                                                                                                    <div class="language-items-wrapper">
-                                                                                                        <div class="select-language px-4 py-2 hstack justify-content-between gap-4">
-                                                                                                            <div class="lh-lg">
-                                                                                                                <h6 class="mb-0">Select Language</h6>
-                                                                                                                <p class="fs-11 text-muted mb-0">12 languages avaiable!</p>
+                                                                                                <a href="javascript:void(0);" class="nxl-head-link me-0 light-button" style="display: none">
+                                                                                                    <i class="feather-sun"></i>
+                                                                                                </a>
+                                                                                            </div>
+                                                                                            <div class="dropdown nxl-h-item">
+                                                                                                <a class="nxl-head-link me-3" data-bs-toggle="dropdown" href="#" role="button"
+                                                                                                       data-bs-auto-close="outside">
+                                                                                                    <i class="feather-bell"></i>
+                                                                                                    <span class="badge bg-danger nxl-h-badge" style="display: none;">0</span>
+                                                                                                </a>
+                                                                                                <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-notifications-menu">
+                                                                                                    <div class="d-flex justify-content-between align-items-center notifications-head">
+                                                                                                        <h6 class="fw-bold text-dark mb-0">Notifications</h6>
+                                                                                                        <a href="javascript:void(0);" class="fs-11 text-success text-end ms-auto mark-all-read"
+                                                                                                               data-bs-toggle="tooltip" title="Mark All as Read">
+                                                                                                            <i class="feather-check"></i>
+                                                                                                            <span>Mark All as Read</span>
+                                                                                                        </a>
+                                                                                                    </div>
+                                                                                                    <div class="notifications-item-wrapper">
+                                                                                                        <!-- Notifications will be loaded here dynamically -->
+                                                                                                        <div class="text-center py-4 text-muted">
+                                                                                                            <div class="spinner-border spinner-border-sm" role="status">
+                                                                                                                <span class="visually-hidden">Loading...</span>
                                                                                                             </div>
-                                                                                                            <a href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="tooltip"
-                                                                                                                   title="Add Language">
-                                                                                                                <i class="feather-plus"></i>
-                                                                                                            </a>
+                                                                                                            <p class="mb-0 mt-2">Loading notifications...</p>
                                                                                                         </div>
-                                                                                                        <div class="dropdown-divider"></div>
-                                                                                                        <div class="row px-4 pt-3">
-                                                                                                            <div class="col-sm-4 col-6 language_select">
-                                                                                                                <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                    <div class="avatar-image avatar-sm"><img
-                                                                                                                        src="~/lib/templates/vendors/img/flags/1x1/sa.svg" alt=""
-                                                                                                                        class="img-fluid" /></div>
-                                                                                                                        <span>Arabic</span>
-                                                                                                                    </a>
-                                                                                                                </div>
-                                                                                                                <div class="col-sm-4 col-6 language_select">
-                                                                                                                    <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                        <div class="avatar-image avatar-sm"><img
-                                                                                                                            src="~/lib/templates/vendors/img/flags/1x1/bd.svg" alt=""
-                                                                                                                            class="img-fluid" /></div>
-                                                                                                                            <span>Bengali</span>
-                                                                                                                        </a>
-                                                                                                                    </div>
-                                                                                                                    <div class="col-sm-4 col-6 language_select">
-                                                                                                                        <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                            <div class="avatar-image avatar-sm"><img
-                                                                                                                                src="~/lib/templates/vendors/img/flags/1x1/ch.svg" alt=""
-                                                                                                                                class="img-fluid" /></div>
-                                                                                                                                <span>Chinese</span>
-                                                                                                                            </a>
-                                                                                                                        </div>
-                                                                                                                        <div class="col-sm-4 col-6 language_select">
-                                                                                                                            <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                <div class="avatar-image avatar-sm"><img
-                                                                                                                                    src="~/lib/templates/vendors/img/flags/1x1/nl.svg" alt=""
-                                                                                                                                    class="img-fluid" /></div>
-                                                                                                                                    <span>Dutch</span>
-                                                                                                                                </a>
-                                                                                                                            </div>
-                                                                                                                            <div class="col-sm-4 col-6 language_select active">
-                                                                                                                                <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                    <div class="avatar-image avatar-sm"><img
-                                                                                                                                        src="~/lib/templates/vendors/img/flags/1x1/us.svg" alt=""
-                                                                                                                                        class="img-fluid" /></div>
-                                                                                                                                        <span>English</span>
-                                                                                                                                    </a>
-                                                                                                                                </div>
-                                                                                                                                <div class="col-sm-4 col-6 language_select">
-                                                                                                                                    <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                        <div class="avatar-image avatar-sm"><img
-                                                                                                                                            src="~/lib/templates/vendors/img/flags/1x1/fr.svg" alt=""
-                                                                                                                                            class="img-fluid" /></div>
-                                                                                                                                            <span>French</span>
-                                                                                                                                        </a>
-                                                                                                                                    </div>
-                                                                                                                                    <div class="col-sm-4 col-6 language_select">
-                                                                                                                                        <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                            <div class="avatar-image avatar-sm"><img
-                                                                                                                                                src="~/lib/templates/vendors/img/flags/1x1/de.svg" alt=""
-                                                                                                                                                class="img-fluid" /></div>
-                                                                                                                                                <span>German</span>
-                                                                                                                                            </a>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col-sm-4 col-6 language_select">
-                                                                                                                                            <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                                <div class="avatar-image avatar-sm"><img
-                                                                                                                                                    src="~/lib/templates/vendors/img/flags/1x1/in.svg" alt=""
-                                                                                                                                                    class="img-fluid" /></div>
-                                                                                                                                                    <span>Hindi</span>
-                                                                                                                                                </a>
-                                                                                                                                            </div>
-                                                                                                                                            <div class="col-sm-4 col-6 language_select">
-                                                                                                                                                <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                                    <div class="avatar-image avatar-sm"><img
-                                                                                                                                                        src="~/lib/templates/vendors/img/flags/1x1/ru.svg" alt=""
-                                                                                                                                                        class="img-fluid" /></div>
-                                                                                                                                                        <span>Russian</span>
-                                                                                                                                                    </a>
-                                                                                                                                                </div>
-                                                                                                                                                <div class="col-sm-4 col-6 language_select">
-                                                                                                                                                    <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                                        <div class="avatar-image avatar-sm"><img
-                                                                                                                                                            src="~/lib/templates/vendors/img/flags/1x1/es.svg" alt=""
-                                                                                                                                                            class="img-fluid" /></div>
-                                                                                                                                                            <span>Spanish</span>
-                                                                                                                                                        </a>
-                                                                                                                                                    </div>
-                                                                                                                                                    <div class="col-sm-4 col-6 language_select">
-                                                                                                                                                        <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                                            <div class="avatar-image avatar-sm"><img
-                                                                                                                                                                src="~/lib/templates/vendors/img/flags/1x1/tr.svg" alt=""
-                                                                                                                                                                class="img-fluid" /></div>
-                                                                                                                                                                <span>Turkish</span>
-                                                                                                                                                            </a>
-                                                                                                                                                        </div>
-                                                                                                                                                        <div class="col-sm-4 col-6 language_select">
-                                                                                                                                                            <a href="javascript:void(0);" class="d-flex align-items-center gap-2">
-                                                                                                                                                                <div class="avatar-image avatar-sm"><img
-                                                                                                                                                                    src="~/lib/templates/vendors/img/flags/1x1/pk.svg" alt=""
-                                                                                                                                                                    class="img-fluid" /></div>
-                                                                                                                                                                    <span>Urdo</span>
-                                                                                                                                                                </a>
-                                                                                                                                                            </div>
-                                                                                                                                                        </div>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                            <div class="nxl-h-item d-none d-sm-flex">
-                                                                                                                                                <div class="full-screen-switcher">
-                                                                                                                                                    <a href="javascript:void(0);" class="nxl-head-link me-0"
-                                                                                                                                                           onclick="$('body').fullScreenHelper('toggle');">
-                                                                                                                                                        <i class="feather-maximize maximize"></i>
-                                                                                                                                                        <i class="feather-minimize minimize"></i>
-                                                                                                                                                    </a>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                            <div class="nxl-h-item dark-light-theme">
-                                                                                                                                                <a href="javascript:void(0);" class="nxl-head-link me-0 dark-button">
-                                                                                                                                                    <i class="feather-moon"></i>
-                                                                                                                                                </a>
-                                                                                                                                                <a href="javascript:void(0);" class="nxl-head-link me-0 light-button" style="display: none">
-                                                                                                                                                    <i class="feather-sun"></i>
-                                                                                                                                                </a>
-                                                                                                                                            </div>
-                                                                                                                                            <div class="dropdown nxl-h-item">
-                                                                                                                                                <a class="nxl-head-link me-3" data-bs-toggle="dropdown" href="#" role="button"
-                                                                                                                                                       data-bs-auto-close="outside">
-                                                                                                                                                    <i class="feather-bell"></i>
-                                                                                                                                                    <span class="badge bg-danger nxl-h-badge" style="display: none;">0</span>
-                                                                                                                                                </a>
-                                                                                                                                                <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-notifications-menu">
-                                                                                                                                                    <div class="d-flex justify-content-between align-items-center notifications-head">
-                                                                                                                                                        <h6 class="fw-bold text-dark mb-0">Notifications</h6>
-                                                                                                                                                        <a href="javascript:void(0);" class="fs-11 text-success text-end ms-auto mark-all-read"
-                                                                                                                                                               data-bs-toggle="tooltip" title="Mark All as Read">
-                                                                                                                                                            <i class="feather-check"></i>
-                                                                                                                                                            <span>Mark All as Read</span>
-                                                                                                                                                        </a>
-                                                                                                                                                    </div>
-                                                                                                                                                    <div class="notifications-item-wrapper">
-                                                                                                                                                        <!-- Notifications will be loaded here dynamically -->
-                                                                                                                                                        <div class="text-center py-4 text-muted">
-                                                                                                                                                            <div class="spinner-border spinner-border-sm" role="status">
-                                                                                                                                                                <span class="visually-hidden">Loading...</span>
-                                                                                                                                                            </div>
-                                                                                                                                                            <p class="mb-0 mt-2">Loading notifications...</p>
-                                                                                                                                                        </div>
-                                                                                                                                                    </div>
-                                                                                                                                                    <div class="text-center notifications-footer">
-                                                                                                                                                        <a href="javascript:void(0);" class="fs-13 fw-semibold text-dark">All Notifications</a>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                            <div class="dropdown nxl-h-item">
-                                                                                                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button"
-                                                                                                                                                       data-bs-auto-close="outside">
-                                                                                                                                                    @{
-                                                                                                                                                        var username = User!.Identity?.Name ?? "User";
-                                                                                                                                                        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ??
-                                                                                                                                                        User.FindFirst("email")?.Value ?? "user@example.com";
-                                                                                                                                                        var initials = GetUserInitials(username);
-                                                                                                                                                    }
-                                                                                                                                                    <div class="avatar-text bg-primary text-white user-avtar me-0">@initials</div>
-                                                                                                                                                </a>
-                                                                                                                                                <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
-                                                                                                                                                    <div class="dropdown-header">
-                                                                                                                                                        <div class="d-flex align-items-center">
-                                                                                                                                                            <div class="avatar-text bg-primary text-white user-avtar">@initials</div>
-                                                                                                                                                            <div>
-                                                                                                                                                                <h6 class="text-dark mb-0">@username
-                                                                                                                                                                    @if (User.IsInRole("SUPER_ADMIN"))
-                                                                                                                                                                    {
-                                                                                                                                                                        <span class="badge bg-soft-success text-success ms-1">SUPER ADMIN</span>
-                                                                                                                                                                    }
-                                                                                                                                                                    else if (User.IsInRole("ADMIN"))
-                                                                                                                                                                    {
-                                                                                                                                                                        <span class="badge bg-soft-primary text-primary ms-1">ADMIN</span>
-                                                                                                                                                                    }
-                                                                                                                                                                    else
-                                                                                                                                                                    {
-                                                                                                                                                                        <span class="badge bg-soft-info text-info ms-1">USER</span>
-                                                                                                                                                                    }
-                                                                                                                                                                </h6>
-                                                                                                                                                                <span class="fs-12 fw-medium text-muted">@email</span>
-                                                                                                                                                            </div>
-                                                                                                                                                        </div>
-                                                                                                                                                    </div>
-                                                                                                                                                    <a href="@Url.Action("ProfileDetails", "Settings")" class="dropdown-item">
-                                                                                                                                                        <i class="feather-user"></i>
-                                                                                                                                                        <span>Profile Details</span>
-                                                                                                                                                    </a>
-                                                                                                                                                    <a href="@Url.Action("Index", "Notification")" class="dropdown-item">
-                                                                                                                                                        <i class="feather-bell"></i>
-                                                                                                                                                        <span>Notifications</span>
-                                                                                                                                                    </a>
-                                                                                                                                                    <a href="javascript:void(0);" class="dropdown-item">
-                                                                                                                                                        <i class="feather-settings"></i>
-                                                                                                                                                        <span>Account Settings</span>
-                                                                                                                                                    </a>
-                                                                                                                                                    <div class="dropdown-divider"></div>
-                                                                                                                                                    <a id="btnLogout" href="javascript:void(0);" role="button" class="dropdown-item">
-                                                                                                                                                        <i class="feather-log-out"></i>
-                                                                                                                                                        <span>Logout</span>
-                                                                                                                                                    </a>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                    <!--! [End] Header Right !-->
-                                                                                                                                </div>
-                                                                                                                            </header>
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! [End] Header !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! [Start] Main Content !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <main class="nxl-container">
-                                                                                                                                <div class="nxl-content">
-                                                                                                                                    @RenderBody()
-                                                                                                                                </div>
-                                                                                                                                <!-- [ Footer ] start -->
-                                                                                                                                <footer class="footer">
-                                                                                                                                    <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
-                                                                                                                                        <span>Copyright ©</span>
-                                                                                                                                        <script>
-                                                                                                                                                            document.write(new Date().getFullYear());
-                                                                                                                                        </script>
-                                                                                                                                    </p>
-                                                                                                                                    <p><span>By: <a target="_blank" href="#" target="_blank">ABB Site Team</a></span></p>
-                                                                                                                                    <div class="d-flex align-items-center gap-4">
-                                                                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Help</a>
-                                                                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Terms</a>
-                                                                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Privacy</a>
-                                                                                                                                    </div>
-                                                                                                                                </footer>
-                                                                                                                                <!-- [ Footer ] end -->
-                                                                                                                            </main>
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! [End] Main Content !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! Footer Script !-->
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! BEGIN: Vendors JS !-->
-                                                                                                                            <script src="~/lib/templates/vendors/js/vendors.min.js"></script>
-                                                                                                                            <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-                                                                                                                            <!-- vendors.min.js {always must need to be top} -->
-                                                                                                                            <script src="~/lib/templates/vendors/js/daterangepicker.min.js"></script>
-                                                                                                                            <script src="~/lib/templates/vendors/js/apexcharts.min.js"></script>
-                                                                                                                            <script src="~/lib/templates/vendors/js/circle-progress.min.js"></script>
-                                                                                                                            <!--! END: Vendors JS !-->
-                                                                                                                            <!--! BEGIN: Apps Init  !-->
-                                                                                                                            <script src="~/lib/templates/js/common-init.min.js"></script>
-                                                                                                                            <!--! BEGIN: Theme Customizer  !-->
-                                                                                                                            <script src="~/lib/templates/js/theme-customizer-init.min.js"></script>
-                                                                                                                            <!--! END: Theme Customizer !-->
+                                                                                                    </div>
+                                                                                                    <div class="text-center notifications-footer">
+                                                                                                        <a href="javascript:void(0);" class="fs-13 fw-semibold text-dark">All Notifications</a>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="dropdown nxl-h-item">
+                                                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button"
+                                                                                                       data-bs-auto-close="outside">
+                                                                                                    @{
+                                                                                                        var username = User!.Identity?.Name ?? "User";
+                                                                                                        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ??
+                                                                                                        User.FindFirst("email")?.Value ?? "user@example.com";
+                                                                                                        var initials = GetUserInitials(username);
+                                                                                                    }
+                                                                                                    <div class="avatar-text bg-primary text-white user-avtar me-0">@initials</div>
+                                                                                                </a>
+                                                                                                <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
+                                                                                                    <div class="dropdown-header">
+                                                                                                        <div class="d-flex align-items-center">
+                                                                                                            <div class="avatar-text bg-primary text-white user-avtar">@initials</div>
+                                                                                                            <div>
+                                                                                                                <h6 class="text-dark mb-0">@username
+                                                                                                                    @if (User.IsInRole("SUPER_ADMIN"))
+                                                                                                                    {
+                                                                                                                        <span class="badge bg-soft-success text-success ms-1">SUPER ADMIN</span>
+                                                                                                                    }
+                                                                                                                    else if (User.IsInRole("ADMIN"))
+                                                                                                                    {
+                                                                                                                        <span class="badge bg-soft-primary text-primary ms-1">ADMIN</span>
+                                                                                                                    }
+                                                                                                                    else
+                                                                                                                    {
+                                                                                                                        <span class="badge bg-soft-info text-info ms-1">USER</span>
+                                                                                                                    }
+                                                                                                                </h6>
+                                                                                                                <span class="fs-12 fw-medium text-muted">@email</span>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <a href="@Url.Action("ProfileDetails", "Settings")" class="dropdown-item">
+                                                                                                        <i class="feather-user"></i>
+                                                                                                        <span>Profile Details</span>
+                                                                                                    </a>
+                                                                                                    <a href="@Url.Action("Index", "Notification")" class="dropdown-item">
+                                                                                                        <i class="feather-bell"></i>
+                                                                                                        <span>Notifications</span>
+                                                                                                    </a>
+                                                                                                    @* <a href="javascript:void(0);" class="dropdown-item">
+                                                                                                        <i class="feather-settings"></i>
+                                                                                                        <span>Account Settings</span>
+                                                                                                    </a> *@
+                                                                                                    <div class="dropdown-divider"></div>
+                                                                                                    <a id="btnLogout" href="javascript:void(0);" role="button" class="dropdown-item">
+                                                                                                        <i class="feather-log-out"></i>
+                                                                                                        <span>Logout</span>
+                                                                                                    </a>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <!--! [End] Header Right !-->
+                                                                                </div>
+                                                                            </header>
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! [End] Header !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! [Start] Main Content !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <main class="nxl-container">
+                                                                                <div class="nxl-content">
+                                                                                    @RenderBody()
+                                                                                </div>
+                                                                                <!-- [ Footer ] start -->
+                                                                                <footer class="footer">
+                                                                                    <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
+                                                                                        <span>Copyright ©</span>
+                                                                                        <script>
+                                                                                                            document.write(new Date().getFullYear());
+                                                                                        </script>
+                                                                                    </p>
+                                                                                    <p><span>By: <a target="_blank" href="#" target="_blank">ABB Site Team</a></span></p>
+                                                                                    <div class="d-flex align-items-center gap-4">
+                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Help</a>
+                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Terms</a>
+                                                                                        <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Privacy</a>
+                                                                                    </div>
+                                                                                </footer>
+                                                                                <!-- [ Footer ] end -->
+                                                                            </main>
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! [End] Main Content !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! Footer Script !-->
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! BEGIN: Vendors JS !-->
+                                                                            <script src="~/lib/templates/vendors/js/vendors.min.js"></script>
+                                                                            <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+                                                                            <!-- vendors.min.js {always must need to be top} -->
+                                                                            <script src="~/lib/templates/vendors/js/daterangepicker.min.js"></script>
+                                                                            <script src="~/lib/templates/vendors/js/apexcharts.min.js"></script>
+                                                                            <script src="~/lib/templates/vendors/js/circle-progress.min.js"></script>
+                                                                            <!--! END: Vendors JS !-->
+                                                                            <!--! BEGIN: Apps Init  !-->
+                                                                            <script src="~/lib/templates/js/common-init.min.js"></script>
+                                                                            <!--! BEGIN: Theme Customizer  !-->
+                                                                            <script src="~/lib/templates/js/theme-customizer-init.min.js"></script>
+                                                                            <!--! END: Theme Customizer !-->
 
-                                                                                                                            <!-- Logout Handler -->
-                                                                                                                            <script src="~/js/layout-logout.js?v=@DateTime.Now.Ticks"></script>
+                                                                            <!-- Logout Handler -->
+                                                                            <script src="~/js/layout-logout.js?v=@DateTime.Now.Ticks"></script>
 
-                                                                                                                            <!-- Notifications Handler -->
-                                                                                                                            <script src="~/js/layout-notifications.js?v=@DateTime.Now.Ticks"></script>
+                                                                            <!-- Notifications Handler -->
+                                                                            <script src="~/js/layout-notifications.js?v=@DateTime.Now.Ticks"></script>
 
-                                                                                                                            <!-- SweetAlert2 -->
-                                                                                                                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                                                            <!-- SweetAlert2 -->
+                                                                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-                                                                                                                            <!-- Datatable JS -->
-                                                                                                                            <script src="~/lib/datatables/jquery.dataTables.min.js"></script>
-                                                                                                                            <script src="~/lib/datatables-bs5/dataTables.bootstrap5.js"></script>
-                                                                                                                            <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-                                                                                                                            <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-                                                                                                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+                                                                            <!-- Datatable JS -->
+                                                                            <script src="~/lib/datatables/jquery.dataTables.min.js"></script>
+                                                                            <script src="~/lib/datatables-bs5/dataTables.bootstrap5.js"></script>
+                                                                            <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+                                                                            <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+                                                                            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-                                                                                                                            <!-- Script Section -->
-                                                                                                                            @await RenderSectionAsync("Scripts", required: false)
+                                                                            <!-- Script Section -->
+                                                                            @await RenderSectionAsync("Scripts", required: false)
 
-                                                                                                                            <!-- AJAX Setup for Authorization Header -->
-                                                                                                                            <script>
-                                                                                                                                // KALAU PAKE AJAX, PASTIKAN SETUP INI ADA SUPAYA TOKEN TERKIRIM
-                                                                                                                                $.ajaxSetup({
-                                                                                                                                beforeSend: function (xhr) {
-                                                                                                                                const token = localStorage.getItem("mdgs_token");
-                                                                                                                                if (token) {
-                                                                                                                                xhr.setRequestHeader("Authorization", "Bearer " + token);
-                                                                                                                                }
-                                                                                                                                }
-                                                                                                                                });
+                                                                            <!-- AJAX Setup for Authorization Header -->
+                                                                            <script>
+                                                                                // KALAU PAKE AJAX, PASTIKAN SETUP INI ADA SUPAYA TOKEN TERKIRIM
+                                                                                $.ajaxSetup({
+                                                                                beforeSend: function (xhr) {
+                                                                                const token = localStorage.getItem("mdgs_token");
+                                                                                if (token) {
+                                                                                xhr.setRequestHeader("Authorization", "Bearer " + token);
+                                                                                }
+                                                                                }
+                                                                                });
 
-                                                                                                                                // KALAU PAKE FETCH 
-                                                                                                                                window.authFetch = function (url, options = {}) {
-                                                                                                                                const token = localStorage.getItem("mdgs_token");
+                                                                                // KALAU PAKE FETCH 
+                                                                                window.authFetch = function (url, options = {}) {
+                                                                                const token = localStorage.getItem("mdgs_token");
+                                                                                options.headers = options.headers || {};
+                                                                                if (token) {
+                                                                                options.headers["Authorization"] = "Bearer " + token;
+                                                                                }
+                                                                                return fetch(url, options);
+                                                                                };
 
-                                                                                                                                options.headers = options.headers || {};
+                                                                                // === SEARCH MENU FEATURE ===
+                                                                                // Daftar menu/page yang bisa dicari
+                                                                                const dashboardSearchPages = [
+                                                                                { label: "Dashboard", url: '@Url.Action("Index", "Home")', keywords: ["dashboard", "beranda", "home"] },
+                                                                                { label: "Invoice", url: '@Url.Action("Index", "Invoice")', keywords: ["invoice", "tagihan"] },
+                                                                                { label: "Contracts", url: '@Url.Action("Index", "Contract")', keywords: ["contract", "kontrak"] },
+                                                                                { label: "Uang Muka", url: '@Url.Action("Index", "UangMuka")', keywords: ["uang muka", "advance"] },
+                                                                                { label: "Notification", url: '@Url.Action("Index", "Notification")', keywords: ["notification", "notifikasi"] },
+                                                                                { label: "Master Data", url: '@Url.Action("Index", "Master")', keywords: ["master", "data master"] },
+                                                                                { label: "Vendor", url: '@Url.Action("Vendor", "Master")', keywords: ["vendor"] },
+                                                                                { label: "Users", url: '@Url.Action("Users", "Master")', keywords: ["user", "pengguna"] },
+                                                                                { label: "Budget", url: '@Url.Action("Budget", "Master")', keywords: ["budget", "anggaran"] },
+                                                                                { label: "Audit Log", url: '@Url.Action("AuditLog", "Settings")', keywords: ["audit", "log"] },
+                                                                                { label: "Setting Admin", url: '@Url.Action("AdminUsers", "Settings")', keywords: ["admin", "setting admin"] },
+                                                                                { label: "Template", url: '@Url.Action("Index", "Template")', keywords: ["template", "dokumen template"] },
+                                                                                { label: "Tampilan di User", url: '@Url.Action("UserPage", "Template")', keywords: ["tampilan", "user", "template user"] },
+                                                                                { label: "Profile", url: '@Url.Action("ProfileDetails", "Settings")', keywords: ["profile", "profil"] }
+                                                                                ];
 
-                                                                                                                                if (token) {
-                                                                                                                                options.headers["Authorization"] = "Bearer " + token;
-                                                                                                                                }
+                                                                                $(document).ready(function () {
+                                                                                // Search input selector
+                                                                                const $searchInput = $('.search-input-field');
+                                                                                const $searchItemsWrapper = $('.search-items-wrapper');
+                                                                                // Container for search results
+                                                                                let $searchResultList = $('#dashboardSearchResultList');
+                                                                                if ($searchResultList.length === 0) {
+                                                                                $searchResultList = $('<div id="dashboardSearchResultList" class="list-group px-4 pb-2"></div>');
+                                                                                $searchItemsWrapper.append($searchResultList);
+                                                                                }
 
-                                                                                                                                return fetch(url, options);
-                                                                                                                                };
-                                                                                                                            </script>
-                                                                                                                            <!--! ================================================================ !-->
-                                                                                                                            <!--! [End] Footer Script !-->
+                                                                                // Simpan elemen statis (semua child selain #dashboardSearchResultList)
+                                                                                const $staticSearchContent = $searchItemsWrapper.children().not($searchResultList);
+
+                                                                                $searchInput.on('input', function () {
+                                                                                const query = $(this).val().toLowerCase().trim();
+                                                                                $searchResultList.empty();
+                                                                                if (!query) {
+                                                                                $searchResultList.hide();
+                                                                                $staticSearchContent.show();
+                                                                                return;
+                                                                                }
+                                                                                // Sembunyikan konten statis saat search aktif
+                                                                                $staticSearchContent.hide();
+                                                                                // Cari yang cocok
+                                                                                const results = dashboardSearchPages.filter(page =>
+                                                                                page.label.toLowerCase().includes(query) ||
+                                                                                (page.keywords && page.keywords.some(k => k.includes(query)))
+                                                                                );
+                                                                                if (results.length === 0) {
+                                                                                $searchResultList.html('<div class="list-group-item text-muted small">No results found</div>').show();
+                                                                                return;
+                                                                                }
+                                                                                results.forEach(page => {
+                                                                                const $item = $(`<a href="${page.url}" class="list-group-item list-group-item-action">${page.label}</a>`);
+                                                                                $item.on('click', function (e) {
+                                                                                // Optional: close dropdown
+                                                                                $(this).closest('.dropdown-menu').removeClass('show');
+                                                                                });
+                                                                                $searchResultList.append($item);
+                                                                                });
+                                                                                $searchResultList.show();
+                                                                                });
+
+                                                                                // Optional: clear results on close
+                                                                                $('.nxl-head-link[data-bs-toggle="dropdown"]').on('hide.bs.dropdown', function () {
+                                                                                $searchResultList.empty().hide();
+                                                                                $searchInput.val('');
+                                                                                $staticSearchContent.show();
+                                                                                });
+                                                                                });
+                                                                                // === END SEARCH MENU FEATURE ===
+                                                                            </script>
+                                                                            <!--! ================================================================ !-->
+                                                                            <!--! [End] Footer Script !-->
 
                                                                                                                 
-                                                                                                                            <!-- Invoice Details Modal: letakkan di paling bawah file, setelah semua konten utama, sebelum </body> -->
-                                                                                                                            <div class="modal fade" id="invoiceStatusModal" tabindex="-1" aria-labelledby="invoiceStatusModalLabel"
-                                                                                                                                 aria-hidden="true">
-                                                                                                                                <div class="modal-dialog modal-xl modal-dialog-centered">
-                                                                                                                                    <div class="modal-content">
-                                                                                                                                        <div class="modal-header">
-                                                                                                                                            <h5 class="modal-title" id="invoiceStatusModalLabel">Invoice List by Status</h5>
-                                                                                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="modal-body">
-                                                                                                                                            <style>
-                                                                                                                                                /* Space between DataTables export buttons and table in modal */
-                                                                                                                                                #invoiceStatusModal .dt-buttons {
-                                                                                                                                                margin-bottom: 1rem;
-                                                                                                                                                }
-                                                                                                                                            </style>
-                                                                                                                                            <div class="table-responsive">
-                                                                                                                                                <table id="modalInvoicesTable"
-                                                                                                                                                       class="table table-striped table-bordered table-hover align-middle w-100">
-                                                                                                                                                    <thead>
-                                                                                                                                                        <tr>
-                                                                                                                                                            <th>Invoice Number</th>
-                                                                                                                                                            <th>Vendor</th>
-                                                                                                                                                            <th>Status</th>
-                                                                                                                                                            <th class="text-end">Invoice Amount</th>
-                                                                                                                                                            <th class="text-end">Tax Amount</th>
-                                                                                                                                                            <th class="text-center">Year</th>
-                                                                                                                                                            <th class="text-center">Month</th>
-                                                                                                                                                            <th class="text-center">On-Time Status</th>
-                                                                                                                                                            <th>Created At</th>
-                                                                                                                                                            <th class="text-center">Actions</th>
-                                                                                                                                                        </tr>
-                                                                                                                                                    </thead>
-                                                                                                                                                    <tbody></tbody>
-                                                                                                                                                </table>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                        </body>
+                                                                            <!-- Invoice Details Modal: letakkan di paling bawah file, setelah semua konten utama, sebelum </body> -->
+                                                                            <div class="modal fade" id="invoiceStatusModal" tabindex="-1" aria-labelledby="invoiceStatusModalLabel"
+                                                                                 aria-hidden="true">
+                                                                                <div class="modal-dialog modal-xl modal-dialog-centered">
+                                                                                    <div class="modal-content">
+                                                                                        <div class="modal-header">
+                                                                                            <h5 class="modal-title" id="invoiceStatusModalLabel">Invoice List by Status</h5>
+                                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                        </div>
+                                                                                        <div class="modal-body">
+                                                                                            <style>
+                                                                                                /* Space between DataTables export buttons and table in modal */
+                                                                                                #invoiceStatusModal .dt-buttons {
+                                                                                                margin-bottom: 1rem;
+                                                                                                }
+                                                                                            </style>
+                                                                                            <div class="table-responsive">
+                                                                                                <table id="modalInvoicesTable"
+                                                                                                       class="table table-striped table-bordered table-hover align-middle w-100">
+                                                                                                    <thead>
+                                                                                                        <tr>
+                                                                                                            <th>Invoice Number</th>
+                                                                                                            <th>Vendor</th>
+                                                                                                            <th>Status</th>
+                                                                                                            <th class="text-end">Invoice Amount</th>
+                                                                                                            <th class="text-end">Tax Amount</th>
+                                                                                                            <th class="text-center">Year</th>
+                                                                                                            <th class="text-center">Month</th>
+                                                                                                            <th class="text-center">On-Time Status</th>
+                                                                                                            <th>Created At</th>
+                                                                                                            <th class="text-center">Actions</th>
+                                                                                                        </tr>
+                                                                                                    </thead>
+                                                                                                    <tbody></tbody>
+                                                                                                </table>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </body>
 
-                                                                                                                    </html>
+                                                                    </html>

@@ -1,4 +1,13 @@
 $(document).ready(function () {
+    // Function to format file size (used in detail modal)
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
     // DataTable init
     var table = $('#templateTable').DataTable({
         ajax: {
@@ -38,21 +47,30 @@ $(document).ready(function () {
     modal.show();
   }
 
-  function hideModal(modalId) {
-    const el = document.getElementById(modalId);
-    if (!el) return;
-    const modal = bootstrap.Modal.getInstance(el);
-    if (modal) {
-      modal.hide();
-      // Force remove backdrop if stuck
-      setTimeout(() => {
-        const backdrops = document.querySelectorAll(".modal-backdrop");
-        backdrops.forEach((backdrop) => backdrop.remove());
-        document.body.classList.remove("modal-open");
-        document.body.style.overflow = "";
-        document.body.style.paddingRight = "";
-      }, 300);
-    }
+  // Track last trigger for modal detail
+  let lastDetailTrigger = null;
+  function hideModal(modalId, options = {}) {
+      const el = document.getElementById(modalId);
+      if (!el) return;
+      const modal = bootstrap.Modal.getInstance(el);
+      // Perbaikan aksesibilitas: pindahkan fokus sebelum hide jika modal detail
+      if (modalId === 'templateDetailModal' && lastDetailTrigger) {
+          lastDetailTrigger.focus();
+          lastDetailTrigger = null;
+      } else if (options.restoreFocus && options.triggerEl) {
+          options.triggerEl.focus();
+      }
+      if (modal) {
+          modal.hide();
+          // Force remove backdrop if stuck
+          setTimeout(() => {
+              const backdrops = document.querySelectorAll(".modal-backdrop");
+              backdrops.forEach((backdrop) => backdrop.remove());
+              document.body.classList.remove("modal-open");
+              document.body.style.overflow = "";
+              document.body.style.paddingRight = "";
+          }, 300);
+      }
   }
 
     // Open modal for add
@@ -197,22 +215,42 @@ $(document).ready(function () {
     $(document).on('click', '.template-detail-link', function (e) {
         e.preventDefault();
         var id = $(this).data('id');
+        lastDetailTrigger = this; // Simpan elemen trigger
         $.get('/api/template-files/' + id, function (data) {
+            let permissionText = '';
+            switch (data.permission) {
+                case 'all':
+                    permissionText = 'Semua User';
+                    break;
+                case 'admin':
+                    permissionText = 'Admin (GS)';
+                    break;
+                case 'user':
+                    permissionText = 'User (Vendor)';
+                    break;
+                default:
+                    permissionText = data.permission;
+            }
+
             var html = `
                 <dl class="row">
                 <dt class="col-sm-4">Judul</dt><dd class="col-sm-8">${data.title}</dd>
-                <dt class="col-sm-4">Permission</dt><dd class="col-sm-8">${data.permission}</dd>
+                <dt class="col-sm-4">Permission</dt><dd class="col-sm-8">${permissionText}</dd>
                 <dt class="col-sm-4">Created At</dt><dd class="col-sm-8">${data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</dd>
+                <dt class="col-sm-4">File Size</dt><dd class="col-sm-8 fw-semibold">${data.fileSize ? formatFileSize(data.fileSize) : '-'}</dd>
                 <dt class="col-sm-4">File</dt><dd class="col-sm-8">`;
             if (data.fileName && data.filePath) {
-                html += `<a href="/api/template-files/download/${data.id}" class="btn btn-sm btn-primary"><i class="feather-download"></i> Download</a> <span class="ms-2">${data.fileName}</span>`;
+                html += `<a href="/api/template-files/download/${data.id}" class="btn btn-sm btn-primary py-2"><i class="feather-download"></i>&nbsp; Download</a>`;
             } else {
                 html += '-';
             }
+            html += `<dt class="col-sm-4">File Name</dt><dd class="col-sm-8 fw-semibold">${data.fileName}</dd>`;
             html += '</dd></dl>';
             $('#templateDetailContent').html(html);
             portalModalToBody('templateDetailModal');
             showModal('templateDetailModal');
         });
     });
+
+    // Handler untuk close modal detail (aksesibilitas) - tidak diperlukan lagi, sudah dipindahkan ke hideModal
 });
