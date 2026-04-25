@@ -49,6 +49,30 @@
         .bg-primary-soft {
             background-color: rgba(13, 110, 253, 0.1);
         }
+
+        /* Timeline UI for history */
+        .timeline {
+            border-left: 3px solid #0d6efd22;
+            margin-left: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -1.7rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: #0d6efd;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #0d6efd22;
+        }
     </style>
 }
 

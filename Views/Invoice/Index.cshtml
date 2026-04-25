@@ -13,6 +13,56 @@
             margin-bottom: 0;
         }
 
+        /* Offcanvas detail styling */
+        .offcanvas.offcanvas-end {
+            max-width: 480px;
+            width: 100%;
+            box-shadow: -2px 0 16px 0 #0001;
+        }
+
+        @@media (max-width: 576px) {
+            .offcanvas.offcanvas-end {
+                max-width: 100vw;
+            }
+        }
+
+        #invoiceDetailContent>.mb-3 {
+            margin-bottom: 1.25rem !important;
+        }
+
+        #invoiceDetailContent .timeline {
+            border-left: 3px solid #0d6efd22;
+            margin-left: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        #invoiceDetailContent .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -1.7rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: #0d6efd;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #0d6efd22;
+        }
+
+        #invoiceDetailContent .list-group-item {
+            border: none;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        #invoiceDetailContent .badge {
+            font-size: 0.85rem;
+        }
+
+        #invoiceDetailContent .fw-bold {
+            font-weight: 600 !important;
+        }
+
         div.dataTables_wrapper div.dataTables_filter input {
             width: 240px;
         }
@@ -37,6 +87,30 @@
 
         .modal-backdrop {
             z-index: 1990;
+        }
+
+        /* Timeline UI for history */
+        .timeline {
+            border-left: 3px solid #0d6efd22;
+            margin-left: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -1.7rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: #0d6efd;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #0d6efd22;
         }
     </style>
 }

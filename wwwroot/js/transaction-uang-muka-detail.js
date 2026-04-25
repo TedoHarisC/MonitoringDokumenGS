@@ -157,9 +157,71 @@ $(function () {
                 </div>
             `);
 
+            // Timeline History Section
+            $content.append(`
+                <div class="mt-5">
+                    <h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>
+                    <div id="uangMukaHistoryTimeline" class="timeline-container"></div>
+                </div>
+            `);
+            // Load timeline after detail
+            if (id) window.renderUangMukaDetailHistory && window.renderUangMukaDetailHistory(id);
+
             console.log(data);
         } catch (e) {
             $content.html('<div class="alert alert-danger">Gagal memuat detail.</div>');
         }
     }
 });
+
+// Timeline History Loader for Uang Muka Detail
+function loadUangMukaHistory(uangMukaId) {
+    const $timeline = $("#uangMukaHistoryTimeline");
+    $timeline.html('<div class="text-muted">Loading history...</div>');
+    $.get(`/api/uang-muka/${uangMukaId}/history`)
+        .done(function (data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+                return;
+            }
+            // Sort by CreatedAt ascending
+            data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            let html = '<div class="timeline">';
+            data.forEach(function (item, idx) {
+                // Ambil status baru dan user
+                let status = "";
+                let user = item.userName || (item.userId ? `User: ${item.userId}` : "-");
+                let tgl = new Date(item.createdAt).toLocaleString();
+                // Cek perubahan status
+                try {
+                    if (item.newData) {
+                        const newData = typeof item.newData === 'string' ? JSON.parse(item.newData) : item.newData;
+                        status = newData.status || newData.Status || newData.statusId || newData.StatusId || "-";
+                    }
+                } catch {}
+                html += `
+                <div class="timeline-item mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary">${status}</span>
+                        <span class="fw-bold">${user}</span>
+                        <span class="text-muted small">${tgl}</span>
+                    </div>
+                    <div class="text-muted">${item.entityName || item.action || ""}</div>
+                </div>`;
+            });
+            html += '</div>';
+            $timeline.html(html);
+        })
+        .fail(function (xhr) {
+            if (xhr.status === 404 && xhr.responseJSON && xhr.responseJSON.message && xhr.responseJSON.message.includes('No history')) {
+                $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+            } else {
+                $timeline.html('<div class="text-danger">Gagal memuat history perubahan.</div>');
+            }
+        });
+}
+
+// Hook: panggil ini setelah detail loaded
+window.renderUangMukaDetailHistory = function(uangMukaId) {
+    loadUangMukaHistory(uangMukaId);
+};

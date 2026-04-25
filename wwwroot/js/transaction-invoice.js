@@ -32,6 +32,8 @@
     if (el.parentElement !== document.body) document.body.appendChild(el);
   }
 
+
+
   function showModal(modalId) {
     const el = document.getElementById(modalId);
     if (!el) return;
@@ -1128,46 +1130,48 @@
           // Fetch attachments
           const attachments = await fetchJson(`${apis.attachments}/by-reference/${id}`);
 
-          // Render detail content
-          let html = `<div class="mb-3">
-            <div class="fw-bold mb-1">Invoice Number:</div>
-            <div>${escapeHtml(data.invoiceNumber)}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Vendor:</div>
-            <div>${escapeHtml(vendorNameById(data.vendorId) || data.vendorId)}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Status:</div>
-            <div>${escapeHtml(statusNameById(data.progressStatusId) || data.progressStatusId)}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Invoice Amount:</div>
-            <div>${escapeHtml(formatMoney(data.invoiceAmount))}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Tax Amount:</div>
-            <div>${escapeHtml(formatMoney(data.taxAmount))}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Year / Month:</div>
-            <div>${escapeHtml(data.invoiceYear)} / ${escapeHtml(data.invoiceMonth)}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Description:</div>
-            <div>${escapeHtml(data.invoiceDescription)}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">Created At:</div>
-            <div>${escapeHtml(formatDate(data.createdAt))}</div>
-          </div>
-          <div class="mb-3">
-            <div class="fw-bold mb-1">On-Time Status:</div>
-            <div>${data.isOnTime ? '<span class="badge bg-success">Tepat Waktu</span>' : '<span class="badge bg-danger">Terlambat</span>'}</div>
+          // Render detail content in grid (2 columns)
+          let html = `<div class="row g-3">
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Invoice Number:</div>
+              <div>${escapeHtml(data.invoiceNumber)}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Vendor:</div>
+              <div>${escapeHtml(vendorNameById(data.vendorId) || data.vendorId)}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Status:</div>
+              <div>${escapeHtml(statusNameById(data.progressStatusId) || data.progressStatusId)}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Invoice Amount:</div>
+              <div>${escapeHtml(formatMoney(data.invoiceAmount))}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Tax Amount:</div>
+              <div>${escapeHtml(formatMoney(data.taxAmount))}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Year / Month:</div>
+              <div>${escapeHtml(data.invoiceYear)} / ${escapeHtml(data.invoiceMonth)}</div>
+            </div>
+            <div class="col-md-12">
+              <div class="fw-bold mb-1">Description:</div>
+              <div>${escapeHtml(data.invoiceDescription)}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Created At:</div>
+              <div>${escapeHtml(formatDate(data.createdAt))}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">On-Time Status:</div>
+              <div>${data.isOnTime ? '<span class="badge bg-success">Tepat Waktu</span>' : '<span class="badge bg-danger">Terlambat</span>'}</div>
+            </div>
           </div>`;
 
           // Attachments
-          html += `<div class="mb-3">
+          html += `<div class="mt-4 mb-3">
             <div class="fw-bold mb-2">Attachments:</div>`;
           if (attachments && attachments.length > 0) {
             html += '<ul class="list-group">';
@@ -1191,7 +1195,14 @@
           }
           html += '</div>';
 
+          // Timeline History Section
+          html += `<div class="mt-5">
+            <h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>
+            <div id="invoiceHistoryTimeline" class="timeline-container"></div>
+          </div>`;
           $("#invoiceDetailContent").html(html);
+          // Load timeline after detail
+          if (id) window.renderInvoiceDetailHistory && window.renderInvoiceDetailHistory(id);
         } catch (err) {
           $("#invoiceDetailContent").html('<div class="text-danger">Gagal memuat detail invoice.</div>');
         }
@@ -1199,3 +1210,51 @@
       // ===================== END INVOICE DETAIL HANDLER =====================
     });
 })(jQuery);
+
+// Timeline History Loader for Invoice Detail
+  function loadInvoiceHistory(invoiceId) {
+    const $timeline = $("#invoiceHistoryTimeline");
+    $timeline.html('<div class="text-muted">Loading history...</div>');
+    $.get(`/api/invoices/${invoiceId}/history`)
+      .done(function (data) {
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+          return;
+        }
+        // Sort by CreatedAt ascending
+        data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        let html = '<div class="timeline">';
+        data.forEach(function (item, idx) {
+          let status = "";
+          let user = item.userName || (item.userId ? `User: ${item.userId}` : "-");
+          let tgl = new Date(item.createdAt).toLocaleString();
+          try {
+            if (item.newData) {
+              const newData = typeof item.newData === 'string' ? JSON.parse(item.newData) : item.newData;
+              status = newData.status || newData.Status || newData.progressStatusId || newData.ProgressStatusId || "-";
+            }
+          } catch {}
+          html += `
+            <div class="timeline-item mb-4">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary">${status}</span>
+                <span class="fw-bold">${user}</span>
+                <span class="text-muted small">${tgl}</span>
+              </div>
+              <div class="text-muted">${item.entityName || item.action || ""}</div>
+            </div>`;
+        });
+        html += '</div>';
+        $timeline.html(html);
+      })
+      .fail(function (xhr) {
+        if (xhr.status === 404 && xhr.responseJSON && xhr.responseJSON.message && xhr.responseJSON.message.includes('No history')) {
+          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+        } else {
+          $timeline.html('<div class="text-danger">Gagal memuat history perubahan.</div>');
+        }
+      });
+  }
+  window.renderInvoiceDetailHistory = function(invoiceId) {
+    loadInvoiceHistory(invoiceId);
+  };

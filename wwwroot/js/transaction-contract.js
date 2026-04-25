@@ -456,7 +456,7 @@
       ],
       drawCallback: function () {
         // Initialize tooltips after table draw
-        $('[data-bs-toggle=\"tooltip\"]').tooltip();
+        $('[data-bs-toggle="tooltip\"]').tooltip();
       },
     });
   }
@@ -870,9 +870,64 @@
         } else {
           html += '<div class="text-muted">No attachments.</div>';
         }
+        // Timeline History Section
+        html += '<div class="mt-5">'
+          + '<h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>'
+          + '<div id="contractHistoryTimeline" class="timeline-container"></div>'
+          + '</div>';
         $('#contractDetailContent').html(html);
         showModal('contractDetailModal');
+        // Load timeline after detail
+        if (id) window.renderContractDetailHistory && window.renderContractDetailHistory(id);
       });
     });
   });
-})(jQuery);
+
+  // Timeline History Loader for Contract Detail
+  function loadContractHistory(contractId) {
+    const $timeline = $("#contractHistoryTimeline");
+    $timeline.html('<div class="text-muted">Loading history...</div>');
+    $.get(`/api/contracts/${contractId}/history`)
+      .done(function (data) {
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+          return;
+        }
+        // Sort by CreatedAt ascending
+        data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        let html = '<div class="timeline">';
+        data.forEach(function (item, idx) {
+          let status = "";
+          let user = item.userName || (item.userId ? `User: ${item.userId}` : "-");
+          let tgl = new Date(item.createdAt).toLocaleString();
+          try {
+            if (item.newData) {
+              const newData = typeof item.newData === 'string' ? JSON.parse(item.newData) : item.newData;
+              status = newData.status || newData.Status || newData.contractStatusId || newData.ContractStatusId || "-";
+            }
+          } catch {}
+          html += `
+            <div class="timeline-item mb-4">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary">${status}</span>
+                <span class="fw-bold">${user}</span>
+                <span class="text-muted small">${tgl}</span>
+              </div>
+              <div class="text-muted">${item.entityName || item.action || ""}</div>
+            </div>`;
+        });
+        html += '</div>';
+        $timeline.html(html);
+      })
+            .fail(function (xhr) {
+        if (xhr.status === 404 && xhr.responseJSON && xhr.responseJSON.message && xhr.responseJSON.message.includes('No history')) {
+          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+        } else {
+          $timeline.html('<div class="text-danger">Gagal memuat history perubahan.</div>');
+        }
+      });
+    }
+    window.renderContractDetailHistory = function(contractId) {
+      loadContractHistory(contractId);
+    };
+  })(jQuery);
