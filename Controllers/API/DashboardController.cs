@@ -102,4 +102,31 @@ public class DashboardController : ControllerBase
         var data = await _dashboard.GetInvoiceStatusSummaryAsync();
         return Ok(data);
     }
+
+    [HttpGet("uang-muka-status-summary")]
+    public async Task<IActionResult> GetUangMukaStatusSummary([FromQuery] string jenis)
+    {
+        var data = await _dashboard.GetUangMukaStatusSummaryAsync(jenis);
+        return Ok(data);
+    }
+
+    // [Uang Muka] Detail by Jenis & Status (dummy)
+    [HttpGet("uang-muka-detail")]
+    public IActionResult GetUangMukaDetail([FromQuery] string jenis, [FromQuery] string status)
+    {
+        // Return real data from service (async)
+        var data = _dashboard.GetUangMukaDetailAsync(jenis, status).GetAwaiter().GetResult();
+        return Ok(data);
+    }
+
+    // [Uang Muka] Export to Excel (dummy)
+    [HttpGet("uang-muka-detail-export")]
+    public IActionResult ExportUangMukaDetail([FromQuery] string jenis, [FromQuery] string status)
+    {
+        // Dummy: return a simple CSV as Excel
+        var csv = "No,Nama,Nominal,Status,Jenis\n";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var fileName = $"UangMuka_{jenis}_{status}_{DateTime.Now:yyyyMMddHHmmss}.csv";
+        return File(bytes, "text/csv", fileName);
+    }
 }

@@ -98,15 +98,216 @@
         </div>
         <!-- [Invoice Summary Total by Status ] end -->
 
-        <!-- [Vendor On-Time Submission KPI] start -->
+        <!-- [Uang Muka Dashboard Tabs] start -->
         <div class="col-12">
             <div class="card stretch stretch-full">
                 <div class="card-header">
-                    <h5 class="card-title">Vendor On-Time Submission KPI <span class="badge bg-info">Target: ≤ 7th
-                        Day</span></h5>
+                    <h5 class="card-title">Uang Muka Overview by Status</h5>
+                    <ul class="nav nav-tabs card-header-tabs" id="uangMukaTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-advanced" data-bs-toggle="tab"
+                                    data-bs-target="#uangmuka-advanced-area" type="button" role="tab"
+                                    aria-controls="uangmuka-advanced-area" aria-selected="true">Advanced</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-biaya" data-bs-toggle="tab"
+                                    data-bs-target="#uangmuka-biaya-area" type="button" role="tab"
+                                    aria-controls="uangmuka-biaya-area" aria-selected="false">Biaya</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-realisasi" data-bs-toggle="tab"
+                                    data-bs-target="#uangmuka-realisasi-area" type="button" role="tab"
+                                    aria-controls="uangmuka-realisasi-area" aria-selected="false">Realisasi</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="uangMukaTabsContent">
+                        <div class="tab-pane fade show active" id="uangmuka-advanced-area" role="tabpanel"
+                             aria-labelledby="tab-advanced">
+                            <div class="row">
+                                <div id="uangmuka_by_status_area_advanced"></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="uangmuka-biaya-area" role="tabpanel" aria-labelledby="tab-biaya">
+                            <div class="row">
+                                <div id="uangmuka_by_status_area_biaya"></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="uangmuka-realisasi-area" role="tabpanel"
+                             aria-labelledby="tab-realisasi">
+                            <div class="row">
+                                <div id="uangmuka_by_status_area_realisasi"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [Uang Muka Dashboard Tabs] end -->
+
+        <!-- Modal moved to bottom for correct stacking -->
+    </div> <!-- end .main-content or main container -->
+
+    <!-- Modal Detail Uang Muka (moved outside grid for Bootstrap stacking fix) -->
+    <div class="modal fade" id="uangMukaDetailModal" tabindex="-1" aria-labelledby="uangMukaDetailModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uangMukaDetailModalLabel">Detail Uang Muka</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="uangMukaDetailContent">
+                        <!-- Detail content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- Export to Excel button removed, now handled by DataTables -->
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of Modal Detail Uang Muka -->
+
+    <!-- [Vendor On-Time Submission KPI] start -->
+    <div class="col-12">
+        <div class="card stretch stretch-full">
+            <div class="card-header">
+                <h5 class="card-title">Vendor On-Time Submission KPI <span class="badge bg-info">Target: ≤ 7th
+                    Day</span></h5>
+                    <div class="card-header-action">
+                        <select id="ontimeYearFilter" class="form-select form-select-sm" style="width: 120px;">
+                            <option value="">All Years</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Overall Stats -->
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Total Invoices</div>
+                                <h3 class="fw-bold text-dark" id="ontimeTotalInvoices">0</h3>
+                                <div class="fs-11 text-muted mt-1">All submissions</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">On-Time Submissions</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold text-success mb-0" id="ontimeOnTimeCount">0</h3>
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="feather-check-circle"></i>
+                                    </span>
+                                </div>
+                                <div class="fs-11 text-muted mt-1">Submitted by 7th</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded">
+                                <div class="fs-12 text-muted mb-1">Late Submissions</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold text-danger mb-0" id="ontimeLateCount">0</h3>
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="feather-alert-circle"></i>
+                                    </span>
+                                </div>
+                                <div class="fs-11 text-muted mt-1">After deadline</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border border-dashed rounded position-relative">
+                                <div class="fs-12 text-muted mb-1">On-Time Percentage</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold mb-0" id="ontimePercentage">0%</h3>
+                                    <span id="ontimeStatusBadge" class="badge"></span>
+                                </div>
+                                <div class="progress mt-2" style="height: 10px;">
+                                    <div id="ontimeProgressBar" class="progress-bar" role="progressbar" style="width: 0%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [Vendor On-Time Submission KPI] end -->
+
+        <div class="col-12">
+            <!-- [On-Time Submission Chart & Vendor Performance] start -->
+            <div class="row">
+                <div class="col-xxl-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-header">
+                            <h5 class="card-title">On-Time vs Late Distribution</h5>
+                            <div class="card-header-action">
+                                <div class="card-header-btn">
+                                    <div data-bs-toggle="tooltip" title="Refresh">
+                                        <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                           onclick="loadOnTimeSubmissionKpi()"> </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body custom-card-action">
+                            <div id="ontime-submission-chart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-header">
+                            <h5 class="card-title">Vendor Performance Ranking</h5>
+                            <div class="card-header-action">
+                                <div class="card-header-btn">
+                                    <div data-bs-toggle="tooltip" title="Refresh">
+                                        <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                           onclick="loadOnTimeSubmissionKpi()"> </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body custom-card-action">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Vendor</th>
+                                            <th class="text-center">Total</th>
+                                            <th class="text-center">On-Time %</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vendorPerformanceTable">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Loading...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [On-Time Submission Chart & Vendor Performance] end -->
+        </div>
+
+        <!-- [Budget KPI Summary] start -->
+        <div class="col-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Budget Summary <span id="budget-year-display"
+                                                                    class="badge bg-primary">2026</span></h5>
                         <div class="card-header-action">
-                            <select id="ontimeYearFilter" class="form-select form-select-sm" style="width: 120px;">
-                                <option value="">All Years</option>
+                            <select id="budgetYearFilter" class="form-select form-select-sm" style="width: 120px;">
                                 <option value="2024">2024</option>
                                 <option value="2025">2025</option>
                                 <option value="2026" selected>2026</option>
@@ -116,159 +317,34 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <!-- Overall Stats -->
                             <div class="col-md-3">
                                 <div class="p-3 border border-dashed rounded">
-                                    <div class="fs-12 text-muted mb-1">Total Invoices</div>
-                                    <h3 class="fw-bold text-dark" id="ontimeTotalInvoices">0</h3>
-                                    <div class="fs-11 text-muted mt-1">All submissions</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="p-3 border border-dashed rounded">
-                                    <div class="fs-12 text-muted mb-1">On-Time Submissions</div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <h3 class="fw-bold text-success mb-0" id="ontimeOnTimeCount">0</h3>
-                                        <span class="badge bg-success-subtle text-success">
-                                            <i class="feather-check-circle"></i>
-                                        </span>
-                                    </div>
-                                    <div class="fs-11 text-muted mt-1">Submitted by 7th</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="p-3 border border-dashed rounded">
-                                    <div class="fs-12 text-muted mb-1">Late Submissions</div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <h3 class="fw-bold text-danger mb-0" id="ontimeLateCount">0</h3>
-                                        <span class="badge bg-danger-subtle text-danger">
-                                            <i class="feather-alert-circle"></i>
-                                        </span>
-                                    </div>
-                                    <div class="fs-11 text-muted mt-1">After deadline</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="p-3 border border-dashed rounded position-relative">
-                                    <div class="fs-12 text-muted mb-1">On-Time Percentage</div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <h3 class="fw-bold mb-0" id="ontimePercentage">0%</h3>
-                                        <span id="ontimeStatusBadge" class="badge"></span>
-                                    </div>
-                                    <div class="progress mt-2" style="height: 10px;">
-                                        <div id="ontimeProgressBar" class="progress-bar" role="progressbar"
-                                             style="width: 0%"></div>
+                                    <div class="fs-12 text-muted mb-1">Total Budget</div>
+                                    <h5 class="fw-bold text-dark" id="totalBudget">Rp 0</h3>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- [Vendor On-Time Submission KPI] end -->
-
-            <!-- [On-Time Submission Chart & Vendor Performance] start -->
-            <div class="col-xxl-6">
-                <div class="card stretch stretch-full">
-                    <div class="card-header">
-                        <h5 class="card-title">On-Time vs Late Distribution</h5>
-                        <div class="card-header-action">
-                            <div class="card-header-btn">
-                                <div data-bs-toggle="tooltip" title="Refresh">
-                                    <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
-                                       onclick="loadOnTimeSubmissionKpi()"> </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body custom-card-action">
-                        <div id="ontime-submission-chart"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xxl-6">
-                <div class="card stretch stretch-full">
-                    <div class="card-header">
-                        <h5 class="card-title">Vendor Performance Ranking</h5>
-                        <div class="card-header-action">
-                            <div class="card-header-btn">
-                                <div data-bs-toggle="tooltip" title="Refresh">
-                                    <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
-                                       onclick="loadOnTimeSubmissionKpi()"> </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body custom-card-action">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Vendor</th>
-                                        <th class="text-center">Total</th>
-                                        <th class="text-center">On-Time %</th>
-                                        <th class="text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="vendorPerformanceTable">
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">Loading...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- [On-Time Submission Chart & Vendor Performance] end -->
-
-
-            <!-- [Budget KPI Summary] start -->
-            <div class="col-12">
-                <div class="card stretch stretch-full">
-                    <div class="card-header">
-                        <h5 class="card-title">Budget Summary <span id="budget-year-display"
-                                                                        class="badge bg-primary">2026</span></h5>
-                            <div class="card-header-action">
-                                <select id="budgetYearFilter" class="form-select form-select-sm" style="width: 120px;">
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026" selected>2026</option>
-                                    <option value="2027">2027</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
                                 <div class="col-md-3">
                                     <div class="p-3 border border-dashed rounded">
-                                        <div class="fs-12 text-muted mb-1">Total Budget</div>
-                                        <h5 class="fw-bold text-dark" id="totalBudget">Rp 0</h3>
+                                        <div class="fs-12 text-muted mb-1">Realisasi</div>
+                                        <h5 class="fw-bold text-primary" id="totalRealisasi">Rp 0</h3>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Realisasi</div>
-                                            <h5 class="fw-bold text-primary" id="totalRealisasi">Rp 0</h3>
+                                            <div class="fs-12 text-muted mb-1">Sisa Budget</div>
+                                            <h5 class="fw-bold text-success" id="sisaBudget">Rp 0</h3>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="p-3 border border-dashed rounded">
-                                                <div class="fs-12 text-muted mb-1">Sisa Budget</div>
-                                                <h5 class="fw-bold text-success" id="sisaBudget">Rp 0</h3>
+                                            <div class="p-3 border border-dashed rounded position-relative">
+                                                <div class="fs-12 text-muted mb-1">Serapan Anggaran</div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <h5 class="fw-bold mb-0" id="persentaseSerapan">0%</h5>
+                                                    <span id="trafficLight" class="badge"
+                                                          style="width: 20px; height: 20px; border-radius: 50%;"></span>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="p-3 border border-dashed rounded position-relative">
-                                                    <div class="fs-12 text-muted mb-1">Serapan Anggaran</div>
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <h5 class="fw-bold mb-0" id="persentaseSerapan">0%</h5>
-                                                        <span id="trafficLight" class="badge"
-                                                              style="width: 20px; height: 20px; border-radius: 50%;"></span>
-                                                    </div>
-                                                    <div class="progress mt-2" style="height: 10px;">
-                                                        <div id="serapanProgressBar" class="progress-bar" role="progressbar"
-                                                             style="width: 0%"></div>
+                                                <div class="progress mt-2" style="height: 10px;">
+                                                    <div id="serapanProgressBar" class="progress-bar" role="progressbar" style="width: 0%">
                                                     </div>
                                                 </div>
                                             </div>
@@ -276,9 +352,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- [Budget KPI Summary] end -->
+                        </div>
+                        <!-- [Budget KPI Summary] end -->
 
-                            <!-- [Budget vs Realisasi by Vendor] start -->
+                        <!-- [Budget vs Realisasi by Vendor & Monthly Realisasi Trend] start -->
+                        <div class="row">
                             <div class="col-xxl-6">
                                 <div class="card stretch stretch-full">
                                     <div class="card-header">
@@ -297,9 +375,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- [Budget vs Realisasi by Vendor] end -->
-
-                            <!-- [Monthly Realisasi Trend] start -->
                             <div class="col-xxl-6">
                                 <div class="card stretch stretch-full">
                                     <div class="card-header">
@@ -318,10 +393,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- [Monthly Realisasi Trend] end -->
+                        </div>
+                        <!-- [Budget vs Realisasi by Vendor & Monthly Realisasi Trend] end -->
 
-                            <!-- [Mini Card] start -->
-                            @* <div class="col-12">
+                        <!-- [Mini Card] start -->
+                        @* <div class="col-12">
             <div class="card stretch stretch-full">
                 <div class="card-body">
                     <div class="hstack justify-content-between mb-4 pb-">
@@ -400,9 +476,9 @@
                 </div>
             </div>
         </div> *@
-                            <!-- [Mini Card] end -->
-                            <!-- [Visitors Overview] start -->
-                            @* <div class="col-xxl-8">
+                        <!-- [Mini Card] end -->
+                        <!-- [Visitors Overview] start -->
+                        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Visitors Overview</h5>
@@ -451,6 +527,7 @@
                 </div>
             </div>
         </div> *@
+                        <div class="row">
                             <!-- [Visitors Overview] end -->
                             <!-- [Top 5 Vendor Spend] start -->
                             <div class="col-xxl-8">
@@ -548,9 +625,10 @@
                                     </a>
                                 </div>
                             </div>
-                            <!-- [Contract Status Summary] end -->
-                            <!-- [Mini Card] start -->
-                            @* <div class="col-xxl-3 col-md-6">
+                        </div>
+                        <!-- [Contract Status Summary] end -->
+                        <!-- [Mini Card] start -->
+                        @* <div class="col-xxl-3 col-md-6">
             <div class="card stretch stretch-full">
                 <div class="card-body p-0">
                     <div class="d-flex justify-content-between p-4 mb-4">
@@ -618,9 +696,9 @@
                 </div>
             </div>
         </div> *@
-                            <!-- [Mini Card] end -->
-                            <!-- [Goal Progress] start -->
-                            @* <div class="col-xxl-4">
+                        <!-- [Mini Card] end -->
+                        <!-- [Goal Progress] start -->
+                        @* <div class="col-xxl-4">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Goal Progress</h5>
@@ -710,9 +788,9 @@
                 </div>
             </div>
         </div> *@
-                            <!-- [Goal Progress] end -->
-                            <!-- [Marketing Campaign] start -->
-                            @* <div class="col-xxl-8">
+                        <!-- [Goal Progress] end -->
+                        <!-- [Marketing Campaign] start -->
+                        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Marketing Campaign</h5>
@@ -801,105 +879,100 @@
                 </div>
             </div>
         </div> *@
-                            <!-- [Marketing Campaign] end -->
-                            <!-- [Contracts Expiring Soon] start -->
-                            <div class="col-xxl-12">
-                                <div class="card stretch stretch-full">
-                                    <div class="card-header">
-                                        <h5 class="card-title">
-                                            Contracts Expiring Soon
-                                            <span class="badge bg-warning" id="expiringContractsCount">0</span>
-                                        </h5>
-                                        <div class="card-header-action">
-                                            <select id="expiryDaysFilter" class="form-select form-select-sm me-2" style="width: 150px;">
-                                                <option value="30" selected>Next 30 Days</option>
-                                                <option value="60">Next 60 Days</option>
-                                                <option value="90">Next 90 Days</option>
-                                            </select>
-                                            <div class="card-header-btn">
-                                                <div data-bs-toggle="tooltip" title="Delete">
-                                                    <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger"
-                                                       data-bs-toggle="remove"> </a>
+                        <!-- [Marketing Campaign] end -->
+                        <!-- [Contracts Expiring Soon] start -->
+                        <div class="col-xxl-12">
+                            <div class="card stretch stretch-full">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        Contracts Expiring Soon
+                                        <span class="badge bg-warning" id="expiringContractsCount">0</span>
+                                    </h5>
+                                    <div class="card-header-action">
+                                        <select id="expiryDaysFilter" class="form-select form-select-sm me-2" style="width: 150px;">
+                                            <option value="30" selected>Next 30 Days</option>
+                                            <option value="60">Next 60 Days</option>
+                                            <option value="90">Next 90 Days</option>
+                                        </select>
+                                        <div class="card-header-btn">
+                                            <div data-bs-toggle="tooltip" title="Delete">
+                                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger"
+                                                   data-bs-toggle="remove"> </a>
+                                            </div>
+                                            <div data-bs-toggle="tooltip" title="Refresh">
+                                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
+                                                   onclick="loadContractsExpiring(parseInt($('#expiryDaysFilter').val()))"> </a>
+                                            </div>
+                                            <div data-bs-toggle="tooltip" title="Maximize/Minimize">
+                                                <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success"
+                                                   data-bs-toggle="expand"> </a>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown">
+                                            <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown"
+                                                   data-bs-offset="25, 25">
+                                                <div data-bs-toggle="tooltip" title="Options">
+                                                    <i class="feather-more-vertical"></i>
                                                 </div>
-                                                <div data-bs-toggle="tooltip" title="Refresh">
-                                                    <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning"
-                                                       onclick="loadContractsExpiring(parseInt($('#expiryDaysFilter').val()))"> </a>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a href="javascript:void(0);" class="dropdown-item"><i class="feather-at-sign"></i>New</a>
+                                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                                    class="feather-calendar"></i>Event</a>
+                                                    <a href="javascript:void(0);" class="dropdown-item"><i class="feather-bell"></i>Snoozed</a>
+                                                    <a href="javascript:void(0);" class="dropdown-item"><i
+                                                        class="feather-trash-2"></i>Deleted</a>
+                                                        <div class="dropdown-divider"></div>
+                                                        <a href="javascript:void(0);" class="dropdown-item"><i
+                                                            class="feather-settings"></i>Settings</a>
+                                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-life-buoy"></i>Tips &
+                                                                Tricks</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div data-bs-toggle="tooltip" title="Maximize/Minimize">
-                                                    <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success"
-                                                       data-bs-toggle="expand"> </a>
+                                                <div class="card-body custom-card-action p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-hover mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th scope="col">Contract</th>
+                                                                    <th scope="col">Status</th>
+                                                                    <th scope="col">Expires In</th>
+                                                                    <th scope="col" class="text-end">Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="contractsExpiringTableBody">
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center text-muted py-4">
+                                                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                                                            <span class="visually-hidden">Loading...</span>
+                                                                        </div>
+                                                                        Loading contracts...
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <ul class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style"
+                                                            id="contractsPagination">
+                                                            <li>
+                                                                <a href="javascript:void(0);" id="contractsPrevPage"><i class="bi bi-arrow-left"></i></a>
+                                                            </li>
+                                                            <li><a href="javascript:void(0);" class="active" data-page="1">1</a></li>
+                                                            <li>
+                                                                <a href="javascript:void(0);" id="contractsNextPage"><i class="bi bi-arrow-right"></i></a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="dropdown">
-                                                <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown"
-                                                       data-bs-offset="25, 25">
-                                                    <div data-bs-toggle="tooltip" title="Options">
-                                                        <i class="feather-more-vertical"></i>
-                                                    </div>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-end">
-                                                    <a href="javascript:void(0);" class="dropdown-item"><i
-                                                        class="feather-at-sign"></i>New</a>
-                                                        <a href="javascript:void(0);" class="dropdown-item"><i
-                                                            class="feather-calendar"></i>Event</a>
-                                                            <a href="javascript:void(0);" class="dropdown-item"><i
-                                                                class="feather-bell"></i>Snoozed</a>
-                                                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                                                    class="feather-trash-2"></i>Deleted</a>
-                                                                    <div class="dropdown-divider"></div>
-                                                                    <a href="javascript:void(0);" class="dropdown-item"><i
-                                                                        class="feather-settings"></i>Settings</a>
-                                                                        <a href="javascript:void(0);" class="dropdown-item"><i
-                                                                            class="feather-life-buoy"></i>Tips &
-                                                                            Tricks</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="card-body custom-card-action p-0">
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-hover mb-0">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                <th scope="col">Contract</th>
-                                                                                <th scope="col">Status</th>
-                                                                                <th scope="col">Expires In</th>
-                                                                                <th scope="col" class="text-end">Action</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody id="contractsExpiringTableBody">
-                                                                            <tr>
-                                                                                <td colspan="4" class="text-center text-muted py-4">
-                                                                                    <div class="spinner-border spinner-border-sm me-2" role="status">
-                                                                                        <span class="visually-hidden">Loading...</span>
-                                                                                    </div>
-                                                                                    Loading contracts...
-                                                                                </td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                                <div class="card-footer">
-                                                                    <ul class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style"
-                                                                        id="contractsPagination">
-                                                                        <li>
-                                                                            <a href="javascript:void(0);" id="contractsPrevPage"><i
-                                                                                class="bi bi-arrow-left"></i></a>
-                                                                            </li>
-                                                                            <li><a href="javascript:void(0);" class="active" data-page="1">1</a></li>
-                                                                            <li>
-                                                                                <a href="javascript:void(0);" id="contractsNextPage"><i
-                                                                                    class="bi bi-arrow-right"></i></a>
-                                                                                </li>
-                                                                            </ul>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- [Contracts Expiring Soon] end -->
+                                        </div>
+                                        <!-- [Contracts Expiring Soon] end -->
 
-                                                            <!-- [Project Remainders] start -->
-                                                            @* <div class="col-xxl-8">
+                                        <!-- [Project Remainders] start -->
+                                        @* <div class="col-xxl-8">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Project Remainders</h5>
@@ -1157,9 +1230,9 @@
                 </div>
             </div>
         </div> *@
-                                                            <!-- [Project Remainders] end -->
-                                                            <!-- Social Statistic -->
-                                                            @* <div class="col-xxl-4">
+                                        <!-- [Project Remainders] end -->
+                                        <!-- Social Statistic -->
+                                        @* <div class="col-xxl-4">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Social Statistics</h5>
@@ -1211,11 +1284,11 @@
                     Details</a>
             </div>
         </div> *@
-                                                            <!-- End of Social Statistic -->
-                                                        </div>
-                                                    </div>
+                                        <!-- End of Social Statistic -->
+                                    </div>
+                                </div>
 
-                                                    @section Scripts {
-                                                        <script src="~/js/dashboard-home.js?v=@DateTime.Now.Ticks"></script>
-                                                    }
-                                                </div>
+                                @section Scripts {
+                                    <script src="~/js/dashboard-home.js?v=@DateTime.Now.Ticks"></script>
+                                }
+                            </div>

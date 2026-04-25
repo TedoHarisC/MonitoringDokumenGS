@@ -1,6 +1,8 @@
+using MonitoringDokumenGS.Dtos.Dashboard;
+using MonitoringDokumenGS.Models.Transaction;
+using MonitoringDokumenGS.Models.Master;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
-using MonitoringDokumenGS.Dtos.Dashboard;
 using MonitoringDokumenGS.Interfaces;
 
 public class DashboardService : IDashboard
@@ -480,5 +482,124 @@ public class DashboardService : IDashboard
         {
             StatusCounts = statusCounts
         };
+    }
+
+    /// <summary>
+    /// Dashboard summary for Uang Muka by Jenis and Status (for tab Advanced, Biaya, Realisasi)
+    /// </summary>
+    public async Task<UangMukaStatusSummaryDto> GetUangMukaStatusSummaryAsync(string jenis)
+    {
+        jenis = (jenis ?? "").Trim();
+        List<UangMukaStatusCountDto> statusCounts = new();
+
+        if (jenis.Equals("Advanced", StringComparison.OrdinalIgnoreCase))
+        {
+            // Ambil semua status Advanced
+            var allStatuses = await _context.AdvancedStatuses
+                .Where(s => !s.IsDeleted)
+                .OrderBy(s => s.Code)
+                .ToListAsync();
+
+            // Hitung total Uang Muka per status
+            var counts = await _context.UangMukas
+                .Where(u => !u.IsDeleted && u.Jenis == "Advanced")
+                .GroupBy(u => u.StatusId)
+                .Select(g => new { StatusId = g.Key, Total = g.Count() })
+                .ToListAsync();
+
+            statusCounts = allStatuses
+                .GroupJoin(
+                    counts,
+                    s => s.AdvancedStatusesId,
+                    c => c.StatusId,
+                    (status, count) => new UangMukaStatusCountDto
+                    {
+                        StatusId = status.AdvancedStatusesId,
+                        StatusName = status.Name,
+                        Total = count.FirstOrDefault()?.Total ?? 0
+                    })
+                .OrderBy(x => x.StatusName)
+                .ToList();
+        }
+        else if (jenis.Equals("Biaya", StringComparison.OrdinalIgnoreCase) || jenis.Equals("Realisasi", StringComparison.OrdinalIgnoreCase))
+        {
+            // Ambil semua status Biaya/Realisasi
+            var allStatuses = await _context.BiayaRealisasiStatuses
+                .Where(s => !s.IsDeleted)
+                .OrderBy(s => s.Code)
+                .ToListAsync();
+
+            // Hitung total Uang Muka per status
+            var counts = await _context.UangMukas
+                .Where(u => !u.IsDeleted && u.Jenis == jenis)
+                .GroupBy(u => u.StatusId)
+                .Select(g => new { StatusId = g.Key, Total = g.Count() })
+                .ToListAsync();
+
+            statusCounts = allStatuses
+                .GroupJoin(
+                    counts,
+                    s => s.BiayaRealisasiStatusesId,
+                    c => c.StatusId,
+                    (status, count) => new UangMukaStatusCountDto
+                    {
+                        StatusId = status.BiayaRealisasiStatusesId,
+                        StatusName = status.Name,
+                        Total = count.FirstOrDefault()?.Total ?? 0
+                    })
+                .OrderBy(x => x.StatusName)
+                .ToList();
+        }
+        else
+        {
+            // Jenis tidak valid
+            return new UangMukaStatusSummaryDto { StatusCounts = new List<UangMukaStatusCountDto>() };
+        }
+
+        return new UangMukaStatusSummaryDto { StatusCounts = statusCounts };
+    }
+
+    public async Task<IEnumerable<object>> GetUangMukaDetailAsync(string jenis, string status)
+    {
+        // Query Uang Muka data filtered by jenis and status (Status property is not mapped, so filter in-memory)
+        var query = _context.UangMukas.AsQueryable();
+        if (!string.IsNullOrEmpty(jenis))
+            query = query.Where(u => u.Jenis == jenis);
+        if (!string.IsNullOrEmpty(status))
+            query = query.Where(u => u.StatusId == status);
+
+        var list = await query
+            .AsNoTracking()
+            .Where(u => !u.IsDeleted)
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+        // Now filter in-memory for Status property if needed
+        if (!string.IsNullOrEmpty(status))
+        {
+            list = list.Where(u => (status ?? u.StatusId) == status).ToList();
+        }
+
+        var result = list.Select(u => new
+        {
+            //u.UangMukaId,
+            u.Jenis,
+            u.AtasNama,
+            u.Amount,
+            //u.StatusId,
+            Status = (jenis == "Advanced")
+                        ? _context.AdvancedStatuses
+                            .Where(s => s.AdvancedStatusesId == u.StatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefault()
+                        : _context.BiayaRealisasiStatuses
+                            .Where(s => s.BiayaRealisasiStatusesId == u.StatusId)
+                            .Select(s => s.Name)
+                            .FirstOrDefault(),
+            u.NoSAP,
+            u.StartDate,
+            u.EndDate,
+            u.Deskripsi
+        });
+        return result;
     }
 }

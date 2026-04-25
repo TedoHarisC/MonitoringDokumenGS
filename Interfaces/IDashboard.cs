@@ -16,5 +16,9 @@ namespace MonitoringDokumenGS.Interfaces
 
         // Invoice status summary for dashboard
         Task<InvoiceStatusSummaryDto> GetInvoiceStatusSummaryAsync();
+        // Uang Muka status summary for dashboard
+        Task<UangMukaStatusSummaryDto> GetUangMukaStatusSummaryAsync(string jenis);
+        // Uang Muka detail by jenis & status
+        Task<IEnumerable<object>> GetUangMukaDetailAsync(string jenis, string status);
     }
 }

@@ -1,3 +1,212 @@
+function portalModalToBody(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    if (el.parentElement !== document.body) document.body.appendChild(el);
+  }
+
+  function showModal(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    const modal = new bootstrap.Modal(el);
+    modal.show();
+  }
+
+  function hideModal(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    const modal = bootstrap.Modal.getInstance(el);
+    if (modal) modal.hide();
+  }
+  
+// ==============================
+// Uang Muka Detail Modal & Export
+// ==============================
+function showUangMukaDetailModal(jenis, statusName, statusId) {
+    // Set modal title
+    $('#uangMukaDetailModalLabel').text(`Detail Uang Muka - ${jenis} [${statusName}]`);
+    // Show loading
+    $('#uangMukaDetailContent').html('<div class="text-center py-5"><div class="spinner-border"></div><div>Loading...</div></div>');
+    portalModalToBody('uangMukaDetailModal');
+    showModal('uangMukaDetailModal');
+    $.ajax({
+        url: `/api/dashboard/uang-muka-detail?jenis=${encodeURIComponent(jenis)}&status=${encodeURIComponent(statusId)}`,
+        method: 'GET',
+        success: function (data) {
+            if (data && data.length > 0) {
+                let html = `<div class="table-responsive"><table id="uangMukaDetailTable" class="table table-bordered table-sm" style="width:100%"><thead><tr>`;
+                const columns = Object.keys(data[0]);
+                columns.forEach(function (key) {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                data.forEach(function (row) {
+                    html += '<tr>';
+                    columns.forEach(function (key) {
+                        let val = row[key];
+                        if (key.toLowerCase() === 'amount') {
+                            val = val != null ? 'Rp ' + Number(val).toLocaleString('id-ID') : '';
+                        } else if (key.toLowerCase().includes('date') && val) {
+                            const dateObj = new Date(val);
+                            val = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                        }
+                        html += `<td>${val ?? ''}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+                // Area for export button above table
+                html = `<div class="d-flex justify-content-start mb-2"><div id="uangMukaExportBtnArea"></div></div>` + html;
+                $('#uangMukaDetailContent').html(html);
+
+                // Load DataTable & export button
+                ensureDataTablesButtons(function() {
+                    const dt = $('#uangMukaDetailTable').DataTable({
+                        responsive: true,
+                        order: [],
+                        autoWidth: false,
+                        searching: false,
+                        paging: false,
+                        info: false,
+                        language: {
+                            emptyTable: "No detail data available"
+                        },
+                        dom: 'Bfrtip',
+                        buttons: [
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="feather-download"></i> Export Excel',
+                                className: 'btn btn-success',
+                                title: `Detail Uang Muka - ${jenis} [${statusName}]`,
+                                exportOptions: {
+                                    columns: ':visible'
+                                },
+                                footer: false
+                            }
+                        ]
+                    });
+                    // Move export button to custom area above table (top left)
+                    dt.buttons().container().appendTo('#uangMukaExportBtnArea');
+                });
+            } else {
+                $('#uangMukaDetailContent').html('<div class="text-center text-muted py-4">No detail data available</div>');
+            }
+        },
+        error: function () {
+            $('#uangMukaDetailContent').html('<div class="text-center text-muted py-4">No detail data available</div>');
+        }
+    });
+    // Store for export
+    $('#uangMukaDetailModal').data('jenis', jenis).data('status', statusName);
+}
+
+// Card click event (delegated)
+$(document).on('click', '.uangmuka-status-card', function () {
+    const jenis = $(this).data('jenis');
+    const status = $(this).data('status');
+    const statusId = $(this).data('status-id'); // pastikan data-status-id ada di elemen
+    showUangMukaDetailModal(jenis, status, statusId);
+});
+
+// Hapus handler export manual, export pakai DataTables
+// Pastikan DataTables Buttons sudah dimuat
+function ensureDataTablesButtons(callback) {
+    if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+        callback();
+        return;
+    }
+    // Load loader script jika belum ada
+    if (!window._dtButtonsLoaderInjected) {
+        var s = document.createElement('script');
+        s.src = '/js/datatables-buttons-loader.js';
+        document.head.appendChild(s);
+        window._dtButtonsLoaderInjected = true;
+    }
+    var tryCount = 0;
+    function waitForButtons() {
+        if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+            callback();
+        } else if (tryCount < 20) {
+            tryCount++;
+            setTimeout(waitForButtons, 150);
+        } else {
+            callback(); // fallback: tetap inisialisasi tanpa export
+        }
+    }
+    waitForButtons();
+}
+// ==============================
+// Uang Muka Total by Status (for #uangmuka_by_status_area_*)
+// ==============================
+function loadUangMukaByStatusArea(jenis, areaId) {
+    $.ajax({
+        url: '/api/dashboard/uang-muka-status-summary?jenis=' + encodeURIComponent(jenis),
+        method: 'GET',
+        success: function (data) {
+            const area = $('#' + areaId);
+            area.empty();
+            let statusList = [];
+            if (data && data.statusCounts) {
+                statusList = data.statusCounts;
+            }
+            if (!statusList || statusList.length === 0) {
+                area.html('<div class="col-12 text-center text-muted py-4">No status data available</div>');
+                return;
+            }
+            let html = '<div class="row justify-content-center">';
+            statusList.forEach(function (item) {
+                let color = 'secondary';
+                let icon = 'feather-info';
+                // Status name mapping (customize as needed)
+                switch ((item.statusName || '').toLowerCase()) {
+                    case 'draft': color = 'secondary'; icon = 'feather-edit'; break;
+                    case 'submitted': color = 'info'; icon = 'feather-upload'; break;
+                    case 'approved': color = 'primary'; icon = 'feather-thumbs-up'; break;
+                    case 'done': color = 'success'; icon = 'feather-check-circle'; break;
+                    case 'rejected': color = 'danger'; icon = 'feather-x-circle'; break;
+                    case 'verifikasi gs': color = 'info'; icon = 'feather-info'; break;
+                    case 'validasi & pembayaran fa': color = 'secondary'; icon = 'feather-dollar-sign'; break;
+                    case 'biaya selesai': color = 'success'; icon = 'feather-check-circle'; break;
+                }
+                html += `
+                <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-3">
+                    <div class="p-3 border border-dashed rounded uangmuka-status-card" 
+                         data-status="${item.statusName}" data-jenis="${jenis}" data-status-id="${item.statusId}">
+                        <div class="fs-12 text-muted mb-1">${item.statusName}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="fw-bold text-${color} mb-0">${item.total}</h3>
+                            <span class="badge bg-${color}-subtle text-${color}">
+                                <i class="${icon}"></i>
+                            </span>
+                        </div>
+                        <div class="fs-11 text-muted mt-1">Total</div>
+                    </div>
+                </div>
+                `;
+            });
+            html += '</div>';
+            area.html(html);
+        },
+        error: function () {
+            $('#' + areaId).html('<div class="col-12 text-center text-danger py-4">Failed to load data</div>');
+        }
+    });
+}
+// Tab event binding for Uang Muka dashboard
+$(document).ready(function () {
+    // Initial load
+    loadUangMukaByStatusArea('Advanced', 'uangmuka_by_status_area_advanced');
+    // Tab click events
+    $('#tab-advanced').on('click', function () {
+        loadUangMukaByStatusArea('Advanced', 'uangmuka_by_status_area_advanced');
+    });
+    $('#tab-biaya').on('click', function () {
+        loadUangMukaByStatusArea('Biaya', 'uangmuka_by_status_area_biaya');
+    });
+    $('#tab-realisasi').on('click', function () {
+        loadUangMukaByStatusArea('Realisasi', 'uangmuka_by_status_area_realisasi');
+    });
+});
+
 // ==============================
 // Invoice Total by Status (for #invoice_by_status_area)
 // ==============================
