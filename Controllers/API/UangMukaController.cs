@@ -11,9 +11,11 @@ namespace MonitoringDokumenGS.Controllers.API
     public class UangMukaController : ControllerBase
     {
         private readonly IUangMuka _service;
-        public UangMukaController(IUangMuka service)
+        private readonly IAuditLog _auditLog;
+        public UangMukaController(IUangMuka service, IAuditLog auditLog)
         {
             _service = service;
+            _auditLog = auditLog;
         }
 
         /// <summary>
@@ -144,6 +146,19 @@ namespace MonitoringDokumenGS.Controllers.API
             var deleted = await _service.DeleteAsync(id);
             if (!deleted) return NotFound();
             return NoContent();
+        }
+
+        [HttpGet("{id}/history")]
+        public async Task<IActionResult> GetHistory(string id)
+        {
+            var data = await _service.GetByIdAsync(id);
+            if (data == null) return NotFound();
+            var history = await _auditLog.GetAuditHistoryAsync(id, "UangMuka");
+            if (history == null || !history.Any())
+            {
+                return NotFound(new { message = "No history found for this Uang Muka" });
+            }
+            return Ok(history);
         }
     }
 }

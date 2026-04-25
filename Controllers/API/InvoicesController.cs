@@ -16,12 +16,14 @@ namespace MonitoringDokumenGS.Controllers.API
         private readonly IInvoice _service;
         private readonly IUser _userService;
         private readonly ILogger<InvoicesController> _logger;
+        private readonly IAuditLog _auditService;
 
-        public InvoicesController(IInvoice service, IUser userService, ILogger<InvoicesController> logger)
+        public InvoicesController(IInvoice service, IUser userService, ILogger<InvoicesController> logger, IAuditLog auditService)
         {
             _service = service;
             _userService = userService;
             _logger = logger;
+            _auditService = auditService;
         }
 
         [HttpGet]
@@ -365,6 +367,26 @@ namespace MonitoringDokumenGS.Controllers.API
             {
                 _logger.LogError(ex, "Error updating invoice status for {InvoiceId}", id);
                 return StatusCode(500, new { message = "An error occurred while updating invoice status" });
+            }
+        }
+
+        [HttpGet("{id:guid}/history")]
+        public async Task<IActionResult> GetHistory(Guid id)
+        {
+            try
+            {
+                var history = await _auditService.GetAuditHistoryAsync(id.ToString(), "Invoice");
+                if (history == null || !history.Any())
+                {
+                    return NotFound(new { message = "No history found for this invoice" });
+                }
+
+                return Ok(history);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting history for invoice {InvoiceId}", id);
+                return StatusCode(500, new { message = "An error occurred while retrieving invoice history" });
             }
         }
     }

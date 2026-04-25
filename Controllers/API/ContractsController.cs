@@ -16,13 +16,15 @@ namespace MonitoringDokumenGS.Controllers.API
     {
         private readonly IContract _service;
         private readonly IUser _userService;
+        private readonly IAuditLog _auditService;
         private readonly ILogger<ContractsController> _logger;
 
-        public ContractsController(IContract service, IUser userService, ILogger<ContractsController> logger)
+        public ContractsController(IContract service, IUser userService, ILogger<ContractsController> logger, IAuditLog auditService)
         {
             _service = service;
             _userService = userService;
             _logger = logger;
+            _auditService = auditService;
         }
 
         [HttpGet]
@@ -350,6 +352,26 @@ namespace MonitoringDokumenGS.Controllers.API
             {
                 _logger.LogError(ex, "Error updating contract status for {ContractId}", id);
                 return StatusCode(500, new { message = "An error occurred while updating contract status" });
+            }
+        }
+
+        [HttpGet("{id}/history")]
+        public async Task<IActionResult> GetHistory(Guid id)
+        {
+            try
+            {
+                var history = await _auditService.GetAuditHistoryAsync(id.ToString(), "Contract");
+                if (history == null || !history.Any())
+                {
+                    return NotFound(new { message = "No history found for this contract" });
+                }
+
+                return Ok(history);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting history for contract {ContractId}", id);
+                return StatusCode(500, new { message = "An error occurred while retrieving contract history" });
             }
         }
     }
