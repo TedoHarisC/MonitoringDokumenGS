@@ -8,9 +8,11 @@ namespace MonitoringDokumenGS.Services
     public class UangMukaService : IUangMuka
     {
         private readonly ApplicationDBContext _db;
-        public UangMukaService(ApplicationDBContext db)
+        private readonly IAuditLog _auditLog;
+        public UangMukaService(ApplicationDBContext db, IAuditLog auditLog)
         {
             _db = db;
+            _auditLog = auditLog;
         }
 
         public async Task<IEnumerable<UangMuka>> GetAllAsync()
@@ -109,6 +111,16 @@ namespace MonitoringDokumenGS.Services
                 }
             }
             await _db.SaveChangesAsync();
+
+            // Audit log
+            await _auditLog.LogAsync(
+                "UangMuka",
+                "Create",
+                null,
+                model,
+                model.UangMukaId
+            );
+
             return model;
         }
 
@@ -119,6 +131,26 @@ namespace MonitoringDokumenGS.Services
                 .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
                 .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (existing == null) throw new KeyNotFoundException("Uang Muka not found");
+
+            var old = new UangMuka
+            {
+                UangMukaId = existing.UangMukaId,
+                Jenis = existing.Jenis,
+                UangMukaRelatedId = existing.UangMukaRelatedId,
+                NoSAP = existing.NoSAP,
+                Amount = existing.Amount,
+                AtasNama = existing.AtasNama,
+                Deskripsi = existing.Deskripsi,
+                StartDate = existing.StartDate,
+                EndDate = existing.EndDate,
+                StatusId = existing.StatusId,
+                UpdatedAt = existing.UpdatedAt,
+                UpdatedBy = existing.UpdatedBy,
+                IsDeleted = existing.IsDeleted,
+                UangMukaBudgetCodes = existing.UangMukaBudgetCodes?.ToList() ?? new List<UangMukaBudgetCode>(),
+                UangMukaCoaTexts = existing.UangMukaCoaTexts?.ToList() ?? new List<UangMukaCoaText>()
+            };
+
             existing.Jenis = model.Jenis;
             existing.UangMukaRelatedId = model.UangMukaRelatedId;
             existing.NoSAP = model.NoSAP;
@@ -152,6 +184,16 @@ namespace MonitoringDokumenGS.Services
                 }
             }
             await _db.SaveChangesAsync();
+
+            // Audit log
+            await _auditLog.LogAsync(
+                "UangMuka",
+                "Update",
+                old,
+                existing,
+                existing.UangMukaId
+            );
+
             return existing;
         }
 
@@ -162,11 +204,41 @@ namespace MonitoringDokumenGS.Services
                 .Include(x => x.UangMukaCoaTexts).ThenInclude(ct => ct.CoaText)
                 .FirstOrDefaultAsync(x => x.UangMukaId == id && !x.IsDeleted);
             if (existing == null) return false;
+
+            var old = new UangMuka
+            {
+                UangMukaId = existing.UangMukaId,
+                Jenis = existing.Jenis,
+                UangMukaRelatedId = existing.UangMukaRelatedId,
+                NoSAP = existing.NoSAP,
+                Amount = existing.Amount,
+                AtasNama = existing.AtasNama,
+                Deskripsi = existing.Deskripsi,
+                StartDate = existing.StartDate,
+                EndDate = existing.EndDate,
+                StatusId = existing.StatusId,
+                UpdatedAt = existing.UpdatedAt,
+                UpdatedBy = existing.UpdatedBy,
+                IsDeleted = existing.IsDeleted,
+                UangMukaBudgetCodes = existing.UangMukaBudgetCodes?.ToList() ?? new List<UangMukaBudgetCode>(),
+                UangMukaCoaTexts = existing.UangMukaCoaTexts?.ToList() ?? new List<UangMukaCoaText>()
+            };
+
             // Remove related junctions
             _db.UangMukaBudgetCode.RemoveRange(existing.UangMukaBudgetCodes ?? new List<UangMukaBudgetCode>());
             _db.UangMukaCoaText.RemoveRange(existing.UangMukaCoaTexts ?? new List<UangMukaCoaText>());
             existing.IsDeleted = true;
             await _db.SaveChangesAsync();
+
+            // Audit log
+            await _auditLog.LogAsync(
+                "UangMuka",
+                "Delete",
+                old,
+                null,
+                existing.UangMukaId
+            );
+
             return true;
         }
     }

@@ -11,5 +11,6 @@ namespace MonitoringDokumenGS.Interfaces
         Task<AuditLogDto?> GetByIdAsync(Guid id);
         Task<AuditLogDto> CreateAsync(AuditLogDto dto);
         Task LogAsync(string entityName, string action, object? oldData, object? newData, string entityKey);
+        Task<List<AuditHistoryDto>> GetAuditHistoryAsync(string entityId, string entityType);
     }
 }

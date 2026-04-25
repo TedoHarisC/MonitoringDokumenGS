@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
+using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
@@ -11,10 +12,12 @@ namespace MonitoringDokumenGS.Controllers.API
     public class AuditLogsController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
+        private readonly IAuditLog _service;
 
-        public AuditLogsController(ApplicationDBContext context)
+        public AuditLogsController(ApplicationDBContext context, IAuditLog service)
         {
             _context = context;
+            _service = service;
         }
 
         [HttpGet]
@@ -114,6 +117,20 @@ namespace MonitoringDokumenGS.Controllers.API
                 item.oldData,
                 item.newData
             });
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory(
+            [FromQuery] string entityId,
+            [FromQuery] string entityType)
+        {
+            if (string.IsNullOrWhiteSpace(entityId) || string.IsNullOrWhiteSpace(entityType))
+            {
+                return BadRequest(new { message = "entityId and entityType are required." });
+            }
+
+            var data = await _service.GetAuditHistoryAsync(entityId, entityType);
+            return Ok(data);
         }
     }
 }

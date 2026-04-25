@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using MonitoringDokumenGS.Data;
 using MonitoringDokumenGS.Dtos.Infrastructure;
@@ -16,11 +18,13 @@ namespace MonitoringDokumenGS.Services.Infrastructure
     {
         private readonly ApplicationDBContext _context;
         private IHttpContextAccessor _httpContextAccessor;
+        private readonly IDbConnection _dbConnection;
 
-        public AuditLogService(ApplicationDBContext context, IHttpContextAccessor httpContextAccessor)
+        public AuditLogService(ApplicationDBContext context, IHttpContextAccessor httpContextAccessor, IDbConnection dbConnection)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _dbConnection = dbConnection;
         }
 
         public Task<IEnumerable<AuditLogDto>> GetAllAsync()
@@ -109,6 +113,25 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 NewData = entity.NewData ?? string.Empty,
                 CreatedAt = entity.CreatedAt
             };
+        }
+
+        public async Task<List<AuditHistoryDto>> GetAuditHistoryAsync(string entityId, string entityType)
+        {
+            var sql = @"
+                SELECT 
+                    EntityType,
+                    EntityId,
+                    DocumentNumber,
+                    StatusTransition,
+                    Username,
+                    CreatedAt,
+                    Jenis
+                FROM vw_AuditStatusChanges
+                WHERE EntityId = @EntityId AND EntityType = @EntityType
+                ORDER BY CreatedAt DESC";
+
+            var result = await _dbConnection.QueryAsync<AuditHistoryDto>(sql, new { EntityId = entityId, EntityType = entityType });
+            return result.ToList();
         }
     }
 }
