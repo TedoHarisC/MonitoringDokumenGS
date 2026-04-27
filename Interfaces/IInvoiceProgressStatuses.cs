@@ -8,7 +8,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IInvoiceProgressStatuses
     {
         Task<IEnumerable<InvoiceProgressStatusDto>> GetAllAsync();
-        Task<PagedResponse<InvoiceProgressStatusDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<InvoiceProgressStatusDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<InvoiceProgressStatusDto?> GetByIdAsync(int id);
         Task<InvoiceProgressStatusDto> CreateAsync(InvoiceProgressStatusDto dto);
         Task<bool> UpdateAsync(InvoiceProgressStatusDto dto);

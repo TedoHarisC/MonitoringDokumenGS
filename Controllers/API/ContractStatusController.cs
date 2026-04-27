@@ -21,8 +21,30 @@ namespace MonitoringDokumenGS.Controllers.API
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetPagedAsync(page, pageSize);
-            return Ok(result);
+            // DataTables server-side
+            int draw = 1;
+            int start = (page - 1) * pageSize;
+            int length = pageSize;
+            string? search = null;
+            if (Request.Query.ContainsKey("draw"))
+                int.TryParse(Request.Query["draw"], out draw);
+            if (Request.Query.ContainsKey("start"))
+                int.TryParse(Request.Query["start"], out start);
+            if (Request.Query.ContainsKey("length"))
+                int.TryParse(Request.Query["length"], out length);
+            if (Request.Query.ContainsKey("search[value]"))
+                search = Request.Query["search[value]"].ToString();
+
+            int pageNum = (start / (length > 0 ? length : 10)) + 1;
+            int pageSizeNum = length;
+            var result = await _service.GetPagedAsync(pageNum, pageSizeNum, search);
+            return Ok(new
+            {
+                draw,
+                recordsTotal = result.TotalCount,
+                recordsFiltered = result.TotalCount,
+                data = result.Items
+            });
         }
 
         [HttpGet("{id:int}")]

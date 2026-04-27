@@ -30,11 +30,23 @@ namespace MonitoringDokumenGS.Services.Master
         }
 
         // ========================= PAGING =========================
-        public async Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize, string? search = null)
         {
-            return await _context.ApprovalStatuses
+            var query = _context.ApprovalStatuses
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(x =>
+                    x.Code.ToLower().Contains(search) ||
+                    x.Name.ToLower().Contains(search)
+                );
+            }
+
+            return await query
                 .OrderBy(x => x.ApprovalStatusId)
                 .Select(ApprovalStatusMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);

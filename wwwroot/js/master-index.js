@@ -447,10 +447,22 @@
         "<'col-sm-12 col-md-5' i>" +
         "<'col-sm-12 col-md-7 d-flex justify-content-md-end' p>" +
         ">",
+      serverSide: true,
+      processing: true,
       ajax: {
-        url: `${apiBase}?page=1&pageSize=2000`,
+        url: apiBase,
+        type: "GET",
+        data: function (d) {
+          // DataTables will send: start, length, search[value], order, etc.
+          // You can customize here if backend expects different params
+          return d;
+        },
         dataSrc: function (json) {
-          return normalizeToArray(json);
+          // DataTables expects { data, recordsTotal, recordsFiltered, draw }
+          return json.data || [];
+        },
+        error: function (xhr, error, thrown) {
+          Swal.fire("Error", "Error loading data: " + (xhr.responseJSON?.message || "Unknown error"), "error");
         },
       },
       columns,

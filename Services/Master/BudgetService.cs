@@ -46,20 +46,31 @@ namespace MonitoringDokumenGS.Services.Master
         }
 
         // ========================= PAGING =========================
-        public async Task<PagedResponse<BudgetDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<BudgetDto>> GetPagedAsync(int page, int pageSize, string? search = null)
         {
-            return await _context.MST_Budget
+            var query = _context.MST_Budget.Include(x => x.BudgetCode).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(x =>
+                    x.Year.ToString().Contains(search) ||
+                    (x.NoCoa != null && x.NoCoa.ToLower().Contains(search)) ||
+                    (x.TypeBudget != null && x.TypeBudget.ToLower().Contains(search)) ||
+                    (x.Activity != null && x.Activity.ToLower().Contains(search)) ||
+                    (x.BudgetCode != null && (
+                        x.BudgetCode.Code.ToLower().Contains(search) ||
+                        x.BudgetCode.Description.ToLower().Contains(search)
+                    ))
+                );
+            }
+            return await query
                 .OrderByDescending(x => x.Year)
                 .Select(x => new BudgetDto
                 {
                     BudgetId = x.BudgetId,
                     Year = x.Year,
                     BudgetCodeId = x.BudgetCodeId,
-                    BudgetCodeLabel = x.BudgetCodeId == null ? null :
-                        _context.BudgetCode
-                            .Where(b => b.BudgetCodeId == x.BudgetCodeId)
-                            .Select(b => b.Code + " - " + b.Description)
-                            .FirstOrDefault(),
+                    BudgetCodeLabel = x.BudgetCode != null ? x.BudgetCode.Code + " - " + x.BudgetCode.Description : null,
                     NoCoa = x.NoCoa,
                     TypeBudget = x.TypeBudget,
                     Activity = x.Activity,

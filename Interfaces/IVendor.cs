@@ -9,7 +9,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IVendor
     {
         Task<IEnumerable<VendorDto>> GetAllAsync();
-        Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<VendorDto?> GetByIdAsync(Guid id);
         Task<VendorDto> CreateAsync(VendorDto dto);
         Task<bool> UpdateAsync(VendorDto dto);

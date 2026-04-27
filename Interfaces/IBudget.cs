@@ -9,7 +9,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IBudget
     {
         Task<IEnumerable<BudgetDto>> GetAllAsync();
-        Task<PagedResponse<BudgetDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<BudgetDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<BudgetDto?> GetByIdAsync(Guid id);
         Task<BudgetDto> CreateAsync(BudgetDto dto);
         Task<bool> UpdateAsync(BudgetDto dto);

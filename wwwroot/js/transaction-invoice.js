@@ -279,11 +279,11 @@
       columns: [
         { data: "invoiceNumber" },
         {
-          data: "vendorId",
+          data: "vendorName",
           render: function (data) {
-            const vendorName = vendorNameById(data) || data || "Unknown";
+            // const vendorName = vendorNameById(data) || data || "Unknown";
             const colorClass = getVendorColor(data);
-            return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(vendorName)}</span>`;
+            return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(data)}</span>`;
           },
         },
         {

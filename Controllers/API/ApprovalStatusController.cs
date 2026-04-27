@@ -17,11 +17,29 @@ namespace MonitoringDokumenGS.Controllers.API
             _service = service;
         }
 
+        /// <summary>
+        /// DataTables server-side endpoint
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll(
+            [FromQuery(Name = "draw")] int draw = 1,
+            [FromQuery(Name = "start")] int start = 0,
+            [FromQuery(Name = "length")] int length = 10,
+            [FromQuery(Name = "search[value]")] string? search = null)
         {
-            var result = await _service.GetPagedAsync(page, pageSize);
-            return Ok(result);
+            // DataTables: start = offset, length = page size
+            int page = (start / (length > 0 ? length : 10)) + 1;
+            int pageSize = length;
+            var result = await _service.GetPagedAsync(page, pageSize, search);
+
+            // DataTables expects: { draw, recordsTotal, recordsFiltered, data }
+            return Ok(new
+            {
+                draw,
+                recordsTotal = result.TotalCount,
+                recordsFiltered = result.TotalCount,
+                data = result.Items
+            });
         }
 
         [HttpGet("{id:int}")]

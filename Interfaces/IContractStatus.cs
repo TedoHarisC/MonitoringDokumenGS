@@ -8,7 +8,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IContractStatus
     {
         Task<IEnumerable<ContractStatusDto>> GetAllAsync();
-        Task<PagedResponse<ContractStatusDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<ContractStatusDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<ContractStatusDto?> GetByIdAsync(int id);
         Task<ContractStatusDto> CreateAsync(ContractStatusDto dto);
         Task<bool> UpdateAsync(ContractStatusDto dto);

@@ -32,10 +32,23 @@ namespace MonitoringDokumenGS.Services.Master
         }
 
         // ========================= PAGING =========================
-        public async Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize, string? search = null)
         {
-            return await _context.AttachmentTypes
+            var query = _context.AttachmentTypes
                 .Where(x => !x.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(x =>
+                    x.Code.ToLower().Contains(search) ||
+                    x.Name.ToLower().Contains(search) ||
+                    (x.AppliesTo != null && x.AppliesTo.ToLower().Contains(search))
+                );
+            }
+
+            return await query
                 .OrderBy(x => x.Name)
                 .Select(AttachmentTypeMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);

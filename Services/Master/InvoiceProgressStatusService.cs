@@ -31,11 +31,23 @@ namespace MonitoringDokumenGS.Services.Master
         }
 
         // ========================= PAGING =========================
-        public async Task<PagedResponse<InvoiceProgressStatusDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<InvoiceProgressStatusDto>> GetPagedAsync(int page, int pageSize, string? search = null)
         {
-            return await _context.InvoiceProgressStatuses
+            var query = _context.InvoiceProgressStatuses
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                query = query.Where(x =>
+                    x.Code.ToLower().Contains(s) ||
+                    x.Name.ToLower().Contains(s)
+                );
+            }
+
+            return await query
                 .OrderBy(x => x.ProgressStatusId)
                 .Select(InvoiceProgressStatusMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);

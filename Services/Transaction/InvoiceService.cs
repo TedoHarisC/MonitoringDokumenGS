@@ -54,6 +54,7 @@ namespace MonitoringDokumenGS.Services.Transaction
         {
             return await _context.Invoices
                 .AsNoTracking()
+                .Include(x => x.Vendor)
                 .Where(x => x.InvoiceId == id && !x.IsDeleted)
                 .Select(InvoiceMappings.ToDtoExpr)
                 .FirstOrDefaultAsync();

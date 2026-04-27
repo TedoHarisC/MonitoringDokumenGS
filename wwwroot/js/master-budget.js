@@ -179,12 +179,18 @@ function loadBudgetCodes() {
 function initDataTable() {
   budgetTable = $("#budgetTable").DataTable({
     processing: true,
-    serverSide: false,
+    serverSide: true,
     ajax: {
       url: "/api/budgets",
       type: "GET",
+      data: function (d) {
+        // DataTables will send: start, length, search[value], order, etc.
+        // You can customize here if backend expects different params
+        return d;
+      },
       dataSrc: function (json) {
-        return json.items || json;
+        // DataTables expects { data, recordsTotal, recordsFiltered, draw }
+        return json.data || [];
       },
       error: function (xhr, error, thrown) {
         console.error("DataTable error:", error, thrown);

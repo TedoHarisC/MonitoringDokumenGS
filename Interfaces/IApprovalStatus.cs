@@ -8,7 +8,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IApprovalStatus
     {
         Task<IEnumerable<ApprovalStatusDto>> GetAllAsync();
-        Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<ApprovalStatusDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<ApprovalStatusDto?> GetByIdAsync(int id);
         Task<ApprovalStatusDto> CreateAsync(ApprovalStatusDto dto);
         Task<bool> UpdateAsync(ApprovalStatusDto dto);

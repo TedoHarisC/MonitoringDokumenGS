@@ -8,7 +8,7 @@ namespace MonitoringDokumenGS.Interfaces
     public interface IAttachmentTypes
     {
         Task<IEnumerable<AttachmentTypeDto>> GetAllAsync();
-        Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize);
+        Task<PagedResponse<AttachmentTypeDto>> GetPagedAsync(int page, int pageSize, string? search = null);
         Task<AttachmentTypeDto?> GetByIdAsync(int id);
         Task<AttachmentTypeDto> CreateAsync(AttachmentTypeDto dto);
         Task<bool> UpdateAsync(AttachmentTypeDto dto);

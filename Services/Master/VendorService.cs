@@ -31,11 +31,28 @@ namespace MonitoringDokumenGS.Services.Master
         }
 
         // ========================= PAGING =========================
-        public async Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize)
+        public async Task<PagedResponse<VendorDto>> GetPagedAsync(int page, int pageSize, string? search = null)
         {
-            return await _context.Vendors
+            var query = _context.Vendors
                 .Include(v => v.VendorPics)
                 .Where(x => !x.IsDeleted)
+                .AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(x =>
+                    x.VendorCode.ToLower().Contains(search) ||
+                    x.VendorName.ToLower().Contains(search) ||
+                    (x.ShortName != null && x.ShortName.ToLower().Contains(search)) ||
+                    (x.OwnerName != null && x.OwnerName.ToLower().Contains(search)) ||
+                    (x.CompanyEmail != null && x.CompanyEmail.ToLower().Contains(search)) ||
+                    (x.NPWP != null && x.NPWP.ToLower().Contains(search))
+                );
+            }
+
+            return await query
                 .OrderBy(x => x.VendorName)
                 .Select(VendorMappings.ToDtoExpr)
                 .ToPagedResponseAsync(page, pageSize);

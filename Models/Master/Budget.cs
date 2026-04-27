@@ -15,5 +15,8 @@ namespace MonitoringDokumenGS.Models
         public string Activity { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public Guid CreatedBy { get; set; }
+
+        // Navigation property
+        public BudgetCode? BudgetCode { get; set; }
     }
 }
