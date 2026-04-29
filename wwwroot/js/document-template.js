@@ -12,7 +12,12 @@ $(document).ready(function () {
     var table = $('#templateTable').DataTable({
         ajax: {
             url: '/api/template-files',
-            dataSrc: ''
+            dataSrc: function(json) {
+                // Jika bukan admin, filter hanya permission 'all' dan 'user'
+                const isAdmin = window.currentUserIsAdmin === true || $("#currentUserIsAdmin").val() === "true";
+                if (isAdmin) return json;
+                return (json || []).filter(x => x.permission === 'all' || x.permission === 'user');
+            }
         },
         columns: [
             { data: null, render: (data, type, row, meta) => meta.row + 1 },

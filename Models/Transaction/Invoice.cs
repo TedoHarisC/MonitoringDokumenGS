@@ -22,6 +22,7 @@ namespace MonitoringDokumenGS.Models
         public bool IsOnTime { get; set; }
         public string? InvoiceDescription { get; set; }
         public string? NoSAP { get; set; }
+        public decimal? GrandTotal { get; set; }
 
         // Navigation properties
         public Vendor Vendor { get; set; } = default!;

@@ -82,6 +82,7 @@ namespace MonitoringDokumenGS.Services.Transaction
                 ProgressStatusId = dto.ProgressStatusId,
                 InvoiceAmount = dto.InvoiceAmount,
                 TaxAmount = dto.TaxAmount,
+                GrandTotal = dto.GrandTotal,
                 CreatedAt = createdAt,
                 CreatedBy = dto.CreatedBy,
                 UpdatedAt = null,
@@ -188,6 +189,7 @@ namespace MonitoringDokumenGS.Services.Transaction
             entity.ProgressStatusId = dto.ProgressStatusId;
             entity.InvoiceAmount = dto.InvoiceAmount;
             entity.TaxAmount = dto.TaxAmount;
+            entity.GrandTotal = dto.GrandTotal;
             entity.UpdatedAt = DateTime.UtcNow;
             entity.UpdatedBy = dto.UpdatedBy;
             entity.IsDeleted = dto.IsDeleted;

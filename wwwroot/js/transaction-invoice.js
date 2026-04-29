@@ -281,9 +281,9 @@
         {
           data: "vendorName",
           render: function (data) {
-            // const vendorName = vendorNameById(data) || data || "Unknown";
             const colorClass = getVendorColor(data);
-            return `<span class="badge bg-${colorClass} bg-soft-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(data)}</span>`;
+            // Hapus bg-soft agar warna solid gelap
+            return `<span class="badge bg-${colorClass} text-white" style="font-size: 0.875rem; padding: 0.35rem 0.75rem;">${escapeHtml(data)}</span>`;
           },
         },
         {
@@ -306,6 +306,13 @@
           className: "text-end",
           render: function (data) {
             return escapeHtml(formatMoney(data));
+          },
+        },
+        {
+          data: "invoiceDescription",
+          render: function (data) {
+            if (!data) return "-";
+            return `<div style='max-width:320px;overflow-x:auto;'>${escapeHtml(data)}</div>`;
           },
         },
         {
@@ -419,6 +426,7 @@
     $("#invoiceDescription").val("");
     $("#invoiceAmount").val("");
     $("#taxAmount").val("");
+    $("#grandTotal").val("");
     $("#invoiceYear").val("");
     $("#invoiceMonth").val("");
   }
@@ -515,6 +523,7 @@
       $("#invoiceDescription").val(data.invoiceDescription || "");
       $("#invoiceAmount").val(data.invoiceAmount ?? "");
       $("#taxAmount").val(data.taxAmount ?? "");
+      $("#grandTotal").val(data.grandTotal ?? "");
       $("#invoiceYear").val(data.invoiceYear ?? "");
       $("#invoiceMonth").val(String(data.invoiceMonth || ""));
 
@@ -564,6 +573,7 @@
       invoiceDescription: String($("#invoiceDescription").val() || "").trim(),
       invoiceAmount: Number($("#invoiceAmount").val() || 0),
       taxAmount: Number($("#taxAmount").val() || 0),
+      grandTotal: Number($("#grandTotal").val() || 0),
       invoiceYear: toInt($("#invoiceYear").val()),
       invoiceMonth: toInt($("#invoiceMonth").val()),
       createdByUserId: uid || undefined,
@@ -1151,6 +1161,10 @@
             <div class="col-md-6">
               <div class="fw-bold mb-1">Tax Amount:</div>
               <div>${escapeHtml(formatMoney(data.taxAmount))}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">No SAP:</div>
+              <div>${escapeHtml(data.noSAP || "-")}</div>
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">Year / Month:</div>

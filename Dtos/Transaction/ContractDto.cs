@@ -6,6 +6,7 @@ namespace MonitoringDokumenGS.Dtos.Transaction
     {
         public Guid ContractId { get; set; }
         public Guid VendorId { get; set; }
+        public String VendorName { get; set; } = string.Empty;
         public Guid CreatedByUserId { get; set; }
         public string ContractNumber { get; set; } = string.Empty;
         public string ContractDescription { get; set; } = string.Empty;

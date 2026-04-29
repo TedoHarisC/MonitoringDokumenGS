@@ -12,6 +12,7 @@ public static class ContractMappings
         {
             ContractId = x.ContractId,
             VendorId = x.VendorId,
+            VendorName = x.Vendor.VendorName,
             CreatedByUserId = x.CreatedByUserId,
             ContractNumber = x.ContractNumber,
             ContractDescription = x.ContractDescription,

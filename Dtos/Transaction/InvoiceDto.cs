@@ -15,6 +15,7 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public string? VendorName { get; set; } // Nama vendor
         public decimal InvoiceAmount { get; set; }
         public decimal TaxAmount { get; set; }
+        public decimal GrandTotal { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }

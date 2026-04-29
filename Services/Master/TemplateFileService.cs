@@ -29,6 +29,8 @@ namespace MonitoringDokumenGS.Services.Master
 
         public async Task<IEnumerable<TemplateFile>> GetByPermissionAsync(string permission)
         {
+            if (string.IsNullOrEmpty(permission)) return new List<TemplateFile>();
+            if (permission == "user") return await _db.TemplateFile.AsNoTracking().Where(t => t.Permission == "all" || t.Permission == "user").ToListAsync();
             return await _db.TemplateFile.AsNoTracking().Where(t => t.Permission == permission).ToListAsync();
         }
 
