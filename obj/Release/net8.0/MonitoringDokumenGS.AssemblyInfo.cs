@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0af3145e851d2452e557cc724abac0c9d099a040")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b2a7b0260c25cb628d9f512ffcef34f0360a23c")]
 [assembly: System.Reflection.AssemblyProductAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MonitoringDokumenGS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

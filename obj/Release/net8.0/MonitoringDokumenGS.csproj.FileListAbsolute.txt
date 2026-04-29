@@ -170,3 +170,11 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/en/InvoiceReminderDay5.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/id/InvoiceReminderDay1.html
 /Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/EmailTemplates/id/InvoiceReminderDay5.html
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.Development.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/appsettings.Production.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/global.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/libman.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS.deps.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/MonitoringDokumenGS.runtimeconfig.json
+/Users/itsiteabb/Projects/ASP.NET Core/MonitoringDokumenGS/bin/Release/net8.0/publish/web.config

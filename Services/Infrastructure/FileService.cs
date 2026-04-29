@@ -5,13 +5,16 @@ public class FileService : IFile
 {
     private readonly string _rootPath;
     private readonly IAuditLog _audit;
+    private readonly ILogger<FileService> _logger;
 
     public FileService(
         IOptions<FileStorageOptions> options,
-        IAuditLog audit)
+        IAuditLog audit,
+        ILogger<FileService> logger)
     {
         _rootPath = options.Value.RootPath;
         _audit = audit;
+        _logger = logger;
     }
 
     public async Task<FileUploadResult> SaveAsync(
@@ -32,6 +35,15 @@ public class FileService : IFile
 
         var fullPath = Path.Combine(_rootPath, relativePath);
         Directory.CreateDirectory(fullPath);
+
+        // Ini contoh
+        _logger.LogInformation("=== UPLOAD START ===");
+
+        _logger.LogInformation("Module: {Module}", module);
+        _logger.LogInformation("ReferenceId: {ReferenceId}", referenceId);
+        _logger.LogInformation("Category: {Category}", category);
+
+        _logger.LogInformation("RootPath: {RootPath}", _rootPath);
 
         var finalFile = Path.Combine(fullPath, storedName);
 

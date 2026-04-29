@@ -10,7 +10,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/attachments")]
     public class AttachmentsController : ControllerBase
@@ -203,11 +203,11 @@ namespace MonitoringDokumenGS.Controllers.API
             }
 
             // Validate file size (max 10MB)
-            const long maxSize = 10 * 1024 * 1024;
+            const long maxSize = 100 * 1024 * 1024;
             if (file.Length > maxSize)
             {
                 _logger.LogWarning("Upload failed - File too large: {FileSize} bytes", file.Length);
-                return BadRequest(new { message = "File size exceeds 10MB limit" });
+                return BadRequest(new { message = "File size exceeds 100MB limit" });
             }
 
             // Get current user ID
