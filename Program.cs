@@ -207,6 +207,12 @@ builder.Services.Configure<FileStorageOptions>(
 builder.Services.Configure<EmailOptions>(
     builder.Configuration.GetSection("Email"));
 
+// Set max request body size for Kestrel (100 MB)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100 MB
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
