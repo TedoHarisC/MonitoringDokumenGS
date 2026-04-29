@@ -8,7 +8,7 @@ using MonitoringDokumenGS.Interfaces;
 
 namespace MonitoringDokumenGS.Controllers.API
 {
-    [Authorize] // All authenticated users can access
+    //[Authorize] // All authenticated users can access
     [ApiController]
     [Route("api/vendors")]
     public class VendorsController : ControllerBase
@@ -30,7 +30,7 @@ namespace MonitoringDokumenGS.Controllers.API
         public async Task<IActionResult> GetAll(
             [FromQuery(Name = "draw")] int draw = 1,
             [FromQuery(Name = "start")] int start = 0,
-            [FromQuery(Name = "length")] int length = 10,
+            [FromQuery(Name = "length")] int length = 100,
             [FromQuery(Name = "search[value]")] string? search = null)
         {
             // DataTables: start = offset, length = page size

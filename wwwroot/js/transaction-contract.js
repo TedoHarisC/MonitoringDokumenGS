@@ -475,29 +475,55 @@
     $("#approvalStatusSelect").val("6");
   }
 
+  // Untuk Setup Vendor Field di form (Create/Edit) berdasarkan role user
+  function setupVendorField(vendorId, vendorName) {
+    if (isCurrentUserAdmin()) {
+      // ADMIN → pakai select
+      $("#vendorIdSelect").show();
+      $("#vendorName").hide();
+
+      populateVendorDropdown();
+
+      $("#vendorIdSelect").val(String(vendorId || ""));
+    } else {
+      // USER → readonly
+      $("#vendorIdSelect").hide();
+      $("#vendorName").show();
+
+      $("#vendorId").val(String(vendorId || ""));
+      $("#vendorName").val(vendorName || "");
+    }
+  }
+
   function openCreate() {
     portalModalToBody("contractModal");
     clearForm();
     $("#contractModalLabel").text("Create Contract");
 
     // Set vendor from current user
-    if (currentUserVendor && currentUserVendor.vendorId) {
-      $("#vendorId").val(currentUserVendor.vendorId);
-      $("#vendorName").val(currentUserVendor.vendorName || "");
-    } else {
-      Swal.fire(
-        "Warning",
-        "No vendor assigned to your account. Please contact administrator.",
-        "warning",
-      );
-      return;
-    }
+    // if (currentUserVendor && currentUserVendor.vendorId) {
+    //   $("#vendorId").val(currentUserVendor.vendorId);
+    //   $("#vendorName").val(currentUserVendor.vendorName || "");
+    // } else {
+    //   Swal.fire(
+    //     "Warning",
+    //     "No vendor assigned to your account. Please contact administrator.",
+    //     "warning",
+    //   );
+    //   return;
+    // }
 
     // Set default statuses
     $("#contractStatusId").val("2");
     $("#contractStatusSelect").val("2");
     $("#approvalStatusId").val("6");
     $("#approvalStatusSelect").val("6");
+
+    // Setup vendor field based on user role
+    setupVendorField(
+      currentUserVendor.vendorId,
+      currentUserVendor.vendorName
+    );
 
     // Show/hide status sections based on user role
     if (isCurrentUserAdmin()) {
@@ -525,10 +551,18 @@
     $("#contractId").val(data.contractId);
 
     // Set vendor
-    const vendorName = vendorNameById(data.vendorId) || "";
-    $("#vendorId").val(String(data.vendorId || ""));
-    $("#vendorName").val(vendorName);
+    // const vendorName = vendorNameById(data.vendorId) || "";
+    // const vendorId = String(data.vendorId || "").toLowerCase();
 
+    // // Normalize option values juga
+    // $("#vendorId option").each(function () {
+    //   this.value = this.value.toLowerCase();
+    // });
+
+    // $("#vendorId").val(vendorId);
+    const vendorName = vendorNameById(data.vendorId) || data.vendorName || "";
+    setupVendorField(data.vendorId, vendorName);
+    $("#vendorName").val(vendorName);
     $("#contractNumber").val(data.contractNumber || "");
     $("#contractDescription").val(data.contractDescription || "");
     $("#startDate").val(formatDate(data.startDate));
@@ -558,12 +592,26 @@
     showModal("contractModal");
   }
 
+  function populateVendorDropdown() {
+    const $select = $("#vendorIdSelect");
+    $select.empty();
+
+    $select.append('<option value="">-- Select Vendor --</option>');
+
+    cachedVendors.forEach((v) => {
+      const id = v.vendorId || v.VendorId;
+      const name = v.vendorName || v.VendorName;
+
+      $select.append(`<option value="${id}">${name}</option>`);
+    });
+  }
+
   async function saveContract(e) {
     e.preventDefault();
 
     const id = String($("#contractId").val() || "").trim();
     const uid = currentUserId();
-    const vendorId = String($("#vendorId").val() || "").trim();
+    //const vendorId = String($("#vendorId").val() || "").trim();
     const isEdit = !!id;
 
     // Get statuses - from select if admin, otherwise from hidden field
@@ -574,6 +622,10 @@
     const approvalStatusId = isCurrentUserAdmin()
       ? toInt($("#approvalStatusSelect").val())
       : toInt($("#approvalStatusId").val());
+
+    const vendorId = isCurrentUserAdmin()
+      ? String($("#vendorIdSelect").val()).trim()
+      : String($("#vendorId").val()).trim();
 
     const payload = {
       contractId: id || undefined,
@@ -694,7 +746,7 @@
     formData.append("referenceId", contractId);
 
     try {
-      await autFetch(`${apis.attachments}/upload`, {
+      await authFetch(`${apis.attachments}/upload`, {
         method: "POST",
         body: formData,
       });

@@ -295,17 +295,17 @@
           },
         },
         {
-          data: "invoiceAmount",
+          data: "grandTotal",
           className: "text-end",
           render: function (data) {
             return escapeHtml(formatMoney(data));
           },
         },
         {
-          data: "taxAmount",
+          data: "noSAP",
           className: "text-end",
           render: function (data) {
-            return escapeHtml(formatMoney(data));
+            return `<div style='max-width:320px;overflow-x:auto;'>${escapeHtml(data)}</div>`;
           },
         },
         {
@@ -447,6 +447,41 @@
       });
   }
 
+  // Populate Vendor
+  function populateVendorDropdown() {
+    const $select = $("#vendorIdSelect");
+    $select.empty();
+
+    $select.append('<option value="">-- Select Vendor --</option>');
+
+    cachedVendors.forEach((v) => {
+      const id = v.vendorId || v.VendorId;
+      const name = v.vendorName || v.VendorName;
+
+      $select.append(`<option value="${id}">${name}</option>`);
+    });
+  }
+
+  // Untuk Setup Vendor Field di form (Create/Edit) berdasarkan role user
+  function setupVendorField(vendorId, vendorName) {
+    if (isCurrentUserAdmin()) {
+      // ADMIN → pakai select
+      $("#vendorIdSelect").show();
+      $("#vendorName").hide();
+
+      populateVendorDropdown();
+
+      $("#vendorIdSelect").val(String(vendorId || ""));
+    } else {
+      // USER → readonly
+      $("#vendorIdSelect").hide();
+      $("#vendorName").show();
+
+      $("#vendorId").val(String(vendorId || ""));
+      $("#vendorName").val(vendorName || "");
+    }
+  }
+
   function openCreate() {
     portalModalToBody("invoiceModal");
     clearForm();
@@ -454,8 +489,12 @@
 
     // Set vendor from current user
     if (currentUserVendor && currentUserVendor.vendorId) {
-      $("#vendorId").val(currentUserVendor.vendorId);
-      $("#vendorName").val(currentUserVendor.vendorName || "");
+      //   $("#vendorId").val(currentUserVendor.vendorId);
+      //   $("#vendorName").val(currentUserVendor.vendorName || "");
+      setupVendorField(
+          currentUserVendor.vendorId,
+          currentUserVendor.vendorName
+      );
     } else {
       Swal.fire(
         "Warning",
@@ -512,9 +551,11 @@
       $("#invoiceId").val(data.invoiceId);
 
       // Set vendor (should be user's own vendor)
-      const vendorName = vendorNameById(data.vendorId) || "";
-      $("#vendorId").val(String(data.vendorId || ""));
-      $("#vendorName").val(vendorName);
+      const vendorName = vendorNameById(data.vendorId) || data.vendorName || "";
+      setupVendorField(data.vendorId, vendorName);
+      // const vendorName = vendorNameById(data.vendorId) || "";
+      // $("#vendorId").val(String(data.vendorId || ""));
+      // $("#vendorName").val(vendorName);
 
       $("#progressStatusId").val(String(data.progressStatusId || ""));
       $("#progressStatusSelect").val(String(data.progressStatusId || ""));
@@ -556,13 +597,18 @@
 
     const id = String($("#invoiceId").val() || "").trim();
     const uid = currentUserId();
-    const vendorId = String($("#vendorId").val() || "").trim();
     const isEdit = !!id;
+    //const vendorId = String($("#vendorId").val() || "").trim();
 
     // Get progress status - from select if admin, otherwise from hidden field
     const progressStatusId = isCurrentUserAdmin()
       ? toInt($("#progressStatusSelect").val())
       : toInt($("#progressStatusId").val());
+
+    // Vendor ID - from select if admin, otherwise from hidden field
+    const vendorId = isCurrentUserAdmin()
+      ? String($("#vendorIdSelect").val()).trim()
+      : String($("#vendorId").val()).trim();
 
     const payload = {
       invoiceId: id || undefined,
@@ -1148,7 +1194,7 @@
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">Vendor:</div>
-              <div>${escapeHtml(vendorNameById(data.vendorId) || data.vendorId)}</div>
+              <div>${escapeHtml(data.vendorName || '-')}</div>
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">Status:</div>
@@ -1161,6 +1207,10 @@
             <div class="col-md-6">
               <div class="fw-bold mb-1">Tax Amount:</div>
               <div>${escapeHtml(formatMoney(data.taxAmount))}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fw-bold mb-1">Grand Total:</div>
+              <div>${escapeHtml(formatMoney(data.grandTotal))}</div>
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">No SAP:</div>

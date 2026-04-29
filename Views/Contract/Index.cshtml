@@ -143,12 +143,15 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="contractId" />
-                    <input type="hidden" id="vendorId" />
                     <input type="hidden" id="contractStatusId" value="2" />
                     <input type="hidden" id="approvalStatusId" value="6" />
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Vendor</label>
+                            <!-- Untuk Admin -->
+                            <select id="vendorIdSelect" class="form-control" style="display:none;"></select>
+                            <!-- Untuk User -->
+                            <input type="hidden" id="vendorId" />
                             <input id="vendorName" class="form-control" disabled />
                         </div>
                         <div class="col-12 col-md-6" id="contractStatusSection" style="display: none;">

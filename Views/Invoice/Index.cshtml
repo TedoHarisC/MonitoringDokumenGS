@@ -1,4 +1,3 @@
-<th class="text-end">Grand Total</th>
 @using System.Security.Claims
 @{
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
@@ -165,8 +164,8 @@
                                     <th>Invoice Number</th>
                                     <th>Vendor</th>
                                     <th>Status</th>
-                                    <th class="text-end">Invoice Amount</th>
-                                    <th class="text-end">Tax Amount</th>
+                                    <th class="text-end">Grand Total</th>
+                                    <th class="text-end">No SAP</th>
                                     <th class="text-center">Description</th>
                                     <th class="text-center">Year</th>
                                     <th class="text-center">Month</th>
@@ -196,11 +195,14 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="invoiceId" />
-                    <input type="hidden" id="vendorId" />
                     <input type="hidden" id="progressStatusId" value="2" />
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Vendor</label>
+                            <!-- Untuk Admin -->
+                            <select id="vendorIdSelect" class="form-control" style="display:none;"></select>
+                            <!-- Untuk User / Vendor -->
+                            <input type="hidden" id="vendorId" />
                             <input id="vendorName" class="form-control" disabled />
                         </div>
                         <div class="col-12" id="progressStatusSection" style="display: none;">
