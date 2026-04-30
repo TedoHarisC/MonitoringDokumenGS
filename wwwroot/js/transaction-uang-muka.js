@@ -234,6 +234,7 @@ document.getElementById('uangMukaModal')
     function loadCoaTexts(jenis) {
         let budgetCodeIds = $('#budgetCodeId').val();
         const $sel = $('#coaTextId');
+        // Hindari duplikasi: destroy dan kosongkan sebelum isi
         if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
         $sel.empty();
         // Support both single and multiple
@@ -271,6 +272,8 @@ document.getElementById('uangMukaModal')
             ? `/api/vendor-categories/by-budget-code/${validGuids[0]}`
             : `/api/vendor-categories/by-budget-codes?ids=${validGuids.join(',')}`;
         return $.getJSON(url).then(function (res) {
+            // Hindari duplikasi: kosongkan lagi sebelum append
+            $sel.empty();
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
             if (jenis === 'Advanced') {
                 $sel.append('<option value="">-- Pilih COA Text --</option>');
@@ -565,18 +568,15 @@ document.getElementById('uangMukaModal')
                 $('#UangMukaRelatedIdWrapper').hide();
             }
 
+            // Step 1: Load Budget Codes dan Status
             Promise.all([
                 loadBudgetCodes(data.jenis),
-                loadCoaTexts(data.jenis),
                 loadStatusOptions(data.jenis)
             ]).then(function () {
-                // Set value: jika array, set multiple; jika single, set satu
+                // Step 2: Set value BudgetCode
                 if (data.jenis === "Advanced") {
-                    // Single select
                     let bc = Array.isArray(data.budgetCodeIds) ? data.budgetCodeIds[0] : (data.budgetCodeId || "");
-                    let ct = Array.isArray(data.coaTextIds) ? data.coaTextIds[0] : (data.coaTextId || "");
                     $("#budgetCodeId").val(bc ? [bc] : [""]).trigger("change");
-                    $("#coaTextId").val(ct ? [ct] : [""]).trigger("change");
                 } else {
                     if (Array.isArray(data.budgetCodeIds)) {
                         $("#budgetCodeId").val(data.budgetCodeIds).trigger("change");
@@ -585,6 +585,15 @@ document.getElementById('uangMukaModal')
                     } else {
                         $("#budgetCodeId").val("").trigger("change");
                     }
+                }
+                // Step 3: Setelah BudgetCode ter-set, load COA Text
+                return loadCoaTexts(data.jenis);
+            }).then(function () {
+                // Step 4: Set value COA Text
+                if (data.jenis === "Advanced") {
+                    let ct = Array.isArray(data.coaTextIds) ? data.coaTextIds[0] : (data.coaTextId || "");
+                    $("#coaTextId").val(ct ? [ct] : [""]).trigger("change");
+                } else {
                     if (Array.isArray(data.coaTextIds)) {
                         $("#coaTextId").val(data.coaTextIds).trigger("change");
                     } else if (data.coaTextId) {
@@ -593,15 +602,12 @@ document.getElementById('uangMukaModal')
                         $("#coaTextId").val("").trigger("change");
                     }
                 }
-
-                // ─── KEY FIX: Set statusId pakai native select — tanpa Select2 ──
-                // Ini menghindari semua timing & re-init issue Select2
+                // Step 5: Set status
                 const $status = $("#statusId");
                 if ($status.hasClass("select2-hidden-accessible")) {
                     $status.select2("destroy");
                 }
                 $status[0].value = data.statusId;
-                //console.log('DEBUG statusId:', data.statusId, '→ result:', $status[0].value);
 
                 // Advanced Realisasi
                 if (data.jenis === "Realisasi") {

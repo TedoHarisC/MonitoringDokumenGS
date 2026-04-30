@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MonitoringDokumenGS.Models.Transaction
 {
@@ -10,6 +11,7 @@ namespace MonitoringDokumenGS.Models.Transaction
         public string UangMukaId { get; set; } = string.Empty;
         public Guid BudgetCodeId { get; set; }
         // Navigation properties (optional, not required if no FK constraint)
+        [JsonIgnore]
         public UangMuka? UangMuka { get; set; }
         public BudgetCode? BudgetCode { get; set; }
     }
@@ -21,6 +23,7 @@ namespace MonitoringDokumenGS.Models.Transaction
         public string UangMukaId { get; set; } = string.Empty;
         public int CoaTextId { get; set; }
         // Navigation properties (optional)
+        [JsonIgnore]
         public UangMuka? UangMuka { get; set; }
         public VendorCategory? CoaText { get; set; }
     }

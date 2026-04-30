@@ -87,32 +87,68 @@ namespace MonitoringDokumenGS.Services
             return item;
         }
 
+        // public async Task<UangMuka> CreateAsync(UangMuka model)
+        // {
+        //     model.UangMukaId = Guid.NewGuid().ToString();
+        //     model.CreatedAt = DateTime.UtcNow;
+        //     _db.UangMukas.Add(model);
+        //     await _db.SaveChangesAsync();
+        //     // Insert ke junction table jika ada
+        //     if (model.UangMukaBudgetCodes != null && model.UangMukaBudgetCodes.Any())
+        //     {
+        //         foreach (var bc in model.UangMukaBudgetCodes)
+        //         {
+        //             bc.UangMukaId = model.UangMukaId;
+        //             _db.UangMukaBudgetCode.Add(bc);
+        //         }
+        //     }
+        //     if (model.UangMukaCoaTexts != null && model.UangMukaCoaTexts.Any())
+        //     {
+        //         foreach (var ct in model.UangMukaCoaTexts)
+        //         {
+        //             ct.UangMukaId = model.UangMukaId;
+        //             _db.UangMukaCoaText.Add(ct);
+        //         }
+        //     }
+        //     await _db.SaveChangesAsync();
+
+        //     // Audit log
+        //     await _auditLog.LogAsync(
+        //         "UangMuka",
+        //         "Create",
+        //         null,
+        //         model,
+        //         model.UangMukaId
+        //     );
+
+        //     return model;
+        // }
+
         public async Task<UangMuka> CreateAsync(UangMuka model)
         {
             model.UangMukaId = Guid.NewGuid().ToString();
             model.CreatedAt = DateTime.UtcNow;
-            _db.UangMukas.Add(model);
-            await _db.SaveChangesAsync();
-            // Insert ke junction table jika ada
-            if (model.UangMukaBudgetCodes != null && model.UangMukaBudgetCodes.Any())
+
+            // set FK ke child (tanpa Add manual)
+            if (model.UangMukaBudgetCodes != null)
             {
                 foreach (var bc in model.UangMukaBudgetCodes)
                 {
                     bc.UangMukaId = model.UangMukaId;
-                    _db.UangMukaBudgetCode.Add(bc);
                 }
             }
-            if (model.UangMukaCoaTexts != null && model.UangMukaCoaTexts.Any())
+
+            if (model.UangMukaCoaTexts != null)
             {
                 foreach (var ct in model.UangMukaCoaTexts)
                 {
                     ct.UangMukaId = model.UangMukaId;
-                    _db.UangMukaCoaText.Add(ct);
                 }
             }
+
+            _db.UangMukas.Add(model);
             await _db.SaveChangesAsync();
 
-            // Audit log
             await _auditLog.LogAsync(
                 "UangMuka",
                 "Create",
