@@ -1,4 +1,19 @@
-﻿@{
+﻿<!-- Modal Contract Detail (identik dengan Invoice) -->
+<div class="modal fade" id="contractStatusModal" tabindex="-1" aria-labelledby="contractStatusModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contractStatusModalLabel">Contract List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="contractStatusModalContent">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+@{
     ViewData["Title"] = "Home Page";
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
 }
@@ -61,7 +76,7 @@
                             <div class="p-3 border border-dashed rounded">
                                 <div class="fs-12 text-muted mb-1">Total Invoice Amount</div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <h3 class="fw-bold text-info mb-0" id="totalInvoiceAmount">Rp 0</h3>
+                                    <h3 class="fw-bold text-info mb-0 text-md" id="totalInvoiceAmount">Rp 0</h3>
                                     <span class="badge bg-info-subtle text-info">
                                         <i class="feather-dollar-sign"></i>
                                     </span>

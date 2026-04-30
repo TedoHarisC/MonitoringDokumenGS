@@ -232,11 +232,46 @@ document.getElementById('uangMukaModal')
 
     // ─── Load COA Text (Vendor Categories) + Select2 ─────────────────────────
     function loadCoaTexts(jenis) {
-        return $.getJSON("/api/vendor-categories?page=1&pageSize=2000").then(function (res) {
+        let budgetCodeIds = $('#budgetCodeId').val();
+        const $sel = $('#coaTextId');
+        if ($sel.hasClass('select2-hidden-accessible')) $sel.select2('destroy');
+        $sel.empty();
+        // Support both single and multiple
+        if (!budgetCodeIds || (Array.isArray(budgetCodeIds) && budgetCodeIds.length === 0)) {
+            $sel.append('<option value="">-- Pilih Budget Code terlebih dahulu --</option>');
+            $sel.prop('disabled', true);
+            $sel.select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Pilih COA Text --',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#uangMukaModal'),
+            });
+            return Promise.resolve();
+        }
+        // Convert to array if not already
+        if (!Array.isArray(budgetCodeIds)) budgetCodeIds = [budgetCodeIds];
+        // Filter only valid GUIDs
+        const validGuids = budgetCodeIds.filter(x => typeof x === 'string' && x.length === 36);
+        if (validGuids.length === 0) {
+            $sel.append('<option value="">-- Pilih Budget Code valid --</option>');
+            $sel.prop('disabled', true);
+            $sel.select2({
+                theme: 'bootstrap-5',
+                placeholder: '-- Pilih COA Text --',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#uangMukaModal'),
+            });
+            return Promise.resolve();
+        }
+        $sel.prop('disabled', false);
+        // Use new API for multiple
+        const url = validGuids.length === 1
+            ? `/api/vendor-categories/by-budget-code/${validGuids[0]}`
+            : `/api/vendor-categories/by-budget-codes?ids=${validGuids.join(',')}`;
+        return $.getJSON(url).then(function (res) {
             const items = Array.isArray(res) ? res : (res.items || res.data || []);
-            const $sel = $("#coaTextId");
-            if ($sel.hasClass("select2-hidden-accessible")) $sel.select2("destroy");
-            $sel.empty();
             if (jenis === 'Advanced') {
                 $sel.append('<option value="">-- Pilih COA Text --</option>');
             }
@@ -245,14 +280,14 @@ document.getElementById('uangMukaModal')
             });
             $sel.prop('multiple', jenis !== 'Advanced');
             $sel.select2({
-                theme: "bootstrap-5",
-                placeholder: "-- Pilih COA Text --",
+                theme: 'bootstrap-5',
+                placeholder: '-- Pilih COA Text --',
                 allowClear: true,
-                width: "100%",
-                dropdownParent: $("#uangMukaModal"),
+                width: '100%',
+                dropdownParent: $('#uangMukaModal'),
                 closeOnSelect: jenis === 'Advanced',
                 templateSelection: function (data, container) {
-                    if (data.id === "") return '';
+                    if (data.id === '') return '';
                     return data.text;
                 }
             });
@@ -444,17 +479,17 @@ document.getElementById('uangMukaModal')
 
     // ─── Event: Jenis berubah → reload status & show/hide Advanced Realisasi + handle select2 single/multiple ──
     // Hanya untuk interaksi user di form, bukan saat edit load
-    $("#jenis").on("change", function () {
+    $('#jenis').on('change', function () {
         const val = $(this).val();
         if (!val) return;
 
         // Reload status options
         loadStatusOptions(val).then(function () {
-            $("#statusId")[0].value = "";
+            $('#statusId')[0].value = '';
         });
 
         // Handle UangMukaRelatedId tampil hanya untuk Realisasi
-        if (val === "Realisasi") {
+        if (val === 'Realisasi') {
             $('#UangMukaRelatedIdWrapper').show();
             initUangMukaRelatedSelect();
         } else {
@@ -463,11 +498,9 @@ document.getElementById('uangMukaModal')
         }
 
         // --- FIX: Budget Code & COA Text single/multiple select2 ---
-        // Destroy select2 dulu
         if ($('#budgetCodeId').hasClass('select2-hidden-accessible')) $('#budgetCodeId').select2('destroy');
         if ($('#coaTextId').hasClass('select2-hidden-accessible')) $('#coaTextId').select2('destroy');
 
-        // Set attribute multiple sesuai jenis
         if (val === 'Biaya' || val === 'Realisasi') {
             $('#budgetCodeId').attr('multiple', 'multiple');
             $('#coaTextId').attr('multiple', 'multiple');
@@ -476,11 +509,9 @@ document.getElementById('uangMukaModal')
             $('#coaTextId').removeAttr('multiple');
         }
 
-        // Clear value setiap ganti jenis
         $('#budgetCodeId').val(null);
         $('#coaTextId').val(null);
 
-        // Re-init select2
         $('#budgetCodeId').select2({
             theme: 'bootstrap-5',
             width: '100%',
@@ -489,6 +520,7 @@ document.getElementById('uangMukaModal')
             allowClear: true,
             closeOnSelect: val === 'Advanced'
         });
+        // COA Text will be loaded after Budget Code selected
         $('#coaTextId').select2({
             theme: 'bootstrap-5',
             width: '100%',
@@ -497,6 +529,14 @@ document.getElementById('uangMukaModal')
             allowClear: true,
             closeOnSelect: val === 'Advanced'
         });
+        // Disable COA Text until Budget Code selected
+        $('#coaTextId').prop('disabled', true);
+    });
+
+    // ─── Event: Budget Code berubah → reload COA Text ───────────────────────
+    $('#budgetCodeId').on('change', function () {
+        const jenis = $('#jenis').val();
+        loadCoaTexts(jenis);
     });
 
     // ─── Event: Tombol Edit ───────────────────────────────────────────────────

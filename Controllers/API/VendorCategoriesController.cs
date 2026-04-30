@@ -67,5 +67,19 @@ namespace MonitoringDokumenGS.Controllers.API
             if (!ok) return NotFound();
             return NoContent();
         }
+
+        // GET: api/vendor-categories/by-budget-codes?ids=guid1,guid2,...
+        [HttpGet("by-budget-codes")]
+        public async Task<IActionResult> GetByBudgetCodes([FromQuery] string ids)
+        {
+            if (string.IsNullOrWhiteSpace(ids)) return BadRequest("No Budget Code IDs provided.");
+            var guidList = ids.Split(',')
+                .Select(x => Guid.TryParse(x, out var g) ? g : Guid.Empty)
+                .Where(g => g != Guid.Empty)
+                .ToList();
+            if (guidList.Count == 0) return BadRequest("No valid GUIDs.");
+            var filtered = await _service.GetByBudgetCodeIdsAsync(guidList);
+            return Ok(filtered);
+        }
     }
 }

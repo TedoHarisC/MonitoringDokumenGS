@@ -260,17 +260,17 @@ public class DashboardService : IDashboard
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
-        var today = DateTime.Now;
+        var today = DateTime.Now.Date;
         var next30Days = today.AddDays(30);
 
-        // Count active contracts (between StartDate and EndDate)
+        // Count active contracts (tidak overlap expiring soon, date only)
         var activeContractsCount = await _context.Contracts
-            .Where(c => !c.IsDeleted && c.StartDate <= today && c.EndDate >= today)
+            .Where(c => !c.IsDeleted && c.StartDate.Date <= today && c.EndDate.Date > next30Days)
             .CountAsync();
 
-        // Count contracts expiring in next 30 days
+        // Count contracts expiring in next 30 days (tidak overlap active, date only)
         var contractsExpiringSoon = await _context.Contracts
-            .Where(c => !c.IsDeleted && c.EndDate >= today && c.EndDate <= next30Days)
+            .Where(c => !c.IsDeleted && c.EndDate.Date >= today && c.EndDate.Date <= next30Days)
             .CountAsync();
 
         // Count total invoices submitted
@@ -600,6 +600,43 @@ public class DashboardService : IDashboard
             u.EndDate,
             u.Deskripsi
         });
+        return result;
+    }
+
+    public async Task<IEnumerable<object>> GetContractsByStatusAsync(string status)
+    {
+        var today = DateTime.Now.Date;
+        var next30Days = today.AddDays(30);
+
+        var query = _context.Contracts
+            .Include(c => c.Vendor)
+            .Include(c => c.ContractStatus)
+            .Where(c => !c.IsDeleted);
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (status == "Active")
+                // Active: kontrak aktif tapi tidak expiring soon
+                query = query.Where(c => c.StartDate <= today && c.EndDate > next30Days);
+            else if (status == "Expiring Soon")
+                // Expiring Soon: kontrak aktif yang akan habis <= 30 hari ke depan
+                query = query.Where(c => c.EndDate >= today && c.EndDate <= next30Days);
+            // Tambahkan status lain jika perlu
+        }
+
+        var result = await query
+            .OrderBy(c => c.EndDate)
+            .Select(c => new
+            {
+                c.ContractNumber,
+                VendorName = c.Vendor != null ? c.Vendor.VendorName : "",
+                c.ContractDescription,
+                c.StartDate,
+                c.EndDate,
+                Status = status == "Active" ? "Aman" : (status == "Expiring Soon" ? "Sudah Mau Habis" : (c.ContractStatus != null ? c.ContractStatus.Name : ""))
+            })
+            .ToListAsync();
+
         return result;
     }
 }

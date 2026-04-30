@@ -4,6 +4,7 @@ namespace MonitoringDokumenGS.Interfaces
 {
     public interface IDashboard
     {
+        Task<IEnumerable<object>> GetContractsByStatusAsync(string status);
         Task<IEnumerable<DashboardBudgetMonthlyDto>> GetMonthlyBudgetAsync(int year);
         Task<IEnumerable<TopVendorSpendDto>> GetTopVendorsAsync(int top = 10, int? year = null);
         Task<IEnumerable<BudgetKpiDto>> GetBudgetKpiByVendorAsync(int year);

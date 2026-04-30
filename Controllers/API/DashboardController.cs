@@ -129,4 +129,11 @@ public class DashboardController : ControllerBase
         var fileName = $"UangMuka_{jenis}_{status}_{DateTime.Now:yyyyMMddHHmmss}.csv";
         return File(bytes, "text/csv", fileName);
     }
+
+    [HttpGet("contracts-by-status")]
+    public async Task<IActionResult> GetContractsByStatus([FromQuery] string status)
+    {
+        var data = await _dashboard.GetContractsByStatusAsync(status);
+        return Ok(data);
+    }
 }

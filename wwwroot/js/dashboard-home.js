@@ -528,6 +528,9 @@ $(document).ready(function () {
                         const taxAmount = (inv.taxAmount !== undefined && inv.taxAmount !== null)
                             ? inv.taxAmount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
                             : '';
+                        const grandTotal = (inv.grandTotal !== undefined && inv.grandTotal !== null)
+                            ? inv.grandTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                            : '';
                         const year = inv.invoiceYear || '';
                         const monthNum = inv.invoiceMonth || 0;
                         const month = monthNames[monthNum] || inv.invoiceMonth || '';
@@ -535,20 +538,17 @@ $(document).ready(function () {
                             <td>${inv.invoiceNumber || ''}</td>
                             <td>${inv.vendorName || ''}</td>
                             <td>${inv.progressStatusName || ''}</td>
-                            <td class="text-end">${invoiceAmount}</td>
-                            <td class="text-end">${taxAmount}</td>
+                            <td class="text-end">${grandTotal}</td>
+                            <td class="text-end">${inv.noSAP}</td>
                             <td class="text-center">${year}</td>
                             <td class="text-center">${month}</td>
                             <td class="text-center">${inv.isOnTime ? 'On Time' : 'Late'}</td>
                             <td>${inv.createdAt ? new Date(inv.createdAt).toLocaleString('id-ID') : ''}</td>
-                            <td class="text-center">
-                                <a href="/Invoice/Details/${inv.invoiceId || inv.id}" class="btn btn-sm btn-info">Detail</a>
-                            </td>
                         </tr>`;
                     });
                 }
 
-                // Destroy DataTable if exists
+                // Destroy DataTable if exists  
                 if ($.fn.DataTable.isDataTable('#modalInvoicesTable')) {
                     $('#modalInvoicesTable').DataTable().destroy();
                 }
@@ -1430,3 +1430,60 @@ function updateContractSummary() {
     $('#warningContractsCount').text(warning);
     $('#safeContractsCount').text(safe);
 }
+
+// Handler klik summary contract
+$(document).on('click', '.col-md-3 .p-3.border.border-dashed.rounded', function () {
+    var title = $(this).find('.fs-12').text().trim();
+    var status = '';
+    if (title.toLowerCase().includes('active')) status = 'Active';
+    else if (title.toLowerCase().includes('expiring')) status = 'Expiring Soon';
+    else if (title.toLowerCase().includes('total invoices')) return; // skip
+    else if (title.toLowerCase().includes('total invoice amount')) return; // skip
+    else return;
+    showContractsByStatusModal(status);
+});
+
+// Show modal dan load data contract sesuai status
+function showContractsByStatusModal(status) {
+    $('#contractStatusModalLabel').text('Contract List - ' + status);
+    $('#contractStatusModalContent').html('<div class="text-center py-4"><div class="spinner-border"></div></div>');
+    portalModalToBody('contractStatusModal');
+    showModal('contractStatusModal');
+    $.get('/api/dashboard/contracts-by-status?status=' + encodeURIComponent(status), function (data) {
+        if (data && data.length > 0) {
+            var html = '<div class="table-responsive"><table class="table table-bordered table-hover"><thead><tr>' +
+                '<th>No</th><th>Contract Number</th><th>Vendor</th><th>Description</th><th>Start Date</th><th>End Date</th><th>Status</th></tr></thead><tbody>';
+            data.forEach(function (c, i) {
+                html += '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td>' + (c.contractNumber || '-') + '</td>' +
+                    '<td>' + (c.vendorName || '-') + '</td>' +
+                    '<td>' + (c.contractDescription || '-') + '</td>' +
+                    '<td>' + (c.startDate ? c.startDate.split('T')[0] : '-') + '</td>' +
+                    '<td>' + (c.endDate ? c.endDate.split('T')[0] : '-') + '</td>' +
+                    '<td>' + (c.status || '-') + '</td>' +
+                    '</tr>';
+            });
+            html += '</tbody></table></div>';
+            $('#contractStatusModalContent').html(html);
+        } else {
+            $('#contractStatusModalContent').html('<div class="text-center text-muted py-4">No contract data available for this status.</div>');
+        }
+    });
+}
+
+// Ensure modal is always portaled to body and cleaned up on hide (like invoice modal)
+$(document).ready(function () {
+    $('#contractStatusModal').on('shown.bs.modal', function () {
+        $(this).find('.modal-body').attr('tabindex', '-1').trigger('focus');
+    });
+    $('#contractStatusModal').on('hide.bs.modal', function () {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+    });
+    $('#contractStatusModal').on('hidden.bs.modal', function () {
+        // Clean up content if needed
+        $('#contractStatusModalContent').empty();
+    });
+});

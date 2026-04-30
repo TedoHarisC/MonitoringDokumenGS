@@ -181,5 +181,32 @@ namespace MonitoringDokumenGS.Services.Master
 
             return true;
         }
+
+        // ========================= GET BY MULTIPLE BUDGET CODE IDS =========================
+        public async Task<IEnumerable<VendorCategoryDto>> GetByBudgetCodeIdsAsync(IEnumerable<Guid> budgetCodeIds)
+        {
+            var list = budgetCodeIds.ToList();
+            return await _context.VendorCategories
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.ParentBudgetCodeId != null && list.Contains(x.ParentBudgetCodeId.Value))
+                .OrderBy(x => x.Name)
+                .Select(x => new VendorCategoryDto
+                {
+                    VendorCategoryId = x.VendorCategoryId,
+                    NoCoa = x.NoCoa,
+                    ParentBudgetCodeId = x.ParentBudgetCodeId,
+                    ParentBudgetCodeLabel = _context.BudgetCode
+                        .Where(b => b.BudgetCodeId == x.ParentBudgetCodeId)
+                        .Select(b => b.Code + " - " + b.Description)
+                        .FirstOrDefault(),
+                    Name = x.Name,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                    UpdatedBy = x.UpdatedBy,
+                    IsDeleted = x.IsDeleted
+                })
+                .ToListAsync();
+        }
     }
 }
