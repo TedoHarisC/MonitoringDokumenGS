@@ -1,7 +1,13 @@
+$(document).on('mousedown', '.select2-dropdown', function (e) {
+    e.stopPropagation();
+});
+
 // ─── Load Advanced yang di realisasikan (UangMukaRelatedId) Select2 ─────
 function initUangMukaRelatedSelect(selectedId, selectedText) {
     const $sel = $('#UangMukaRelatedId');
-    $sel.select2('destroy');
+    if ($sel.hasClass("select2-hidden-accessible")) {
+        $sel.select2('destroy');
+    }
     $sel.empty();
     $sel.select2({
         theme: 'bootstrap-5',
@@ -17,9 +23,11 @@ function initUangMukaRelatedSelect(selectedId, selectedText) {
             processResults: function (data) {
                 return {
                     results: data.map(function (item) {
+                    //console.log("INI 1 : ", item);
+                    let budgetCode = (item.budgetCode) ? item.budgetCode : "no budget code";
                         return {
-                            id: item.id,
-                            text: item.atasNama + ' - ' + item.amount + ' - ' + item.budgetCode
+                            id: item.uangMukaId,
+                            text: item.atasNama + ' - ' + item.amount + ' - ' + budgetCode
                         };
                     })
                 };
@@ -27,7 +35,7 @@ function initUangMukaRelatedSelect(selectedId, selectedText) {
             cache: true
         },
         width: '100%',
-        dropdownParent: $('#uangMukaModal')
+       dropdownParent: $(document.body) 
     });
     if (selectedId && selectedText) {
         var option = new Option(selectedText, selectedId, true, true);
@@ -36,31 +44,32 @@ function initUangMukaRelatedSelect(selectedId, selectedText) {
 }
 
 // Initialize Select2 for UangMukaRelatedId (initial)
-$('#UangMukaRelatedId').select2({
-    theme: 'bootstrap-5',
-    placeholder: '-- Pilih Advanced --',
-    allowClear: true,
-    ajax: {
-        url: '/api/uang-muka/advanced-for-realisasi',
-        dataType: 'json',
-        delay: 250,
-        data: function (params) {
-            return { search: params.term };
-        },
-        processResults: function (data) {
-            return {
-                results: data.map(function (item) {
-                    return {
-                        id: item.id,
-                        text: item.atasNama + ' - ' + item.amount + ' - ' + item.budgetCode
-                    };
-                })
-            };
-        },
-        cache: true
-    },
-    width: '100%'
-});
+// $('#UangMukaRelatedId').select2({
+//     theme: 'bootstrap-5',
+//     placeholder: '-- Pilih Advanced --',
+//     allowClear: true,
+//     ajax: {
+//         url: '/api/uang-muka/advanced-for-realisasi',
+//         dataType: 'json',
+//         delay: 250,
+//         data: function (params) {
+//             return { search: params.term };
+//         },
+//         processResults: function (data) {
+//             return {
+//                 results: data.map(function (item) {
+//                     console.log("INI 2 : ", item);
+//                     return {
+//                         id: item.id,
+//                         text: item.atasNama + ' - ' + item.amount + ' - ' + item.budgetCode
+//                     };
+//                 })
+//             };
+//         },
+//         cache: true
+//     },
+//     width: '100%'
+// });
 
 // Show/hide field based on Jenis selection
 $('#jenis').on('change', function () {
@@ -100,30 +109,89 @@ $(function () {
         }
     }
 
+    document.addEventListener('focusin', function (e) {
+    if (e.target.closest('.select2-container--open, .select2-dropdown, .select2-results__options')) {
+        e.stopImmediatePropagation(); // Bootstrap tidak dapat event ini sama sekali
+    }
+    }, true); 
+
+    // Taruh setelah portalModalToBody() di dalam $(function(){})
+    // $('#uangMukaModal').on('shown.bs.modal', function () {
+    //     const modal = bootstrap.Modal.getInstance(this);
+    //     if (modal && modal._focustrap) {
+    //         modal._focustrap.deactivate(); // ← Matikan focus trap Bootstrap 5
+    //     }
+    // });
+
     // ─── Helper: show modal ───────────────────────────────────────────────────
     function showModal() {
         const el = document.getElementById('uangMukaModal');
-        const modal = bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el, {
+        // ← Destroy instance lama dulu, agar focus:false benar-benar ter-apply
+        const existingModal = bootstrap.Modal.getInstance(el);
+        if (existingModal) existingModal.dispose();
+        // Sekarang buat instance baru dengan focus: false
+        // const modal = bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el, {
+        //     backdrop: 'static',
+        //     keyboard: false,
+        //     focus: false
+        // });
+        // modal.show();
+        new bootstrap.Modal(el, {
             backdrop: 'static',
-            keyboard: false
-        });
-        modal.show();
+            keyboard: false,
+            focus: false
+        }).show();
     }
 
+    $(document).on('select2:open', function () {
+        setTimeout(function () {
+            const searchField = document.querySelector(
+                '.select2-container--open .select2-search__field'
+            );
+            if (searchField) searchField.focus();
+        }, 0);
+    });
+
     // ─── Helper: hide modal + force cleanup backdrop ──────────────────────────
+    // function hideModal() {
+    //     const el = document.getElementById('uangMukaModal');
+    //     const modal = bootstrap.Modal.getInstance(el);
+    //     if (modal) {
+    //         modal.hide();
+    //         setTimeout(() => {
+    //             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    //             document.body.classList.remove('modal-open');
+    //             document.body.style.overflow = '';
+    //             document.body.style.paddingRight = '';
+    //         }, 300);
+    //     }
+    // }
     function hideModal() {
         const el = document.getElementById('uangMukaModal');
         const modal = bootstrap.Modal.getInstance(el);
+
         if (modal) {
             modal.hide();
-            setTimeout(() => {
-                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
-            }, 300);
         }
     }
+
+// Cleanup hanya saat modal benar-benar selesai close
+document.getElementById('uangMukaModal')
+    .addEventListener('hidden.bs.modal', function () {
+
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+
+        // 🔥 Hapus hanya backdrop berlebih (bukan semua)
+        if (backdrops.length > 1) {
+            for (let i = 0; i < backdrops.length - 1; i++) {
+                backdrops[i].remove();
+            }
+        }
+
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
 
     // ─── Load Budget Codes + Select2 ─────────────────────────────────────────
     function loadBudgetCodes(jenis) {
@@ -241,7 +309,7 @@ $(function () {
                 }
             },
             dataSrc: function (json) {
-                console.log('DEBUG DataTable AJAX response:', json);
+                //console.log('DEBUG DataTable AJAX response:', json);
                 return Array.isArray(json) ? json : (json.items || json.data || []);
             }
         },
@@ -328,14 +396,29 @@ $(function () {
     });
 
     // ─── Event: modal hidden → force cleanup backdrop ─────────────────────────
-    document.getElementById('uangMukaModal').addEventListener('hidden.bs.modal', function () {
-        setTimeout(() => {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-        }, 300);
+    document.getElementById('uangMukaModal')
+    .addEventListener('hidden.bs.modal', function () {
+
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+
+        if (backdrops.length > 1) {
+            for (let i = 0; i < backdrops.length - 1; i++) {
+                backdrops[i].remove();
+            }
+        }
+
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     });
+    // document.getElementById('uangMukaModal').addEventListener('hidden.bs.modal', function () {
+    //     setTimeout(() => {
+    //         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    //         document.body.classList.remove('modal-open');
+    //         document.body.style.overflow = '';
+    //         document.body.style.paddingRight = '';
+    //     }, 300);
+    // });
 
     // ─── Event: Tombol Add New Data ───────────────────────────────────────────
     $("#btnCreateContract").on("click", function () {
@@ -478,7 +561,7 @@ $(function () {
                     $status.select2("destroy");
                 }
                 $status[0].value = data.statusId;
-                console.log('DEBUG statusId:', data.statusId, '→ result:', $status[0].value);
+                //console.log('DEBUG statusId:', data.statusId, '→ result:', $status[0].value);
 
                 // Advanced Realisasi
                 if (data.jenis === "Realisasi") {
