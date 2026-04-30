@@ -730,29 +730,25 @@
     }
   }
 
-  async function uploadFile(file, contractId) {
-    // If no contractId yet (create mode), add to pending list
+  async function uploadFile(file, contractId, typeId = null) {
     if (!contractId) {
       pendingFiles.push(file);
       updatePendingFilesList();
-      $("#fileUpload").val(""); // Clear input for next file
+      $("#fileUploadInput").val("");
       return;
     }
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("module", "Contracts");
-    formData.append("attachmentTypeId", "1");
+    formData.append("attachmentTypeId", typeId || "1");
     formData.append("referenceId", contractId);
-
     try {
       await authFetch(`${apis.attachments}/upload`, {
         method: "POST",
         body: formData,
       });
-
       await loadAttachments(contractId);
-      $("#fileUpload").val(""); // Clear input for next file
+      $("#fileUploadInput").val("");
     } catch (err) {
       Swal.fire("Error", "Failed to upload file", "error");
     }
@@ -772,12 +768,15 @@
     $list.append(
       '<div class="alert alert-info small mb-2">Files to upload after save:</div>',
     );
-    pendingFiles.forEach((file, index) => {
+    pendingFiles.forEach((pendingFile, index) => {
+      const file = pendingFile.file || pendingFile;
+      const typeName = pendingFile.typeName || "No Type";
       const sizeKb = (file.size / 1024).toFixed(2);
       $list.append(`
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>${file.name}</strong>
+                        <span class="badge bg-info ms-2">${typeName}</span>
                         <span class="text-muted small ms-2">(${sizeKb} KB)</span>
                     </div>
                     <button type="button" class="btn btn-sm btn-danger btn-remove-pending" data-index="${index}">
@@ -790,9 +789,10 @@
 
   async function uploadPendingFiles(contractId) {
     if (pendingFiles.length === 0) return;
-
-    for (const file of pendingFiles) {
-      await uploadFile(file, contractId);
+    for (const pendingFile of pendingFiles) {
+      const file = pendingFile.file || pendingFile;
+      const typeId = pendingFile.typeId || null;
+      await uploadFile(file, contractId, typeId);
     }
     pendingFiles = [];
   }
@@ -841,6 +841,24 @@
     }
   }
 
+  let cachedAttachmentTypes = [];
+
+  async function loadAttachmentTypes() {
+    const result = await fetchJson("/api/attachment-types?page=1&pageSize=2000");
+    cachedAttachmentTypes = normalizeToArray(result).filter(t => t.appliesTo === "CONTRACT");
+    populateAttachmentTypeDropdown();
+    return cachedAttachmentTypes;
+  }
+
+  function populateAttachmentTypeDropdown() {
+    const $select = $("#attachmentTypeSelect");
+    $select.empty();
+    $select.append('<option value="">-- Pilih Tipe Attachment --</option>');
+    cachedAttachmentTypes.forEach((type) => {
+      $select.append(`<option value="${type.attachmentTypeId}">${type.name}</option>`);
+    });
+  }
+
   $(async function () {
     portalModalToBody("contractModal");
 
@@ -872,12 +890,64 @@
       deleteContract(id);
     });
 
-    $("#fileUpload").on("change", function () {
-      const file = this.files[0];
-      if (file) {
-        const contractId = $("#contractId").val();
-        uploadFile(file, contractId);
+    // Load attachment types
+    await loadAttachmentTypes();
+
+    // Add file with attachment type
+    $("#btnAddFile").on("click", function () {
+      const fileInput = $("#fileUploadInput")[0];
+      const file = fileInput.files[0];
+      const typeId = $("#attachmentTypeSelect").val();
+
+      // Validation
+      if (!file) {
+        Swal.fire({
+          icon: "warning",
+          title: "No File Selected",
+          text: "Please select a file to upload.",
+        });
+        return;
       }
+      if (!typeId) {
+        Swal.fire({
+          icon: "warning",
+          title: "No Type Selected",
+          text: "Please select an attachment type.",
+        });
+        return;
+      }
+      // Validate file size (max 100MB)
+      const maxSize = 100 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "File size must not exceed 10 MB.",
+        });
+        return;
+      }
+      // Find type name
+      const type = cachedAttachmentTypes.find((t) => t.attachmentTypeId == typeId);
+      const typeName = type ? type.name : "Unknown";
+      // Add to pending files
+      const pendingFile = {
+        file: file,
+        typeId: typeId,
+        typeName: typeName,
+        id: Date.now(),
+      };
+      pendingFiles.push(pendingFile);
+      updatePendingFilesList();
+      // Clear inputs
+      fileInput.value = "";
+      $("#attachmentTypeSelect").val("");
+      Swal.fire({
+        icon: "success",
+        title: "File Added",
+        text: `${file.name} will be uploaded after saving the contract.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     });
 
     $(document).on("click", ".btn-delete-attachment", function () {

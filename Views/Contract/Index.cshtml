@@ -188,11 +188,26 @@
                     <div id="attachmentsSection" style="display: none;" class="mt-4">
                         <hr />
                         <h6 class="mb-3">Attachments</h6>
-                        <div class="mb-3">
-                            <label class="form-label">Upload File</label>
-                            <input type="file" id="fileUpload" class="form-control"
-                                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
-                            <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                        <div class="row g-2 align-items-end mb-3">
+                            <div class="col-md-5">
+                                <label class="form-label">Attachment Type</label>
+                                <select id="attachmentTypeSelect" class="form-control">
+                                    <option value="">-- Pilih Tipe Attachment --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Upload File</label>
+                                <input type="file" id="fileUploadInput" class="form-control"
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-info w-100" id="btnAddFile">
+                                    <i class="feather-plus me-1"></i> Add File
+                                </button>
+                            </div>
+                            <div class="col-md-12">
+                                <small class="text-muted">Max 10MB. Allowed: PDF, Images, Word, Excel</small>
+                            </div>
                         </div>
                         <div id="attachmentsList" class="list-group"></div>
                     </div>
