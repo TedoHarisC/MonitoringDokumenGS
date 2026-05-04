@@ -142,5 +142,60 @@ namespace MonitoringDokumenGS.Services.Infrastructure
                 throw;
             }
         }
+
+        /// <summary>
+        /// Send email to multiple TO recipients with optional CC and BCC
+        /// </summary>
+        public async Task SendWithCopyMultipleToAsync(List<string> toAddresses, string subject, string htmlBody,
+            List<string>? cc = null, List<string>? bcc = null)
+        {
+            try
+            {
+                var msg = new MailMessage();
+                msg.From = new MailAddress(_options.FromEmail, _options.FromName);
+
+                foreach (var email in toAddresses)
+                {
+                    msg.To.Add(email);
+                }
+
+                if (cc != null)
+                {
+                    foreach (var email in cc)
+                    {
+                        msg.CC.Add(email);
+                    }
+                }
+
+                if (bcc != null)
+                {
+                    foreach (var email in bcc)
+                    {
+                        msg.Bcc.Add(email);
+                    }
+                }
+
+                msg.Subject = subject;
+                msg.Body = htmlBody;
+                msg.IsBodyHtml = true;
+
+                using var client = new SmtpClient(_options.Smtp.Host, _options.Smtp.Port)
+                {
+                    Credentials = new NetworkCredential(
+                        _options.Smtp.Username,
+                        _options.Smtp.Password
+                    ),
+                    EnableSsl = _options.Smtp.UseSsl
+                };
+
+                await client.SendMailAsync(msg);
+                _logger.LogInformation("Email sent successfully to {ToCount} TO recipients with optional CC/BCC", toAddresses.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email to multiple TO recipients with CC/BCC");
+                throw;
+            }
+        }
     }
 }

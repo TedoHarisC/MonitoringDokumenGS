@@ -10,17 +10,20 @@ public class NotificationJobApiController : ControllerBase
 {
     private readonly IContractNotificationJob _contractJob;
     private readonly IBudgetNotificationJob _budgetJob;
+    private readonly IInvoiceNotificationJob _invoiceJob;
     private readonly ILogger<NotificationJobApiController> _logger;
     private readonly IConfiguration _configuration;
 
     public NotificationJobApiController(
         IContractNotificationJob contractJob,
         IBudgetNotificationJob budgetJob,
+        IInvoiceNotificationJob invoiceJob,
         ILogger<NotificationJobApiController> logger,
         IConfiguration configuration)
     {
         _contractJob = contractJob;
         _budgetJob = budgetJob;
+        _invoiceJob = invoiceJob;
         _logger = logger;
         _configuration = configuration;
     }
@@ -221,6 +224,46 @@ public class NotificationJobApiController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Run invoice reminder job manually for testing.
+    /// Uses the same algorithm as scheduled run, but template day is selected from request (1 or 5).
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("invoice-reminder-trial")]
+    public async Task<IActionResult> RunInvoiceReminderTrial([FromBody] InvoiceReminderTrialRequest request)
+    {
+        if (request.TemplateDay != 1 && request.TemplateDay != 5)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "templateDay must be 1 or 5"
+            });
+        }
+
+        try
+        {
+            await _invoiceJob.RunTrialAsync(request.TemplateDay, request.TestToEmails);
+            return Ok(new
+            {
+                success = true,
+                message = "Invoice reminder trial executed successfully.",
+                templateDay = request.TemplateDay,
+                testRecipientCount = request.TestToEmails?.Count ?? 0
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error running invoice reminder trial with template day {TemplateDay}", request.TemplateDay);
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "Failed to execute invoice reminder trial.",
+                error = ex.Message
+            });
+        }
+    }
+
     private string GetMonthName(int month)
     {
         var months = new[] { "", "January", "February", "March", "April", "May", "June",
@@ -237,4 +280,10 @@ public class TestBudgetAlertRequest
     public int? Month { get; set; }
     public decimal? Budget { get; set; }
     public decimal? Spent { get; set; }
+}
+
+public class InvoiceReminderTrialRequest
+{
+    public int TemplateDay { get; set; }
+    public List<string>? TestToEmails { get; set; }
 }

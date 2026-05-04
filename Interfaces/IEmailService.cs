@@ -19,5 +19,10 @@ namespace MonitoringDokumenGS.Interfaces
         /// Send email with CC and BCC
         /// </summary>
         Task SendWithCopyAsync(string to, string subject, string htmlBody, List<string>? cc = null, List<string>? bcc = null);
+
+        /// <summary>
+        /// Send email to multiple TO recipients with optional CC and BCC
+        /// </summary>
+        Task SendWithCopyMultipleToAsync(List<string> toAddresses, string subject, string htmlBody, List<string>? cc = null, List<string>? bcc = null);
     }
 }

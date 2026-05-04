@@ -26,22 +26,71 @@ public class InvoiceNotificationJob : IInvoiceNotificationJob
     public async Task RunAsync()
     {
         var today = DateTime.Now.Date;
-        int day = today.Day;
+        var day = today.Day;
         if (day != 1 && day != 5)
         {
             _logger.LogInformation("Invoice notification skipped: today is not 1st or 5th");
             return;
         }
 
-        // Get all vendors with at least one invoice in this month
-        var invoices = await _db.Invoices
-            .Where(i => !i.IsDeleted && i.InvoiceYear == today.Year && i.InvoiceMonth == today.Month)
-            .Include(i => i.Vendor)
+        await ExecuteReminderAsync(templateDay: day, today: today, mode: "scheduled");
+    }
+
+    public async Task RunTrialAsync(int templateDay, List<string>? overrideToEmails = null)
+    {
+        if (templateDay != 1 && templateDay != 5)
+        {
+            throw new ArgumentException("Template day must be 1 or 5", nameof(templateDay));
+        }
+
+        await ExecuteReminderAsync(
+            templateDay: templateDay,
+            today: DateTime.Now.Date,
+            mode: "trial",
+            overrideToEmails: overrideToEmails);
+    }
+
+    private async Task ExecuteReminderAsync(int templateDay, DateTime today, string mode, List<string>? overrideToEmails = null)
+    {
+        var day = templateDay;
+
+        var previousMonthDate = today.AddMonths(-1);
+        var targetYear = previousMonthDate.Year;
+        var targetMonth = previousMonthDate.Month;
+
+        _logger.LogInformation(
+            "Invoice reminder started in {Mode} mode with template day {Day}. Target invoice period: {Year}/{Month}",
+            mode,
+            day,
+            targetYear,
+            targetMonth);
+
+        var submittedVendorIds = await _db.Invoices
+            .Where(i => !i.IsDeleted && i.InvoiceYear == targetYear && i.InvoiceMonth == targetMonth)
+            .Select(i => i.VendorId)
+            .Distinct()
             .ToListAsync();
 
-        var vendorGroups = invoices
-            .GroupBy(i => i.Vendor)
-            .ToList();
+        var vendorsToRemind = await _db.Vendors
+            .Where(v => !v.IsDeleted && !submittedVendorIds.Contains(v.VendorId))
+            .Select(v => new { v.VendorId, v.VendorName })
+            .ToListAsync();
+
+        _logger.LogInformation(
+            "Invoice reminder target vendors: {TargetCount}. Vendors already submitted: {SubmittedCount}",
+            vendorsToRemind.Count,
+            submittedVendorIds.Count);
+
+        var hasOverrideRecipients = overrideToEmails != null && overrideToEmails.Any();
+
+        if (!vendorsToRemind.Any() && !hasOverrideRecipients)
+        {
+            _logger.LogInformation(
+                "Invoice reminder finished: no vendors pending for period {Year}/{Month}",
+                targetYear,
+                targetMonth);
+            return;
+        }
 
         // Get all admin emails
         var adminEmails = await _db.Users
@@ -50,51 +99,102 @@ public class InvoiceNotificationJob : IInvoiceNotificationJob
             .Join(_db.Roles, x => x.ur.RoleId, r => r.RoleId, (x, r) => new { x.u, r })
             .Where(x => x.r.Code == "ADMIN" || x.r.Code == "SUPER_ADMIN")
             .Select(x => x.u.Email)
-            .Where(e => !string.IsNullOrEmpty(e))
+            .Where(e => !string.IsNullOrWhiteSpace(e))
             .Distinct()
             .ToListAsync();
 
-        foreach (var group in vendorGroups)
+        string subject;
+        string templateFileName;
+        if (day == 1)
         {
-            var vendor = group.Key;
-            var vendorEmails = _db.Users
-                .Where(u => u.VendorId == vendor.VendorId && !u.isDeleted && u.isActive && !string.IsNullOrEmpty(u.Email))
-                .Select(u => u.Email)
+            subject = "[Pengingat Invoice] Reminder Awal Bulan - Invoice Belum Dikirim";
+            templateFileName = "InvoiceReminderDay1.html";
+        }
+        else // day == 5
+        {
+            subject = "[Pengingat Invoice] Reminder Deadline - Invoice Belum Dikirim";
+            templateFileName = "InvoiceReminderDay5.html";
+        }
+
+        var relativeTemplatePath = Path.Combine("EmailTemplates", "id", templateFileName);
+        var templatePath = Path.Combine(AppContext.BaseDirectory, relativeTemplatePath);
+        if (!File.Exists(templatePath))
+        {
+            templatePath = Path.Combine(Directory.GetCurrentDirectory(), relativeTemplatePath);
+        }
+
+        if (!File.Exists(templatePath))
+        {
+            _logger.LogError(
+                "Invoice reminder template not found. Checked: {BasePath} and {CurrentPath}",
+                Path.Combine(AppContext.BaseDirectory, relativeTemplatePath),
+                Path.Combine(Directory.GetCurrentDirectory(), relativeTemplatePath));
+            return;
+        }
+
+        var templateHtml = await File.ReadAllTextAsync(templatePath);
+        List<string> vendorEmails;
+        if (hasOverrideRecipients)
+        {
+            vendorEmails = overrideToEmails!
+                .Where(e => !string.IsNullOrWhiteSpace(e))
                 .Distinct()
                 .ToList();
 
-            if (!vendorEmails.Any())
-                continue;
+            _logger.LogInformation(
+                "Invoice reminder trial uses override recipients. Recipient count: {RecipientCount}",
+                vendorEmails.Count);
+        }
+        else
+        {
+            var vendorIdsToRemind = vendorsToRemind.Select(v => v.VendorId).ToList();
+            vendorEmails = await _db.Users
+                .Where(u => vendorIdsToRemind.Contains(u.VendorId) && !u.isDeleted && u.isActive && !string.IsNullOrWhiteSpace(u.Email))
+                .Select(u => u.Email)
+                .Distinct()
+                .ToListAsync();
+        }
 
+        if (!vendorEmails.Any())
+        {
+            _logger.LogWarning(
+                "Invoice reminder skipped: no active vendor emails found for {VendorCount} vendors in period {Year}/{Month}",
+                vendorsToRemind.Count,
+                targetYear,
+                targetMonth);
+            return;
+        }
 
-            string subject, htmlBody;
-            string templatePath = string.Empty;
-            if (day == 1)
-            {
-                subject = $"[Pengingat Invoice] {vendor.VendorName} - Awal Bulan";
-                templatePath = "EmailTemplates/id/InvoiceReminderDay1.html";
-            }
-            else // day == 5
-            {
-                subject = $"[Pengingat Invoice] {vendor.VendorName} - Deadline Input Invoice";
-                templatePath = "EmailTemplates/id/InvoiceReminderDay5.html";
-            }
+        var periodLabel = previousMonthDate.ToString("MMMM yyyy");
+        var htmlBody = templateHtml
+            .Replace("{{TargetPeriod}}", periodLabel)
+            .Replace("{{AppUrl}}", _appUrl);
 
-            // Baca template dan replace placeholder
-            htmlBody = System.IO.File.ReadAllText(templatePath)
-                .Replace("{{VendorName}}", vendor.VendorName)
-                .Replace("{{AppUrl}}", _appUrl);
-
-
-            // Gunakan SendWithCopyAsync agar bisa multiple TO dan CC
-            await _emailService.SendWithCopyAsync(
-                to: vendorEmails.First(), // TO utama (wajib, ambil satu)
+        try
+        {
+            await _emailService.SendWithCopyMultipleToAsync(
+                toAddresses: vendorEmails,
                 subject: subject,
                 htmlBody: htmlBody,
-                cc: adminEmails.Concat(vendorEmails.Skip(1)).ToList() // CC: admin + sisa vendor
-            );
+                cc: adminEmails);
 
-            _logger.LogInformation("Invoice notification sent to vendor {VendorName} ({Emails}) for day {Day}", vendor.VendorName, string.Join(",", vendorEmails), day);
+            _logger.LogInformation(
+                "Invoice reminder completed in {Mode} mode. Sent 1 email to {VendorEmailCount} vendor recipients with {AdminEmailCount} admin CC for period {Year}/{Month}",
+                mode,
+                vendorEmails.Count,
+                adminEmails.Count,
+                targetYear,
+                targetMonth);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to send global invoice reminder in {Mode} mode for period {Year}/{Month}",
+                mode,
+                targetYear,
+                targetMonth);
+            throw;
         }
     }
 }

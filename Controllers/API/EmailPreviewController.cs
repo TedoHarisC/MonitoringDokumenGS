@@ -20,7 +20,10 @@ namespace MonitoringDokumenGS.Controllers.API
         {
             try
             {
-                string html = template.ToLower() switch
+                var templateKey = template.ToLower();
+                var isKnownTemplate = true;
+
+                string html = templateKey switch
                 {
                     "invoice" => EmailTemplateHelper.GetInvoiceCreatedEmail(
                         invoiceNumber: "INV-2026-001",
@@ -89,24 +92,26 @@ namespace MonitoringDokumenGS.Controllers.API
                         viewDetailsLink: "http://localhost:5170/invoice/123"
                     ),
 
-                    _ => $@"
-                        <html>
-                        <body style='font-family: Arial, sans-serif; padding: 40px;'>
-                            <h1>Email Template Preview</h1>
-                            <p>Available templates:</p>
-                            <ul>
-                                <li><a href='/api/test/email/preview/invoice'>Invoice Created</a></li>
-                                <li><a href='/api/test/email/preview/contract'>Contract Created</a></li>
-                                <li><a href='/api/test/email/preview/welcome'>Welcome Email</a></li>
-                                <li><a href='/api/test/email/preview/reset'>Password Reset</a></li>
-                                <li><a href='/api/test/email/preview/notification'>Notification</a></li>
-                                <li><a href='/api/test/email/preview/approval'>Approval Required</a></li>
-                            </ul>
-                            <p style='color: #dc3545;'>Unknown template: {template}</p>
-                        </body>
-                        </html>
-                    "
+                    _ => BuildUnknownTemplateHtml(template)
                 };
+
+                if (!templateKey.Equals("invoice") && !templateKey.Equals("contract") &&
+                    !templateKey.Equals("welcome") && !templateKey.Equals("reset") &&
+                    !templateKey.Equals("password") && !templateKey.Equals("notification") &&
+                    !templateKey.Equals("approval"))
+                {
+                    isKnownTemplate = false;
+                }
+
+                if (!isKnownTemplate)
+                {
+                    return new ContentResult
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Content = html,
+                        ContentType = "text/html"
+                    };
+                }
 
                 return Content(html, "text/html");
             }
@@ -123,6 +128,28 @@ namespace MonitoringDokumenGS.Controllers.API
                     </html>
                 ", "text/html");
             }
+        }
+
+        private static string BuildUnknownTemplateHtml(string template)
+        {
+            return $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; padding: 40px;'>
+                    <h1>Email Template Preview</h1>
+                    <p>Available templates:</p>
+                    <ul>
+                        <li><a href='/api/test/email/preview/invoice'>Invoice Created</a></li>
+                        <li><a href='/api/test/email/preview/contract'>Contract Created</a></li>
+                        <li><a href='/api/test/email/preview/welcome'>Welcome Email</a></li>
+                        <li><a href='/api/test/email/preview/reset'>Password Reset</a></li>
+                        <li><a href='/api/test/email/preview/notification'>Notification</a></li>
+                        <li><a href='/api/test/email/preview/approval'>Approval Required</a></li>
+                    </ul>
+                    <p style='color: #dc3545;'>Unknown template: {template}</p>
+                    <p style='color: #6c757d;'>This endpoint only previews HTML and does not send email.</p>
+                </body>
+                </html>
+            ";
         }
 
         /// <summary>
