@@ -972,6 +972,9 @@ function loadDashboardStats() {
 // Vendor On-Time Submission KPI
 // ==============================
 let ontimeSubmissionChart = null;
+let vendorPerformanceData = [];
+let vendorPerformanceCurrentPage = 1;
+const vendorPerformancePerPage = 5;
 
 function loadOnTimeSubmissionKpi() {
     // Get year from filter, or use current year as fallback
@@ -1043,7 +1046,8 @@ function loadOnTimeSubmissionKpi() {
             // Show error in table
             const $tbody = $('#vendorPerformanceTable');
             $tbody.empty();
-            $tbody.append(`<tr><td colspan="4" class="text-center text-danger py-4">Failed to load data: ${error || 'Unknown error'}</td></tr>`);
+            $tbody.append(`<tr><td colspan="5" class="text-center text-danger py-4">Failed to load data: ${error || 'Unknown error'}</td></tr>`);
+            $('#vendorPerformancePagination').hide();
         }
     });
 }
@@ -1128,18 +1132,28 @@ function renderOnTimeChart(data) {
 }
 
 function renderVendorPerformanceTable(vendors) {
-    
+    vendorPerformanceData = Array.isArray(vendors) ? vendors : [];
+    vendorPerformanceCurrentPage = 1;
+    updateVendorPerformanceTable();
+    updateVendorPerformancePagination();
+}
+
+function updateVendorPerformanceTable() {
     const $tbody = $('#vendorPerformanceTable');
-    
     $tbody.empty();
-    
-    if (!vendors || vendors.length === 0) {
-        $tbody.append('<tr><td colspan="4" class="text-center text-muted py-4">No vendor data available</td></tr>');
+
+    if (!vendorPerformanceData || vendorPerformanceData.length === 0) {
+        $tbody.append('<tr><td colspan="5" class="text-center text-muted py-4">No vendor data available</td></tr>');
         return;
     }
-    
-    
-    vendors.forEach((vendor, index) => {
+
+    const startIndex = (vendorPerformanceCurrentPage - 1) * vendorPerformancePerPage;
+    const endIndex = startIndex + vendorPerformancePerPage;
+    const paginatedVendors = vendorPerformanceData.slice(startIndex, endIndex);
+
+    paginatedVendors.forEach((vendor, localIndex) => {
+        const index = startIndex + localIndex;
+        const rank = index + 1;
         const percentage = vendor.onTimePercentage.toFixed(1);
         
         // Determine badge color based on performance
@@ -1161,9 +1175,21 @@ function renderVendorPerformanceTable(vendors) {
         } else if (index === 2) {
             rankBadge = '<i class="feather-award text-secondary me-2"></i>';
         }
+
+        let rankStyle = 'color:#64748b; font-weight:500;';
+        if (rank === 1) {
+            rankStyle = 'color:#d4af37; font-weight:700;';
+        } else if (rank === 2) {
+            rankStyle = 'color:#9ca3af; font-weight:700;';
+        } else if (rank === 3) {
+            rankStyle = 'color:#cd7f32; font-weight:700;';
+        }
         
         const row = `
             <tr>
+                <td class="text-center">
+                    <span style="${rankStyle}">${rank}</span>
+                </td>
                 <td>
                     ${rankBadge}<strong>${vendor.vendorName}</strong>
                     <div class="fs-11 text-muted">${vendor.onTimeSubmissions} on-time / ${vendor.lateSubmissions} late</div>
@@ -1184,6 +1210,96 @@ function renderVendorPerformanceTable(vendors) {
         `;
         
         $tbody.append(row);
+    });
+}
+
+function updateVendorPerformancePagination() {
+    const totalPages = Math.ceil(vendorPerformanceData.length / vendorPerformancePerPage);
+    const $pagination = $('#vendorPerformancePagination');
+
+    if ($pagination.length === 0) {
+        return;
+    }
+
+    if (!vendorPerformanceData || totalPages <= 1) {
+        $pagination.hide();
+        return;
+    }
+
+    $pagination.show();
+    $pagination.empty();
+
+    $pagination.append(`
+        <li>
+            <a href="javascript:void(0);" id="vendorPerfPrevPage" ${vendorPerformanceCurrentPage === 1 ? 'class="disabled"' : ''}>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </li>
+    `);
+
+    let startPage = Math.max(1, vendorPerformanceCurrentPage - 1);
+    let endPage = Math.min(totalPages, startPage + 2);
+
+    if (endPage - startPage < 2) {
+        startPage = Math.max(1, endPage - 2);
+    }
+
+    if (startPage > 1) {
+        $pagination.append('<li><a href="javascript:void(0);" data-page="1">1</a></li>');
+        if (startPage > 2) {
+            $pagination.append('<li><a href="javascript:void(0);"><i class="bi bi-dot"></i></a></li>');
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        $pagination.append(`
+            <li>
+                <a href="javascript:void(0);" data-page="${i}" class="${i === vendorPerformanceCurrentPage ? 'active' : ''}">${i}</a>
+            </li>
+        `);
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            $pagination.append('<li><a href="javascript:void(0);"><i class="bi bi-dot"></i></a></li>');
+        }
+        $pagination.append(`<li><a href="javascript:void(0);" data-page="${totalPages}">${totalPages}</a></li>`);
+    }
+
+    $pagination.append(`
+        <li>
+            <a href="javascript:void(0);" id="vendorPerfNextPage" ${vendorPerformanceCurrentPage === totalPages ? 'class="disabled"' : ''}>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </li>
+    `);
+
+    $pagination.find('a[data-page]').off('click').on('click', function (e) {
+        e.preventDefault();
+        const page = parseInt($(this).data('page'));
+        if (page) {
+            vendorPerformanceCurrentPage = page;
+            updateVendorPerformanceTable();
+            updateVendorPerformancePagination();
+        }
+    });
+
+    $('#vendorPerfPrevPage').off('click').on('click', function (e) {
+        e.preventDefault();
+        if (vendorPerformanceCurrentPage > 1) {
+            vendorPerformanceCurrentPage--;
+            updateVendorPerformanceTable();
+            updateVendorPerformancePagination();
+        }
+    });
+
+    $('#vendorPerfNextPage').off('click').on('click', function (e) {
+        e.preventDefault();
+        if (vendorPerformanceCurrentPage < totalPages) {
+            vendorPerformanceCurrentPage++;
+            updateVendorPerformanceTable();
+            updateVendorPerformancePagination();
+        }
     });
 }
 // ==============================

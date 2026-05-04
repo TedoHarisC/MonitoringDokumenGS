@@ -29,9 +29,9 @@ public class InvoiceNotificationJob : IInvoiceNotificationJob
     {
         var today = DateTime.Now.Date;
         var day = today.Day;
-        if (day != 1 && day != 5 && day != 7 && day != 14)
+        if (day != 1 && day != 5 && day != 7 && day != 14 && day != 21 && day != 28)
         {
-            _logger.LogInformation("Invoice notification skipped: today is not 1st, 5th, 7th, or 14th");
+            _logger.LogInformation("Invoice notification skipped: today is not 1st, 5th, 7th, 14th, 21st, or 28th");
             return;
         }
 
@@ -46,9 +46,9 @@ public class InvoiceNotificationJob : IInvoiceNotificationJob
 
     public async Task RunTrialAsync(int templateDay, List<string>? overrideToEmails = null)
     {
-        if (templateDay != 1 && templateDay != 5 && templateDay != 7 && templateDay != 14)
+        if (templateDay != 1 && templateDay != 5 && templateDay != 7 && templateDay != 14 && templateDay != 21 && templateDay != 28)
         {
-            throw new ArgumentException("Template day must be 1, 5, 7, or 14", nameof(templateDay));
+            throw new ArgumentException("Template day must be 1, 5, 7, 14, 21, or 28", nameof(templateDay));
         }
 
         if (templateDay == 1 || templateDay == 5)
@@ -254,9 +254,7 @@ public class InvoiceNotificationJob : IInvoiceNotificationJob
 
         if (pendingVendors.Any())
         {
-            subject = templateDay == 7
-                ? $"[Invoice] Laporan Vendor Belum Submit - Monitoring Tanggal 7 ({periodLabel})"
-                : $"[Invoice] Laporan Vendor Belum Submit - Monitoring Tanggal 14 ({periodLabel})";
+            subject = $"[Invoice] Laporan Vendor Belum Submit - Monitoring Tanggal {templateDay} ({periodLabel})";
             relativeTemplatePath = Path.Combine("EmailTemplates", "id", "InvoiceAdminPendingSummary.html");
 
             var templatePath = ResolveTemplatePath(relativeTemplatePath);

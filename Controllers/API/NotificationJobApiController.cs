@@ -226,18 +226,18 @@ public class NotificationJobApiController : ControllerBase
 
     /// <summary>
     /// Run invoice reminder job manually for testing.
-    /// Uses the same algorithm as scheduled run, but template day is selected from request (1, 5, 7, or 14).
+    /// Uses the same algorithm as scheduled run, but template day is selected from request (1, 5, 7, 14, 21, or 28).
     /// </summary>
     [AllowAnonymous]
     [HttpPost("invoice-reminder-trial")]
     public async Task<IActionResult> RunInvoiceReminderTrial([FromBody] InvoiceReminderTrialRequest request)
     {
-        if (request.TemplateDay != 1 && request.TemplateDay != 5 && request.TemplateDay != 7 && request.TemplateDay != 14)
+        if (request.TemplateDay != 1 && request.TemplateDay != 5 && request.TemplateDay != 7 && request.TemplateDay != 14 && request.TemplateDay != 21 && request.TemplateDay != 28)
         {
             return BadRequest(new
             {
                 success = false,
-                message = "templateDay must be 1, 5, 7, or 14"
+                message = "templateDay must be 1, 5, 7, 14, 21, or 28"
             });
         }
 
