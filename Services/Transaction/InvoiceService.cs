@@ -90,7 +90,9 @@ namespace MonitoringDokumenGS.Services.Transaction
                 IsDeleted = false,
                 InvoiceYear = dto.InvoiceYear,
                 InvoiceMonth = dto.InvoiceMonth,
-                IsOnTime = isOnTime
+                IsOnTime = isOnTime,
+                BudgetCodeId = dto.BudgetCodeId == Guid.Empty ? null : dto.BudgetCodeId,
+                CoaTextId = dto.CoaTextId == 0 ? null : dto.CoaTextId,
             };
 
             _context.Invoices.Add(entity);
@@ -196,6 +198,8 @@ namespace MonitoringDokumenGS.Services.Transaction
             entity.InvoiceYear = dto.InvoiceYear;
             entity.InvoiceMonth = dto.InvoiceMonth;
             entity.IsOnTime = isOnTime;
+            entity.BudgetCodeId = dto.BudgetCodeId == Guid.Empty ? null : dto.BudgetCodeId;
+            entity.CoaTextId = dto.CoaTextId == 0 ? null : dto.CoaTextId;
 
             await _context.SaveChangesAsync();
 

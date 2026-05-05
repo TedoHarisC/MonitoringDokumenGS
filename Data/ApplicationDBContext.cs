@@ -114,6 +114,22 @@ namespace MonitoringDokumenGS.Data
                 .WithMany()
                 .HasForeignKey(x => x.CoaTextId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Invoice → Budget (optional, BudgetCodeId nullable)
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Budget)
+                .WithMany()
+                .HasForeignKey(i => i.BudgetCodeId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Invoice → VendorCategory/Coa (optional, CoaTextId nullable)
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Coa)
+                .WithMany()
+                .HasForeignKey(i => i.CoaTextId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

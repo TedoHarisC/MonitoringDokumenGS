@@ -23,10 +23,14 @@ namespace MonitoringDokumenGS.Models
         public string? InvoiceDescription { get; set; }
         public string? NoSAP { get; set; }
         public decimal? GrandTotal { get; set; }
+        public Guid? BudgetCodeId { get; set; }
+        public int? CoaTextId { get; set; }
 
         // Navigation properties
         public Vendor Vendor { get; set; } = default!;
         public UserModel Creator { get; set; } = default!;
         public InvoiceProgressStatuses ProgressStatus { get; set; } = default!;
+        public Budget? Budget { get; set; }
+        public VendorCategory? Coa { get; set; }
     }
 }

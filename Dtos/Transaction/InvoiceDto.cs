@@ -24,5 +24,9 @@ namespace MonitoringDokumenGS.Dtos.Transaction
         public int InvoiceYear { get; set; }
         public int InvoiceMonth { get; set; }
         public bool IsOnTime { get; set; }
+        public Guid? BudgetCodeId { get; set; }
+        public string? BudgetCode { get; set; }
+        public int? CoaTextId { get; set; }
+        public string? CoaText { get; set; }
     }
 }

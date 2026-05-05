@@ -343,6 +343,12 @@ namespace MonitoringDokumenGS.Controllers.API
                     ProgressStatusId = request.StatusId, // Update status
                     InvoiceAmount = invoice.InvoiceAmount,
                     TaxAmount = invoice.TaxAmount,
+                    GrandTotal = invoice.GrandTotal,
+                    NoSAP = invoice.NoSAP,
+                    InvoiceYear = invoice.InvoiceYear,
+                    InvoiceMonth = invoice.InvoiceMonth,
+                    BudgetCodeId = invoice.BudgetCodeId,
+                    CoaTextId = invoice.CoaTextId,
                     CreatedBy = invoice.CreatedBy,
                     UpdatedBy = currentUserId
                 };

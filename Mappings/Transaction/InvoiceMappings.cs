@@ -29,6 +29,10 @@ public static class InvoiceMappings
             InvoiceMonth = x.InvoiceMonth,
             NoSAP = x.NoSAP,
             GrandTotal = x.GrandTotal ?? 0,
+            BudgetCodeId = x.BudgetCodeId,
+            BudgetCode = x.Budget != null && x.Budget.BudgetCode != null ? x.Budget.BudgetCode.Description : null,
+            CoaTextId = x.CoaTextId,
+            CoaText = x.Coa != null ? x.Coa.Name : null,
             // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
             IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };
@@ -56,6 +60,8 @@ public static class InvoiceMappings
             InvoiceMonth = x.InvoiceMonth,
             NoSAP = x.NoSAP,
             GrandTotal = x.GrandTotal ?? 0,
+            BudgetCodeId = x.BudgetCodeId,
+            CoaTextId = x.CoaTextId,
             // Calculate IsOnTime: CreatedAt should be <= 7th day of InvoiceYear/InvoiceMonth
             IsOnTime = x.CreatedAt.Date <= new DateTime(x.InvoiceYear, x.InvoiceMonth, 7).Date
         };

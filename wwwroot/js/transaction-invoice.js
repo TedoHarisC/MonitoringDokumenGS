@@ -8,6 +8,8 @@
     attachments: "/api/attachments",
     attachmentTypes: "/api/attachment-types?page=1&pageSize=2000",
     currentUser: "/api/auth/me",
+    budgetCodes: "/api/budget-codes?page=1&pageSize=2000",
+    vendorCategoriesByBudgetCode: (id) => `/api/vendor-categories/by-budget-code/${id}`,
   };
 
   let table;
@@ -30,6 +32,10 @@
     const el = document.getElementById(modalId);
     if (!el) return;
     if (el.parentElement !== document.body) document.body.appendChild(el);
+  }
+
+  function getInvoiceSelect2DropdownParent() {
+    return $("#invoiceModal");
   }
 
 
@@ -429,6 +435,72 @@
     $("#grandTotal").val("");
     $("#invoiceYear").val("");
     $("#invoiceMonth").val("");
+    resetInvoiceBudgetCode();
+  }
+
+  function resetInvoiceBudgetCode() {
+    const $bc = $("#invoiceBudgetCodeSelect");
+    const $coa = $("#invoiceCoaTextSelect");
+    if ($bc.hasClass("select2-hidden-accessible")) $bc.val(null).trigger("change");
+    else $bc.val("");
+    $coa.html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>').prop("disabled", true);
+    if ($coa.hasClass("select2-hidden-accessible")) { $coa.select2("destroy"); }
+  }
+
+  async function loadBudgetCodesForInvoice() {
+    try {
+      const result = await fetchJson(apis.budgetCodes);
+      const items = normalizeToArray(result);
+      const $bc = $("#invoiceBudgetCodeSelect");
+      $bc.html('<option value="">-- Select Budget Code --</option>');
+      items.forEach((bc) => {
+        const id = bc.budgetCodeId || bc.BudgetCodeId;
+        const label = (bc.code || bc.Code || "") + (bc.description || bc.Description ? " - " + (bc.description || bc.Description) : "");
+        $bc.append(`<option value="${id}">${escapeHtml(label)}</option>`);
+      });
+      initInvoiceSelect2();
+    } catch (err) {
+      console.error("Failed to load budget codes for invoice:", err);
+    }
+  }
+
+  function initInvoiceSelect2() {
+    const $bc = $("#invoiceBudgetCodeSelect");
+    const $coa = $("#invoiceCoaTextSelect");
+    const $dropdownParent = getInvoiceSelect2DropdownParent();
+    if ($bc.hasClass("select2-hidden-accessible")) $bc.select2("destroy");
+    $bc.select2({ theme: "bootstrap-5", placeholder: "-- Search Budget Code --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+    if (!$coa.prop("disabled") && $coa.find("option").length > 1) {
+      if ($coa.hasClass("select2-hidden-accessible")) $coa.select2("destroy");
+      $coa.select2({ theme: "bootstrap-5", placeholder: "-- Search COA Text --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+    }
+  }
+
+  async function loadCoaForInvoice(budgetCodeId, selectedCoaId) {
+    const $coa = $("#invoiceCoaTextSelect");
+    const $dropdownParent = getInvoiceSelect2DropdownParent();
+    if ($coa.hasClass("select2-hidden-accessible")) $coa.select2("destroy");
+    $coa.html('<option value="">-- Loading... --</option>').prop("disabled", true);
+    if (!budgetCodeId) {
+      $coa.html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>').prop("disabled", true);
+      return;
+    }
+    try {
+      const result = await fetchJson(apis.vendorCategoriesByBudgetCode(budgetCodeId));
+      const items = Array.isArray(result) ? result : normalizeToArray(result);
+      $coa.html('<option value="">-- Select COA Text --</option>');
+      items.forEach((vc) => {
+        const id = vc.vendorCategoryId || vc.VendorCategoryId;
+        const name = vc.name || vc.Name || "";
+        $coa.append(`<option value="${id}" data-nocoa="${escapeHtml(vc.noCoa || "")}">${escapeHtml(name)}</option>`);
+      });
+      $coa.prop("disabled", false);
+      if (selectedCoaId) $coa.val(String(selectedCoaId));
+      $coa.select2({ theme: "bootstrap-5", placeholder: "-- Search COA Text --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+    } catch (err) {
+      console.error("Failed to load COA for invoice:", err);
+      $coa.html('<option value="">-- Failed to load --</option>').prop("disabled", true);
+    }
   }
 
   function populateStatusDropdown() {
@@ -568,6 +640,19 @@
       $("#invoiceYear").val(data.invoiceYear ?? "");
       $("#invoiceMonth").val(String(data.invoiceMonth || ""));
 
+      // Load Budget Code and COA Text
+      const bcId = data.budgetCodeId && data.budgetCodeId !== "00000000-0000-0000-0000-000000000000" ? data.budgetCodeId : null;
+      const coaId = data.coaTextId || null;
+      if (bcId) {
+        // First load COA options for this budget code with selected value
+        await loadCoaForInvoice(bcId, coaId);
+        // Then set budget code value WITHOUT triggering change (COA already loaded)
+        const $bc = $("#invoiceBudgetCodeSelect");
+        $bc.val(bcId);
+      } else {
+        resetInvoiceBudgetCode();
+      }
+
       // Show/hide progress status section based on user role
       if (isCurrentUserAdmin()) {
         populateStatusDropdown();
@@ -622,6 +707,8 @@
       grandTotal: Number($("#grandTotal").val() || 0),
       invoiceYear: toInt($("#invoiceYear").val()),
       invoiceMonth: toInt($("#invoiceMonth").val()),
+      budgetCodeId: $("#invoiceBudgetCodeSelect").val() || "00000000-0000-0000-0000-000000000000",
+      coaTextId: toInt($("#invoiceCoaTextSelect").val()) || 0,
       createdByUserId: uid || undefined,
       createdBy: uid || undefined,
       updatedBy: uid || undefined,
@@ -1020,11 +1107,18 @@
           loadCurrentUser(),
           loadStatuses(),
           loadVendors(),
-          loadAttachmentTypes(),  
+          loadAttachmentTypes(),
+          loadBudgetCodesForInvoice(),
         ]);
       } catch (err) {
         console.error("Initialization error:", err);
       }
+
+      // Cascading: Budget Code → COA Text
+      $(document).on("change", "#invoiceBudgetCodeSelect", function () {
+        const budgetCodeId = $(this).val();
+        loadCoaForInvoice(budgetCodeId, null);
+      });
 
       initTable();
 
