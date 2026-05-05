@@ -28,4 +28,17 @@ namespace MonitoringDokumenGS.Dtos.Dashboard
         public decimal OverallPersentaseSerapan { get; set; }
         public string OverallTrafficLight { get; set; } = "green";
     }
+
+    public class BudgetCoaPerformanceDto
+    {
+        public Guid? BudgetCodeId { get; set; }
+        public string BudgetCode { get; set; } = string.Empty;
+        public int CoaTextId { get; set; }
+        public string CoaText { get; set; } = string.Empty;
+        public string DisplayLabel { get; set; } = string.Empty;
+        public decimal Plan { get; set; }
+        public decimal Actual { get; set; }
+        public decimal Variance { get; set; }
+        public decimal UtilizationPercentage { get; set; }
+    }
 }

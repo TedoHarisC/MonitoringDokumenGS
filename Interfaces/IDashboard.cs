@@ -7,8 +7,8 @@ namespace MonitoringDokumenGS.Interfaces
         Task<IEnumerable<object>> GetContractsByStatusAsync(string status);
         Task<IEnumerable<DashboardBudgetMonthlyDto>> GetMonthlyBudgetAsync(int year);
         Task<IEnumerable<TopVendorSpendDto>> GetTopVendorsAsync(int top = 10, int? year = null);
-        Task<IEnumerable<BudgetKpiDto>> GetBudgetKpiByVendorAsync(int year);
-        Task<BudgetSummaryDto> GetBudgetSummaryAsync(int year);
+        Task<IEnumerable<BudgetCoaPerformanceDto>> GetBudgetCoaPerformanceAsync(int year, DateTime? startDate = null, DateTime? endDate = null, List<Guid>? budgetCodeIds = null, List<int>? coaTextIds = null);
+        Task<BudgetSummaryDto> GetBudgetSummaryAsync(int year, Guid? budgetCodeId = null, int? vendorCategoryId = null);
         Task<IEnumerable<MonthlyRealisasiDto>> GetMonthlyRealisasiAsync(int year);
         Task<DashboardStatsDto> GetDashboardStatsAsync();
         Task<OnTimeSubmissionKpiDto> GetVendorOnTimeSubmissionKpiAsync(int? year = null);

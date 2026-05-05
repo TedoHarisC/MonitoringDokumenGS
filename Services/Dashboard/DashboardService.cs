@@ -55,91 +55,238 @@ public class DashboardService : IDashboard
         return topVendors;
     }
 
-    public async Task<IEnumerable<BudgetKpiDto>> GetBudgetKpiByVendorAsync(int year)
+    public async Task<IEnumerable<BudgetCoaPerformanceDto>> GetBudgetCoaPerformanceAsync(
+        int year,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        List<Guid>? budgetCodeIds = null,
+        List<int>? coaTextIds = null)
     {
-        // Get ALL budgets for the year (per vendor category)
-        var budgets = await _context.MST_Budget
-            .Where(b => b.Year == year)
-            .ToListAsync();
+        // PLAN from master budget, grouped by COA + BudgetCode
+        var planQuery =
+            from b in _context.MST_Budget
+            join vc in _context.VendorCategories on b.BudgetCodeId equals vc.ParentBudgetCodeId
+            join bc in _context.BudgetCode on b.BudgetCodeId equals bc.BudgetCodeId
+            where b.Year == year
+            where budgetCodeIds == null || (b.BudgetCodeId.HasValue && budgetCodeIds.Contains(b.BudgetCodeId.Value))
+            where coaTextIds == null || coaTextIds.Contains(vc.VendorCategoryId)
+            where (b.NoCoa != null && vc.NoCoa != null && b.NoCoa == vc.NoCoa)
+                || (b.TypeBudget != null && vc.Name != null && b.TypeBudget == vc.Name)
+            group b by new { vc.VendorCategoryId, vc.Name, bc.BudgetCodeId, bc.Code, bc.Description } into g
+            select new
+            {
+                BudgetCodeId = g.Key.BudgetCodeId,
+                BudgetCode = g.Key.Code,
+                BudgetCodeDescription = g.Key.Description,
+                CoaTextId = g.Key.VendorCategoryId,
+                CoaText = g.Key.Name,
+                Plan = g.Sum(x => x.TotalBudget)
+            };
 
-        if (!budgets.Any())
+        var planData = await planQuery.ToListAsync();
+
+        var invoiceQuery = _context.Invoices
+            .Include(i => i.Coa)
+            .Include(i => i.Budget)
+            .ThenInclude(b => b!.BudgetCode)
+            .Where(i => !i.IsDeleted && i.InvoiceYear == year && i.CoaTextId.HasValue);
+
+        if (startDate.HasValue)
         {
-            return new List<BudgetKpiDto>();
+            var start = startDate.Value.Date;
+            invoiceQuery = invoiceQuery.Where(i => i.CreatedAt.Date >= start);
         }
 
-        // Get realisasi per vendor with category information
-        var vendorRealisasi = await _context.Invoices
-            .Include(i => i.Vendor)
-            .ThenInclude(v => v.VendorCategory)
-            .Where(i => !i.IsDeleted && i.InvoiceYear == year && i.Vendor != null)
+        if (endDate.HasValue)
+        {
+            var end = endDate.Value.Date;
+            invoiceQuery = invoiceQuery.Where(i => i.CreatedAt.Date <= end);
+        }
+
+        if (budgetCodeIds != null && budgetCodeIds.Count > 0)
+        {
+            invoiceQuery = invoiceQuery.Where(i => i.BudgetCodeId.HasValue && budgetCodeIds.Contains(i.BudgetCodeId.Value));
+        }
+
+        if (coaTextIds != null && coaTextIds.Count > 0)
+        {
+            invoiceQuery = invoiceQuery.Where(i => i.CoaTextId.HasValue && coaTextIds.Contains(i.CoaTextId.Value));
+        }
+
+        // ACTUAL from invoice spending by matched COA + BudgetCode
+        var actualData = await invoiceQuery
             .GroupBy(i => new
             {
-                i.Vendor.VendorId,
-                i.Vendor.VendorName,
-                CategoryName = i.Vendor.VendorCategory.Name
+                BudgetCodeId = i.BudgetCodeId,
+                BudgetCode = i.Budget != null && i.Budget.BudgetCode != null ? i.Budget.BudgetCode.Code : string.Empty,
+                BudgetCodeDescription = i.Budget != null && i.Budget.BudgetCode != null ? i.Budget.BudgetCode.Description : string.Empty,
+                i.CoaTextId,
+                CoaText = i.Coa != null ? i.Coa.Name : string.Empty
             })
             .Select(g => new
             {
-                VendorId = g.Key.VendorId,
-                VendorName = g.Key.VendorName,
-                CategoryName = g.Key.CategoryName,
-                Realisasi = g.Sum(i => i.InvoiceAmount)
+                BudgetCodeId = g.Key.BudgetCodeId,
+                BudgetCode = g.Key.BudgetCode,
+                BudgetCodeDescription = g.Key.BudgetCodeDescription,
+                CoaTextId = g.Key.CoaTextId ?? 0,
+                CoaText = g.Key.CoaText,
+                Actual = g.Sum(i => i.GrandTotal ?? (i.InvoiceAmount + i.TaxAmount))
             })
             .ToListAsync();
 
-        // Create budget lookup by category — use ToLookup to handle duplicate TypeBudget safely
-        var budgetByCategory = budgets
-            .GroupBy(b => (b.TypeBudget ?? "").Trim())
-            .ToDictionary(g => g.Key, g => g.Sum(b => b.TotalBudget));
+        // Fallback map: ensure BudgetCode text can still be resolved from BudgetCodeId
+        // even when invoice navigation properties are not populated.
+        var allBudgetCodeIds = planData
+            .Select(x => (Guid?)x.BudgetCodeId)
+            .Concat(actualData.Select(x => x.BudgetCodeId))
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value)
+            .Distinct()
+            .ToList();
 
-        var result = vendorRealisasi.Select(v =>
+        var budgetCodeLookup = !allBudgetCodeIds.Any()
+            ? new Dictionary<Guid, string>()
+            : await _context.BudgetCode
+                .Where(x => allBudgetCodeIds.Contains(x.BudgetCodeId))
+                .Select(x => new { x.BudgetCodeId, x.Code, x.Description })
+                .ToDictionaryAsync(
+                    x => x.BudgetCodeId,
+                    x => FormatBudgetCodeLabel(x.Code, x.Description));
+
+        static string FormatBudgetCodeLabel(string? code, string? description)
         {
-            // Get budget for this vendor's category
-            var categoryBudget = budgetByCategory.TryGetValue(v.CategoryName ?? "", out var cb) ? cb : 0;
+            var normalizedCode = string.IsNullOrWhiteSpace(code) ? string.Empty : code.Trim();
+            var normalizedDescription = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
 
-            // Count vendors in same category for budget allocation
-            var vendorsInCategory = vendorRealisasi.Count(x => x.CategoryName == v.CategoryName);
-            var allocatedBudget = vendorsInCategory > 0 && categoryBudget > 0
-                ? categoryBudget / vendorsInCategory
-                : 0;
-
-            var sisaBudget = allocatedBudget - v.Realisasi;
-            var persentaseSerapan = allocatedBudget > 0 ? (v.Realisasi / allocatedBudget) * 100 : 0;
-            var variance = allocatedBudget - v.Realisasi;
-            var variancePercentage = allocatedBudget > 0 ? (variance / allocatedBudget) * 100 : 0;
-
-            // Traffic light logic
-            string trafficLight = "green";
-            if (persentaseSerapan >= 95)
-                trafficLight = "red";
-            else if (persentaseSerapan >= 80)
-                trafficLight = "yellow";
-
-            return new BudgetKpiDto
+            if (!string.IsNullOrEmpty(normalizedCode) && !string.IsNullOrEmpty(normalizedDescription))
             {
-                VendorName = $"{v.VendorName} ({v.CategoryName})",
-                TotalBudget = allocatedBudget,
-                Realisasi = v.Realisasi,
-                SisaBudget = sisaBudget,
-                PersentaseSerapan = persentaseSerapan,
+                return $"{normalizedCode} - {normalizedDescription}";
+            }
+
+            if (!string.IsNullOrEmpty(normalizedCode))
+            {
+                return normalizedCode;
+            }
+
+            return normalizedDescription;
+        }
+
+        static string ResolveBudgetCode(params string?[] candidates)
+        {
+            foreach (var value in candidates)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value.Trim();
+                }
+            }
+
+            return "No Budget Code";
+        }
+
+        string BuildKey(Guid? budgetId, int coaId) => $"{(budgetId.HasValue ? budgetId.Value.ToString() : "none")}|{coaId}";
+
+        var allKeys = planData
+            .Select(p => BuildKey(p.BudgetCodeId, p.CoaTextId))
+            .Union(actualData.Select(a => BuildKey(a.BudgetCodeId, a.CoaTextId)))
+            .Distinct()
+            .ToList();
+
+        var result = allKeys.Select(key =>
+        {
+            var p = planData.FirstOrDefault(x => BuildKey(x.BudgetCodeId, x.CoaTextId) == key);
+            var a = actualData.FirstOrDefault(x => BuildKey(x.BudgetCodeId, x.CoaTextId) == key);
+
+            var plan = p?.Plan ?? 0;
+            var actual = a?.Actual ?? 0;
+            var variance = actual - plan;
+            var utilization = plan > 0 ? (actual / plan) * 100 : 0;
+
+            var coaText = p?.CoaText ?? a?.CoaText ?? "COA";
+            var budgetCodeId = p?.BudgetCodeId ?? a?.BudgetCodeId;
+            budgetCodeLookup.TryGetValue(budgetCodeId ?? Guid.Empty, out var budgetCodeFromLookup);
+            var budgetCode = ResolveBudgetCode(
+                FormatBudgetCodeLabel(p?.BudgetCode, p?.BudgetCodeDescription),
+                FormatBudgetCodeLabel(a?.BudgetCode, a?.BudgetCodeDescription),
+                budgetCodeFromLookup);
+
+            return new BudgetCoaPerformanceDto
+            {
+                BudgetCodeId = budgetCodeId,
+                BudgetCode = budgetCode,
+                CoaTextId = p?.CoaTextId ?? a?.CoaTextId ?? 0,
+                CoaText = coaText,
+                DisplayLabel = $"{coaText} ({budgetCode})",
+                Plan = plan,
+                Actual = actual,
                 Variance = variance,
-                VariancePercentage = variancePercentage,
-                TrafficLight = trafficLight
+                UtilizationPercentage = utilization
             };
-        }).OrderByDescending(x => x.Realisasi).ToList();
+        })
+        .OrderByDescending(x => x.Actual)
+        .ThenBy(x => x.BudgetCode)
+        .ThenBy(x => x.CoaText)
+        .ToList();
 
         return result;
     }
 
-    public async Task<BudgetSummaryDto> GetBudgetSummaryAsync(int year)
+    public async Task<BudgetSummaryDto> GetBudgetSummaryAsync(int year, Guid? budgetCodeId = null, int? vendorCategoryId = null)
     {
+        // When filters are provided, use a direct filtered query
+        if (budgetCodeId.HasValue || vendorCategoryId.HasValue)
+        {
+            // Determine effective budgetCodeId from vendorCategory if not explicitly set
+            Guid? effectiveBudgetCodeId = budgetCodeId;
+            if (!effectiveBudgetCodeId.HasValue && vendorCategoryId.HasValue)
+            {
+                effectiveBudgetCodeId = await _context.VendorCategories
+                    .Where(vc => vc.VendorCategoryId == vendorCategoryId.Value)
+                    .Select(vc => vc.ParentBudgetCodeId)
+                    .FirstOrDefaultAsync();
+            }
+
+            // Budget total
+            var budgetQuery = _context.MST_Budget.Where(b => b.Year == year);
+            if (effectiveBudgetCodeId.HasValue)
+                budgetQuery = budgetQuery.Where(b => b.BudgetCodeId == effectiveBudgetCodeId.Value);
+            var totalBudget = await budgetQuery.SumAsync(b => (decimal?)b.TotalBudget) ?? 0;
+
+            // Realisasi (invoices)
+            var invoiceQuery = _context.Invoices.Where(i => !i.IsDeleted && i.InvoiceYear == year);
+            if (effectiveBudgetCodeId.HasValue)
+                invoiceQuery = invoiceQuery.Where(i => i.BudgetCodeId == effectiveBudgetCodeId.Value);
+            if (vendorCategoryId.HasValue)
+            {
+                var vendorIds = await _context.Vendors
+                    .Where(v => !v.IsDeleted && v.VendorCategoryId == vendorCategoryId.Value)
+                    .Select(v => v.VendorId)
+                    .ToListAsync();
+                invoiceQuery = invoiceQuery.Where(i => vendorIds.Contains(i.VendorId));
+            }
+            var totalRealisasi = await invoiceQuery.SumAsync(i => (decimal?)i.InvoiceAmount) ?? 0;
+
+            var sisa = totalBudget - totalRealisasi;
+            var persen = totalBudget > 0 ? (totalRealisasi / totalBudget) * 100 : 0;
+            string tl = persen >= 95 ? "red" : persen >= 80 ? "yellow" : "green";
+
+            return new BudgetSummaryDto
+            {
+                TotalBudget = totalBudget,
+                TotalRealisasi = totalRealisasi,
+                TotalSisaBudget = sisa,
+                OverallPersentaseSerapan = persen,
+                OverallTrafficLight = tl
+            };
+        }
+
         // Get ALL budgets for the year (per vendor category)
         var budgets = await _context.MST_Budget
             .Where(b => b.Year == year)
             .ToListAsync();
 
         // Calculate total budget from all categories
-        var totalBudget = budgets.Sum(b => b.TotalBudget);
+        var allBudgetTotal = budgets.Sum(b => b.TotalBudget);
 
         if (!budgets.Any())
         {
@@ -180,9 +327,9 @@ public class DashboardService : IDashboard
             categoryRealisasi.Add(spent);
         }
 
-        var totalRealisasi = categoryRealisasi.Sum();
-        var sisaBudget = totalBudget - totalRealisasi;
-        var persentaseSerapan = totalBudget > 0 ? (totalRealisasi / totalBudget) * 100 : 0;
+        var allRealisasiTotal = categoryRealisasi.Sum();
+        var sisaBudget = allBudgetTotal - allRealisasiTotal;
+        var persentaseSerapan = allBudgetTotal > 0 ? (allRealisasiTotal / allBudgetTotal) * 100 : 0;
 
         string trafficLight = "green";
         if (persentaseSerapan >= 95)
@@ -192,8 +339,8 @@ public class DashboardService : IDashboard
 
         return new BudgetSummaryDto
         {
-            TotalBudget = totalBudget,
-            TotalRealisasi = totalRealisasi,
+            TotalBudget = allBudgetTotal,
+            TotalRealisasi = allRealisasiTotal,
             TotalSisaBudget = sisaBudget,
             OverallPersentaseSerapan = persentaseSerapan,
             OverallTrafficLight = trafficLight

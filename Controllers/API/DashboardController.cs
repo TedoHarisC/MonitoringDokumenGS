@@ -30,17 +30,49 @@ public class DashboardController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("budget-kpi/{year}")]
-    public async Task<IActionResult> GetBudgetKpiByVendor(int year)
+    [HttpGet("budget-coa-performance/{year}")]
+    public async Task<IActionResult> GetBudgetCoaPerformance(
+        int year,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] string? budgetCodeIds = null,
+        [FromQuery] string? coaTextIds = null)
     {
-        var data = await _dashboard.GetBudgetKpiByVendorAsync(year);
+        var parsedBudgetCodeIds = new List<Guid>();
+        if (!string.IsNullOrWhiteSpace(budgetCodeIds))
+        {
+            parsedBudgetCodeIds = budgetCodeIds
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => Guid.TryParse(x.Trim(), out var id) ? id : Guid.Empty)
+                .Where(x => x != Guid.Empty)
+                .Distinct()
+                .ToList();
+        }
+
+        var parsedCoaTextIds = new List<int>();
+        if (!string.IsNullOrWhiteSpace(coaTextIds))
+        {
+            parsedCoaTextIds = coaTextIds
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.TryParse(x.Trim(), out var id) ? id : 0)
+                .Where(x => x > 0)
+                .Distinct()
+                .ToList();
+        }
+
+        var data = await _dashboard.GetBudgetCoaPerformanceAsync(
+            year,
+            startDate,
+            endDate,
+            parsedBudgetCodeIds.Count > 0 ? parsedBudgetCodeIds : null,
+            parsedCoaTextIds.Count > 0 ? parsedCoaTextIds : null);
         return Ok(data);
     }
 
     [HttpGet("budget-summary/{year}")]
-    public async Task<IActionResult> GetBudgetSummary(int year)
+    public async Task<IActionResult> GetBudgetSummary(int year, [FromQuery] Guid? budgetCodeId = null, [FromQuery] int? vendorCategoryId = null)
     {
-        var data = await _dashboard.GetBudgetSummaryAsync(year);
+        var data = await _dashboard.GetBudgetSummaryAsync(year, budgetCodeId, vendorCategoryId);
         return Ok(data);
     }
 
