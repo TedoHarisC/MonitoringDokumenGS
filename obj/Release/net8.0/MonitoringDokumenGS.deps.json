@@ -16,10 +16,19 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.0",
           "Microsoft.OpenApi": "1.6.14",
+          "Svg.Skia": "4.6.0",
           "Swashbuckle.AspNetCore": "6.6.2"
         },
         "runtime": {
           "MonitoringDokumenGS.dll": {}
+        }
+      },
+      "Acornima/1.4.0": {
+        "runtime": {
+          "lib/net8.0/Acornima.dll": {
+            "assemblyVersion": "1.4.0.0",
+            "fileVersion": "1.4.0.0"
+          }
         }
       },
       "Azure.Core/1.50.0": {
@@ -64,7 +73,93 @@
           }
         }
       },
+      "ExCSS/4.3.1": {
+        "runtime": {
+          "lib/net8.0/ExCSS.dll": {
+            "assemblyVersion": "4.3.1.0",
+            "fileVersion": "4.3.1.0"
+          }
+        }
+      },
+      "HarfBuzzSharp/7.3.0.3": {
+        "dependencies": {
+          "HarfBuzzSharp.NativeAssets.Win32": "7.3.0.3",
+          "HarfBuzzSharp.NativeAssets.macOS": "7.3.0.3"
+        },
+        "runtime": {
+          "lib/net6.0/HarfBuzzSharp.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "7.3.0.3"
+          }
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.Linux/7.3.0.3": {
+        "dependencies": {
+          "HarfBuzzSharp": "7.3.0.3"
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm/native/libHarfBuzzSharp.so": {
+            "rid": "linux-arm",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-arm64/native/libHarfBuzzSharp.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-musl-x64/native/libHarfBuzzSharp.so": {
+            "rid": "linux-musl-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libHarfBuzzSharp.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.macOS/7.3.0.3": {
+        "runtimeTargets": {
+          "runtimes/osx/native/libHarfBuzzSharp.dylib": {
+            "rid": "osx",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "HarfBuzzSharp.NativeAssets.Win32/7.3.0.3": {
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/libHarfBuzzSharp.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/libHarfBuzzSharp.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/libHarfBuzzSharp.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
       "Humanizer.Core/2.14.1": {},
+      "Jint/4.8.0": {
+        "dependencies": {
+          "Acornima": "1.4.0"
+        },
+        "runtime": {
+          "lib/net8.0/Jint.dll": {
+            "assemblyVersion": "4.8.0.0",
+            "fileVersion": "4.5.0.0"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.7.1"
@@ -460,6 +555,139 @@
           "System.CodeDom": "4.4.0"
         }
       },
+      "ShimSkiaSharp/4.6.0": {
+        "runtime": {
+          "lib/net8.0/ShimSkiaSharp.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "SkiaSharp/2.88.9": {
+        "dependencies": {
+          "SkiaSharp.NativeAssets.Win32": "2.88.9",
+          "SkiaSharp.NativeAssets.macOS": "2.88.9"
+        },
+        "runtime": {
+          "lib/net6.0/SkiaSharp.dll": {
+            "assemblyVersion": "2.88.0.0",
+            "fileVersion": "2.88.9.0"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.macOS/2.88.9": {
+        "runtimeTargets": {
+          "runtimes/osx/native/libSkiaSharp.dylib": {
+            "rid": "osx",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.Win32/2.88.9": {
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/libSkiaSharp.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/libSkiaSharp.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/libSkiaSharp.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Svg.Animation/4.6.0": {
+        "dependencies": {
+          "ShimSkiaSharp": "4.6.0",
+          "SkiaSharp": "2.88.9",
+          "Svg.Custom": "4.6.0",
+          "Svg.Model": "4.6.0"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.Animation.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "Svg.Custom/4.6.0": {
+        "dependencies": {
+          "ExCSS": "4.3.1"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.Custom.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "Svg.JavaScript/4.6.0": {
+        "dependencies": {
+          "Jint": "4.8.0",
+          "ShimSkiaSharp": "4.6.0",
+          "Svg.Custom": "4.6.0",
+          "Svg.Model": "4.6.0",
+          "Svg.SceneGraph": "4.6.0"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.JavaScript.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "Svg.Model/4.6.0": {
+        "dependencies": {
+          "ShimSkiaSharp": "4.6.0",
+          "Svg.Custom": "4.6.0"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.Model.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "Svg.SceneGraph/4.6.0": {
+        "dependencies": {
+          "ShimSkiaSharp": "4.6.0",
+          "Svg.Custom": "4.6.0",
+          "Svg.Model": "4.6.0"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.SceneGraph.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
+      "Svg.Skia/4.6.0": {
+        "dependencies": {
+          "HarfBuzzSharp": "7.3.0.3",
+          "HarfBuzzSharp.NativeAssets.Linux": "7.3.0.3",
+          "HarfBuzzSharp.NativeAssets.Win32": "7.3.0.3",
+          "HarfBuzzSharp.NativeAssets.macOS": "7.3.0.3",
+          "SkiaSharp": "2.88.9",
+          "Svg.Animation": "4.6.0",
+          "Svg.Custom": "4.6.0",
+          "Svg.JavaScript": "4.6.0",
+          "Svg.Model": "4.6.0",
+          "Svg.SceneGraph": "4.6.0"
+        },
+        "runtime": {
+          "lib/net8.0/Svg.Skia.dll": {
+            "assemblyVersion": "4.6.0.0",
+            "fileVersion": "4.6.0.0"
+          }
+        }
+      },
       "Swashbuckle.AspNetCore/6.6.2": {
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "6.0.5",
@@ -651,6 +879,13 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Acornima/1.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3M7NpnhKL//pf7HkSfLJaGQ37uksibdqfa9YuUov1VOX0QXapZeYCUpURZ9an4VMt9wJ70MU/PeAsjhw8DwtJw==",
+      "path": "acornima/1.4.0",
+      "hashPath": "acornima.1.4.0.nupkg.sha512"
+    },
     "Azure.Core/1.50.0": {
       "type": "package",
       "serviceable": true,
@@ -679,12 +914,54 @@
       "path": "dapper/2.1.66",
       "hashPath": "dapper.2.1.66.nupkg.sha512"
     },
+    "ExCSS/4.3.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A8UtcghHQlWxPJhJF5bsfEYO7068JHGTuJ7tzyyMjd5fE/N/xY1cVOUhzuLLFwMOCJVnM4mqSQc93W9fGfZ1kA==",
+      "path": "excss/4.3.1",
+      "hashPath": "excss.4.3.1.nupkg.sha512"
+    },
+    "HarfBuzzSharp/7.3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Hq+5+gx10coOvuRgB13KBwiWxJq1QeYuhtVLbA01ZCWaugOnolUahF44KvrQTUUHDNk/C7HB6SMaebsZeOdhgg==",
+      "path": "harfbuzzsharp/7.3.0.3",
+      "hashPath": "harfbuzzsharp.7.3.0.3.nupkg.sha512"
+    },
+    "HarfBuzzSharp.NativeAssets.Linux/7.3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hkcHeTfOyIeJuPtO/QfoqkDvV/MXebZYaA/Bn/S+nXsjH3Wt9oQ6okH2kklYO+1UUdBSJFd67bi9IrpQXI2mPw==",
+      "path": "harfbuzzsharp.nativeassets.linux/7.3.0.3",
+      "hashPath": "harfbuzzsharp.nativeassets.linux.7.3.0.3.nupkg.sha512"
+    },
+    "HarfBuzzSharp.NativeAssets.macOS/7.3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UAwIYnkbBTzBJv1Id8FijY/i8QiIepRemSXufU8fyzwWhYJdx4+ajG8yQUie5HW/uusbVLFSr26muSlJOFDgSw==",
+      "path": "harfbuzzsharp.nativeassets.macos/7.3.0.3",
+      "hashPath": "harfbuzzsharp.nativeassets.macos.7.3.0.3.nupkg.sha512"
+    },
+    "HarfBuzzSharp.NativeAssets.Win32/7.3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RPxRXD16KtSs8Yxr2RK9Qs7AwyN9MlpqZIYs0AvfaJwl7RAtVhC0+u2f2SKwX0uMYYd3O98Z+OBA1sj6aWVKQA==",
+      "path": "harfbuzzsharp.nativeassets.win32/7.3.0.3",
+      "hashPath": "harfbuzzsharp.nativeassets.win32.7.3.0.3.nupkg.sha512"
+    },
     "Humanizer.Core/2.14.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
+    },
+    "Jint/4.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JlXh13WDivP2izPgS9jeUlzyP//hsHUGhGb33EQHLuRiLhdwJ0ajaYjVETnqnkIQay/qP6NHglxx/40bL0/ihQ==",
+      "path": "jint/4.8.0",
+      "hashPath": "jint.4.8.0.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.0": {
       "type": "package",
@@ -951,6 +1228,76 @@
       "sha512": "sha512-KZYeKBET/2Z0gY1WlTAK7+RHTl7GSbtvTLDXEZZojUdAPqpQNDL6tHv7VUpqfX5VEOh+uRGKaZXkuD253nEOBQ==",
       "path": "mono.texttemplating/2.2.1",
       "hashPath": "mono.texttemplating.2.2.1.nupkg.sha512"
+    },
+    "ShimSkiaSharp/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KALIdRdTDzlvbBWKesVHY0DeccoD/LXgBLQOwQhO5e45tLB5W+enz1zmjOPGfpbtLlwco44TS7+s8p7ziii8+A==",
+      "path": "shimskiasharp/4.6.0",
+      "hashPath": "shimskiasharp.4.6.0.nupkg.sha512"
+    },
+    "SkiaSharp/2.88.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3MD5VHjXXieSHCleRLuaTXmL2pD0mB7CcOB1x2kA1I4bhptf4e3R27iM93264ZYuAq6mkUyX5XbcxnZvMJYc1Q==",
+      "path": "skiasharp/2.88.9",
+      "hashPath": "skiasharp.2.88.9.nupkg.sha512"
+    },
+    "SkiaSharp.NativeAssets.macOS/2.88.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Nv5spmKc4505Ep7oUoJ5vp3KweFpeNqxpyGDWyeEPTX2uR6S6syXIm3gj75dM0YJz7NPvcix48mR5laqs8dPuA==",
+      "path": "skiasharp.nativeassets.macos/2.88.9",
+      "hashPath": "skiasharp.nativeassets.macos.2.88.9.nupkg.sha512"
+    },
+    "SkiaSharp.NativeAssets.Win32/2.88.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wb2kYgU7iy84nQLYZwMeJXixvK++GoIuECjU4ECaUKNuflyRlJKyiRhN1MAHswvlvzuvkrjRWlK0Za6+kYQK7w==",
+      "path": "skiasharp.nativeassets.win32/2.88.9",
+      "hashPath": "skiasharp.nativeassets.win32.2.88.9.nupkg.sha512"
+    },
+    "Svg.Animation/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GQF18++e8Bh2lFNfdnhCIMADO0tCJ122OmoNi0VzdwXHmdQBpkVO3xkptgnPFv4ZPn5ZLgOG1KP0phtv4NZQng==",
+      "path": "svg.animation/4.6.0",
+      "hashPath": "svg.animation.4.6.0.nupkg.sha512"
+    },
+    "Svg.Custom/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nPa9PjaUbkvKhVtMrx0BtHNs7AGI8nUdOcA1oIECwXQX+/9nnZlWqNwZysiL4QdR0fw00J4OKrFQPkzDSKZSMg==",
+      "path": "svg.custom/4.6.0",
+      "hashPath": "svg.custom.4.6.0.nupkg.sha512"
+    },
+    "Svg.JavaScript/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-55msuIyxN9kLA+fznFiVFweV+at+s1rManxLztsICxMzWiwP69Glj/bQ8n5Qkn5J0k9f32vh5s7h8QNlxLgIAw==",
+      "path": "svg.javascript/4.6.0",
+      "hashPath": "svg.javascript.4.6.0.nupkg.sha512"
+    },
+    "Svg.Model/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Qyy33wI1s2LxxmpwhsN2rgUASOMwwDQry+Z+qVnnaaWQ1cgWhSerognrzkm6lU1aTd18e9F0T1537EyEtbWgwA==",
+      "path": "svg.model/4.6.0",
+      "hashPath": "svg.model.4.6.0.nupkg.sha512"
+    },
+    "Svg.SceneGraph/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-K9ao0d1c4k6t599CICpIu7Jk9fs9YnQAKZ5fRZVdT7FyzTzyhoHHkUPmb4s0+vrr0b3C7wjZLzEeDYSrrCNr1w==",
+      "path": "svg.scenegraph/4.6.0",
+      "hashPath": "svg.scenegraph.4.6.0.nupkg.sha512"
+    },
+    "Svg.Skia/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xLyhsX5Szr4JhKkVy3AJjKK8blzZfRLZDAwbWeFeB2QnocCUVCaeAiNQ1gP/PtVxGJcc9//XgafKxe7AaAuTaA==",
+      "path": "svg.skia/4.6.0",
+      "hashPath": "svg.skia.4.6.0.nupkg.sha512"
     },
     "Swashbuckle.AspNetCore/6.6.2": {
       "type": "package",

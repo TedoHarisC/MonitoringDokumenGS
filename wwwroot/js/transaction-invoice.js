@@ -9,7 +9,8 @@
     attachmentTypes: "/api/attachment-types?page=1&pageSize=2000",
     currentUser: "/api/auth/me",
     budgetCodes: "/api/budget-codes?page=1&pageSize=2000",
-    vendorCategoriesByBudgetCode: (id) => `/api/vendor-categories/by-budget-code/${id}`,
+    vendorCategoriesByBudgetCode: (id) =>
+      `/api/vendor-categories/by-budget-code/${id}`,
   };
 
   let table;
@@ -37,8 +38,6 @@
   function getInvoiceSelect2DropdownParent() {
     return $("#invoiceModal");
   }
-
-
 
   function showModal(modalId) {
     const el = document.getElementById(modalId);
@@ -441,10 +440,15 @@
   function resetInvoiceBudgetCode() {
     const $bc = $("#invoiceBudgetCodeSelect");
     const $coa = $("#invoiceCoaTextSelect");
-    if ($bc.hasClass("select2-hidden-accessible")) $bc.val(null).trigger("change");
+    if ($bc.hasClass("select2-hidden-accessible"))
+      $bc.val(null).trigger("change");
     else $bc.val("");
-    $coa.html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>').prop("disabled", true);
-    if ($coa.hasClass("select2-hidden-accessible")) { $coa.select2("destroy"); }
+    $coa
+      .html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>')
+      .prop("disabled", true);
+    if ($coa.hasClass("select2-hidden-accessible")) {
+      $coa.select2("destroy");
+    }
   }
 
   async function loadBudgetCodesForInvoice() {
@@ -455,7 +459,11 @@
       $bc.html('<option value="">-- Select Budget Code --</option>');
       items.forEach((bc) => {
         const id = bc.budgetCodeId || bc.BudgetCodeId;
-        const label = (bc.code || bc.Code || "") + (bc.description || bc.Description ? " - " + (bc.description || bc.Description) : "");
+        const label =
+          (bc.code || bc.Code || "") +
+          (bc.description || bc.Description
+            ? " - " + (bc.description || bc.Description)
+            : "");
         $bc.append(`<option value="${id}">${escapeHtml(label)}</option>`);
       });
       initInvoiceSelect2();
@@ -469,10 +477,22 @@
     const $coa = $("#invoiceCoaTextSelect");
     const $dropdownParent = getInvoiceSelect2DropdownParent();
     if ($bc.hasClass("select2-hidden-accessible")) $bc.select2("destroy");
-    $bc.select2({ theme: "bootstrap-5", placeholder: "-- Search Budget Code --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+    $bc.select2({
+      theme: "bootstrap-5",
+      placeholder: "-- Search Budget Code --",
+      allowClear: true,
+      width: "100%",
+      dropdownParent: $dropdownParent,
+    });
     if (!$coa.prop("disabled") && $coa.find("option").length > 1) {
       if ($coa.hasClass("select2-hidden-accessible")) $coa.select2("destroy");
-      $coa.select2({ theme: "bootstrap-5", placeholder: "-- Search COA Text --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+      $coa.select2({
+        theme: "bootstrap-5",
+        placeholder: "-- Search COA Text --",
+        allowClear: true,
+        width: "100%",
+        dropdownParent: $dropdownParent,
+      });
     }
   }
 
@@ -480,26 +500,44 @@
     const $coa = $("#invoiceCoaTextSelect");
     const $dropdownParent = getInvoiceSelect2DropdownParent();
     if ($coa.hasClass("select2-hidden-accessible")) $coa.select2("destroy");
-    $coa.html('<option value="">-- Loading... --</option>').prop("disabled", true);
+    $coa
+      .html('<option value="">-- Loading... --</option>')
+      .prop("disabled", true);
     if (!budgetCodeId) {
-      $coa.html('<option value="">-- Pilih Budget Code terlebih dahulu --</option>').prop("disabled", true);
+      $coa
+        .html(
+          '<option value="">-- Pilih Budget Code terlebih dahulu --</option>',
+        )
+        .prop("disabled", true);
       return;
     }
     try {
-      const result = await fetchJson(apis.vendorCategoriesByBudgetCode(budgetCodeId));
+      const result = await fetchJson(
+        apis.vendorCategoriesByBudgetCode(budgetCodeId),
+      );
       const items = Array.isArray(result) ? result : normalizeToArray(result);
       $coa.html('<option value="">-- Select COA Text --</option>');
       items.forEach((vc) => {
         const id = vc.vendorCategoryId || vc.VendorCategoryId;
         const name = vc.name || vc.Name || "";
-        $coa.append(`<option value="${id}" data-nocoa="${escapeHtml(vc.noCoa || "")}">${escapeHtml(name)}</option>`);
+        $coa.append(
+          `<option value="${id}" data-nocoa="${escapeHtml(vc.noCoa || "")}">${escapeHtml(name)}</option>`,
+        );
       });
       $coa.prop("disabled", false);
       if (selectedCoaId) $coa.val(String(selectedCoaId));
-      $coa.select2({ theme: "bootstrap-5", placeholder: "-- Search COA Text --", allowClear: true, width: "100%", dropdownParent: $dropdownParent });
+      $coa.select2({
+        theme: "bootstrap-5",
+        placeholder: "-- Search COA Text --",
+        allowClear: true,
+        width: "100%",
+        dropdownParent: $dropdownParent,
+      });
     } catch (err) {
       console.error("Failed to load COA for invoice:", err);
-      $coa.html('<option value="">-- Failed to load --</option>').prop("disabled", true);
+      $coa
+        .html('<option value="">-- Failed to load --</option>')
+        .prop("disabled", true);
     }
   }
 
@@ -564,8 +602,8 @@
       //   $("#vendorId").val(currentUserVendor.vendorId);
       //   $("#vendorName").val(currentUserVendor.vendorName || "");
       setupVendorField(
-          currentUserVendor.vendorId,
-          currentUserVendor.vendorName
+        currentUserVendor.vendorId,
+        currentUserVendor.vendorName,
       );
     } else {
       Swal.fire(
@@ -641,14 +679,30 @@
       $("#invoiceMonth").val(String(data.invoiceMonth || ""));
 
       // Load Budget Code and COA Text
-      const bcId = data.budgetCodeId && data.budgetCodeId !== "00000000-0000-0000-0000-000000000000" ? data.budgetCodeId : null;
+      const bcId =
+        data.budgetCodeId &&
+        data.budgetCodeId !== "00000000-0000-0000-0000-000000000000"
+          ? data.budgetCodeId
+          : null;
       const coaId = data.coaTextId || null;
       if (bcId) {
         // First load COA options for this budget code with selected value
         await loadCoaForInvoice(bcId, coaId);
         // Then set budget code value WITHOUT triggering change (COA already loaded)
         const $bc = $("#invoiceBudgetCodeSelect");
+        const $dropdownParent = getInvoiceSelect2DropdownParent();
         $bc.val(bcId);
+        // Reinitialize Select2 to refresh display
+        if ($bc.hasClass("select2-hidden-accessible")) {
+          $bc.select2("destroy");
+        }
+        $bc.select2({
+          theme: "bootstrap-5",
+          placeholder: "-- Search Budget Code --",
+          allowClear: true,
+          width: "100%",
+          dropdownParent: $dropdownParent,
+        });
       } else {
         resetInvoiceBudgetCode();
       }
@@ -707,7 +761,9 @@
       grandTotal: Number($("#grandTotal").val() || 0),
       invoiceYear: toInt($("#invoiceYear").val()),
       invoiceMonth: toInt($("#invoiceMonth").val()),
-      budgetCodeId: $("#invoiceBudgetCodeSelect").val() || "00000000-0000-0000-0000-000000000000",
+      budgetCodeId:
+        $("#invoiceBudgetCodeSelect").val() ||
+        "00000000-0000-0000-0000-000000000000",
       coaTextId: toInt($("#invoiceCoaTextSelect").val()) || 0,
       createdByUserId: uid || undefined,
       createdBy: uid || undefined,
@@ -1099,159 +1155,163 @@
     }
   }
 
-    $(async function () {
-      portalModalToBody("invoiceModal");
+  $(async function () {
+    portalModalToBody("invoiceModal");
 
-      try {
-        await Promise.all([
-          loadCurrentUser(),
-          loadStatuses(),
-          loadVendors(),
-          loadAttachmentTypes(),
-          loadBudgetCodesForInvoice(),
-        ]);
-      } catch (err) {
-        console.error("Initialization error:", err);
+    try {
+      await Promise.all([
+        loadCurrentUser(),
+        loadStatuses(),
+        loadVendors(),
+        loadAttachmentTypes(),
+        loadBudgetCodesForInvoice(),
+      ]);
+    } catch (err) {
+      console.error("Initialization error:", err);
+    }
+
+    // Cascading: Budget Code → COA Text
+    $(document).on("change", "#invoiceBudgetCodeSelect", function () {
+      const budgetCodeId = $(this).val();
+      loadCoaForInvoice(budgetCodeId, null);
+    });
+
+    initTable();
+
+    $("#btnCreateInvoice").on("click", openCreate);
+
+    $("#invoicesTable").on("click", ".btn-edit", function () {
+      const id = $(this).data("id");
+      openEdit(id);
+    });
+
+    $("#invoicesTable").on("click", ".btn-delete", function () {
+      const id = $(this).data("id");
+      deleteInvoice(id);
+    });
+
+    $("#invoiceForm").on("submit", saveInvoice);
+
+    // Add file with attachment type
+    $("#btnAddFile").on("click", function () {
+      const fileInput = $("#fileUploadInput")[0];
+      const file = fileInput.files[0];
+      const typeId = $("#attachmentTypeSelect").val();
+
+      // Validation
+      if (!file) {
+        Swal.fire({
+          icon: "warning",
+          title: "No File Selected",
+          text: "Please select a file to upload.",
+        });
+        return;
       }
 
-      // Cascading: Budget Code → COA Text
-      $(document).on("change", "#invoiceBudgetCodeSelect", function () {
-        const budgetCodeId = $(this).val();
-        loadCoaForInvoice(budgetCodeId, null);
-      });
-
-      initTable();
-
-      $("#btnCreateInvoice").on("click", openCreate);
-
-      $("#invoicesTable").on("click", ".btn-edit", function () {
-        const id = $(this).data("id");
-        openEdit(id);
-      });
-
-      $("#invoicesTable").on("click", ".btn-delete", function () {
-        const id = $(this).data("id");
-        deleteInvoice(id);
-      });
-
-      $("#invoiceForm").on("submit", saveInvoice);
-
-      // Add file with attachment type
-      $("#btnAddFile").on("click", function () {
-        const fileInput = $("#fileUploadInput")[0];
-        const file = fileInput.files[0];
-        const typeId = $("#attachmentTypeSelect").val();
-
-        // Validation
-        if (!file) {
-          Swal.fire({
-            icon: "warning",
-            title: "No File Selected",
-            text: "Please select a file to upload.",
-          });
-          return;
-        }
-
-        if (!typeId) {
-          Swal.fire({
-            icon: "warning",
-            title: "No Type Selected",
-            text: "Please select an attachment type.",
-          });
-          return;
-        }
-
-        // Validate file size (max 10MB)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-          Swal.fire({
-            icon: "error",
-            title: "File Too Large",
-            text: "File size must not exceed 10 MB.",
-          });
-          return;
-        }
-
-        // Find type name
-        const type = cachedAttachmentTypes.find(
-          (t) => t.attachmentTypeId == typeId,
-        );
-        const typeName = type ? type.name : "Unknown";
-
-        // Add to pending files
-        const pendingFile = {
-          file: file,
-          typeId: typeId,
-          typeName: typeName,
-          id: Date.now(),
-        };
-
-        console.log("Adding file to pending:", pendingFile);
-        pendingFiles.push(pendingFile);
-        updatePendingFilesList();
-
-        // Clear inputs
-        fileInput.value = "";
-        $("#attachmentTypeSelect").val("");
-
+      if (!typeId) {
         Swal.fire({
-          icon: "success",
-          title: "File Added",
-          text: `${file.name} will be uploaded after saving the invoice.`,
-          timer: 2000,
-          showConfirmButton: false,
+          icon: "warning",
+          title: "No Type Selected",
+          text: "Please select an attachment type.",
         });
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "File size must not exceed 10 MB.",
+        });
+        return;
+      }
+
+      // Find type name
+      const type = cachedAttachmentTypes.find(
+        (t) => t.attachmentTypeId == typeId,
+      );
+      const typeName = type ? type.name : "Unknown";
+
+      // Add to pending files
+      const pendingFile = {
+        file: file,
+        typeId: typeId,
+        typeName: typeName,
+        id: Date.now(),
+      };
+
+      console.log("Adding file to pending:", pendingFile);
+      pendingFiles.push(pendingFile);
+      updatePendingFilesList();
+
+      // Clear inputs
+      fileInput.value = "";
+      $("#attachmentTypeSelect").val("");
+
+      Swal.fire({
+        icon: "success",
+        title: "File Added",
+        text: `${file.name} will be uploaded after saving the invoice.`,
+        timer: 2000,
+        showConfirmButton: false,
       });
+    });
 
-      // File upload handler (kept for backward compatibility if needed)
-      $("#fileUpload").on("change", function (e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    // File upload handler (kept for backward compatibility if needed)
+    $("#fileUpload").on("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-        const invoiceId = $("#invoiceId").val();
-        uploadFile(file, invoiceId);
-      });
+      const invoiceId = $("#invoiceId").val();
+      uploadFile(file, invoiceId);
+    });
 
-      // Delete attachment handler
-      $(document).on("click", ".btn-delete-attachment", function () {
-        const attachmentId = $(this).data("id");
-        const invoiceId = $("#invoiceId").val();
-        deleteAttachment(attachmentId, invoiceId);
-      });
+    // Delete attachment handler
+    $(document).on("click", ".btn-delete-attachment", function () {
+      const attachmentId = $(this).data("id");
+      const invoiceId = $("#invoiceId").val();
+      deleteAttachment(attachmentId, invoiceId);
+    });
 
-      // Download attachment handler (uses auth token)
-      $(document).on("click", ".btn-download-attachment", function (e) {
-        e.preventDefault();
-        const attachmentId = $(this).data("id");
-        const token = localStorage.getItem("mdgs_token");
+    // Download attachment handler (uses auth token)
+    $(document).on("click", ".btn-download-attachment", function (e) {
+      e.preventDefault();
+      const attachmentId = $(this).data("id");
+      const token = localStorage.getItem("mdgs_token");
 
-        // Open direct download URL with token in query string (works over HTTP)
-        const downloadUrl = `${apis.attachments}/file/${attachmentId}?token=${encodeURIComponent(token)}`;
-        window.open(downloadUrl, "_blank");
-      });
+      // Open direct download URL with token in query string (works over HTTP)
+      const downloadUrl = `${apis.attachments}/file/${attachmentId}?token=${encodeURIComponent(token)}`;
+      window.open(downloadUrl, "_blank");
+    });
 
-      // Remove pending file handler
-      $(document).on("click", ".btn-remove-pending", function () {
-        const index = $(this).data("index");
-        pendingFiles.splice(index, 1);
-        updatePendingFilesList();
-      });
+    // Remove pending file handler
+    $(document).on("click", ".btn-remove-pending", function () {
+      const index = $(this).data("index");
+      pendingFiles.splice(index, 1);
+      updatePendingFilesList();
+    });
 
-      // ===================== INVOICE DETAIL HANDLER =====================
-      // Add detail button to table actions (patch DataTable render)
-      // Or use delegated event for detail button
-      $("#invoicesTable").on("click", ".btn-detail", function () {
-        const id = $(this).data("id");
-        openInvoiceDetail(id);
-      });
+    // ===================== INVOICE DETAIL HANDLER =====================
+    // Add detail button to table actions (patch DataTable render)
+    // Or use delegated event for detail button
+    $("#invoicesTable").on("click", ".btn-detail", function () {
+      const id = $(this).data("id");
+      openInvoiceDetail(id);
+    });
 
-      // Patch DataTable actions column to add Detail button
-      // (Monkey patch, since DataTable is already initialized)
-      if (table) {
-        const oldRender = table.column(-1).settings()[0].aoColumns[9].mRender;
-        table.column(-1).settings()[0].aoColumns[9].mRender = function (data, type, row) {
-          const id = row.invoiceId || row.InvoiceId;
-          return `
+    // Patch DataTable actions column to add Detail button
+    // (Monkey patch, since DataTable is already initialized)
+    if (table) {
+      const oldRender = table.column(-1).settings()[0].aoColumns[9].mRender;
+      table.column(-1).settings()[0].aoColumns[9].mRender = function (
+        data,
+        type,
+        row,
+      ) {
+        const id = row.invoiceId || row.InvoiceId;
+        return `
             <div class="hstack gap-1 justify-content-center flex-nowrap">
                 <button type="button" class="btn btn-sm btn-light-info btn-detail" data-id="${escapeHtml(id)}">
                     <i class="feather-eye me-1"></i> Detail
@@ -1264,31 +1324,35 @@
                 </button>
             </div>
           `;
-        };
-        table.draw(false);
-      }
+      };
+      table.draw(false);
+    }
 
-      // Handler for detail modal
-      async function openInvoiceDetail(id) {
-        portalModalToBody("invoiceDetailModal");
-        $("#invoiceDetailContent").html('<div class="text-center py-4"><div class="spinner-border"></div></div>');
-        showModal("invoiceDetailModal");
+    // Handler for detail modal
+    async function openInvoiceDetail(id) {
+      portalModalToBody("invoiceDetailModal");
+      $("#invoiceDetailContent").html(
+        '<div class="text-center py-4"><div class="spinner-border"></div></div>',
+      );
+      showModal("invoiceDetailModal");
 
-        try {
-          // Fetch invoice data
-          const data = await fetchJson(`${apis.invoices}/${id}`);
-          // Fetch attachments
-          const attachments = await fetchJson(`${apis.attachments}/by-reference/${id}`);
+      try {
+        // Fetch invoice data
+        const data = await fetchJson(`${apis.invoices}/${id}`);
+        // Fetch attachments
+        const attachments = await fetchJson(
+          `${apis.attachments}/by-reference/${id}`,
+        );
 
-          // Render detail content in grid (2 columns)
-          let html = `<div class="row g-3">
+        // Render detail content in grid (2 columns)
+        let html = `<div class="row g-3">
             <div class="col-md-6">
               <div class="fw-bold mb-1">Invoice Number:</div>
               <div>${escapeHtml(data.invoiceNumber)}</div>
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">Vendor:</div>
-              <div>${escapeHtml(data.vendorName || '-')}</div>
+              <div>${escapeHtml(data.vendorName || "-")}</div>
             </div>
             <div class="col-md-6">
               <div class="fw-bold mb-1">Status:</div>
@@ -1328,14 +1392,14 @@
             </div>
           </div>`;
 
-          // Attachments
-          html += `<div class="mt-4 mb-3">
+        // Attachments
+        html += `<div class="mt-4 mb-3">
             <div class="fw-bold mb-2">Attachments:</div>`;
-          if (attachments && attachments.length > 0) {
-            html += '<ul class="list-group">';
-            attachments.forEach(att => {
-              const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1);
-              html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+        if (attachments && attachments.length > 0) {
+          html += '<ul class="list-group">';
+          attachments.forEach((att) => {
+            const sizeKB = ((att.fileSize || 0) / 1024).toFixed(1);
+            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                   <i class="feather-file me-2"></i>
                   <span>${escapeHtml(att.fileName)}</span>
@@ -1346,53 +1410,69 @@
                   <i class="feather-download"></i> Download
                 </a>
               </li>`;
-            });
-            html += '</ul>';
-          } else {
-            html += '<div class="text-muted">Belum ada dokumen yang diupload oleh GS</div>';
-          }
-          html += '</div>';
+          });
+          html += "</ul>";
+        } else {
+          html +=
+            '<div class="text-muted">Belum ada dokumen yang diupload oleh GS</div>';
+        }
+        html += "</div>";
 
-          // Timeline History Section
-          html += `<div class="mt-5">
+        // Timeline History Section
+        html += `<div class="mt-5">
             <h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>
             <div id="invoiceHistoryTimeline" class="timeline-container"></div>
           </div>`;
-          $("#invoiceDetailContent").html(html);
-          // Load timeline after detail
-          if (id) window.renderInvoiceDetailHistory && window.renderInvoiceDetailHistory(id);
-        } catch (err) {
-          $("#invoiceDetailContent").html('<div class="text-danger">Gagal memuat detail invoice.</div>');
-        }
+        $("#invoiceDetailContent").html(html);
+        // Load timeline after detail
+        if (id)
+          window.renderInvoiceDetailHistory &&
+            window.renderInvoiceDetailHistory(id);
+      } catch (err) {
+        $("#invoiceDetailContent").html(
+          '<div class="text-danger">Gagal memuat detail invoice.</div>',
+        );
       }
-      // ===================== END INVOICE DETAIL HANDLER =====================
-    });
+    }
+    // ===================== END INVOICE DETAIL HANDLER =====================
+  });
 })(jQuery);
 
 // Timeline History Loader for Invoice Detail
-  function loadInvoiceHistory(invoiceId) {
-    const $timeline = $("#invoiceHistoryTimeline");
-    $timeline.html('<div class="text-muted">Loading history...</div>');
-    $.get(`/api/invoices/${invoiceId}/history`)
-      .done(function (data) {
-        if (!data || !Array.isArray(data) || data.length === 0) {
-          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
-          return;
-        }
-        // Sort by CreatedAt ascending
-        data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        let html = '<div class="timeline">';
-        data.forEach(function (item, idx) {
-          let status = "";
-          let user = item.userName || (item.userId ? `User: ${item.userId}` : "-");
-          let tgl = new Date(item.createdAt).toLocaleString();
-          try {
-            if (item.newData) {
-              const newData = typeof item.newData === 'string' ? JSON.parse(item.newData) : item.newData;
-              status = newData.status || newData.Status || newData.progressStatusId || newData.ProgressStatusId || "-";
-            }
-          } catch {}
-          html += `
+function loadInvoiceHistory(invoiceId) {
+  const $timeline = $("#invoiceHistoryTimeline");
+  $timeline.html('<div class="text-muted">Loading history...</div>');
+  $.get(`/api/invoices/${invoiceId}/history`)
+    .done(function (data) {
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        $timeline.html(
+          '<div class="text-muted">Tidak ada history perubahan.</div>',
+        );
+        return;
+      }
+      // Sort by CreatedAt ascending
+      data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      let html = '<div class="timeline">';
+      data.forEach(function (item, idx) {
+        let status = "";
+        let user =
+          item.userName || (item.userId ? `User: ${item.userId}` : "-");
+        let tgl = new Date(item.createdAt).toLocaleString();
+        try {
+          if (item.newData) {
+            const newData =
+              typeof item.newData === "string"
+                ? JSON.parse(item.newData)
+                : item.newData;
+            status =
+              newData.status ||
+              newData.Status ||
+              newData.progressStatusId ||
+              newData.ProgressStatusId ||
+              "-";
+          }
+        } catch {}
+        html += `
             <div class="timeline-item mb-4">
               <div class="d-flex align-items-center gap-2 mb-1">
                 <span class="badge bg-primary">${status}</span>
@@ -1401,18 +1481,27 @@
               </div>
               <div class="text-muted">${item.entityName || item.action || ""}</div>
             </div>`;
-        });
-        html += '</div>';
-        $timeline.html(html);
-      })
-      .fail(function (xhr) {
-        if (xhr.status === 404 && xhr.responseJSON && xhr.responseJSON.message && xhr.responseJSON.message.includes('No history')) {
-          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
-        } else {
-          $timeline.html('<div class="text-danger">Gagal memuat history perubahan.</div>');
-        }
       });
-  }
-  window.renderInvoiceDetailHistory = function(invoiceId) {
-    loadInvoiceHistory(invoiceId);
-  };
+      html += "</div>";
+      $timeline.html(html);
+    })
+    .fail(function (xhr) {
+      if (
+        xhr.status === 404 &&
+        xhr.responseJSON &&
+        xhr.responseJSON.message &&
+        xhr.responseJSON.message.includes("No history")
+      ) {
+        $timeline.html(
+          '<div class="text-muted">Tidak ada history perubahan.</div>',
+        );
+      } else {
+        $timeline.html(
+          '<div class="text-danger">Gagal memuat history perubahan.</div>',
+        );
+      }
+    });
+}
+window.renderInvoiceDetailHistory = function (invoiceId) {
+  loadInvoiceHistory(invoiceId);
+};
