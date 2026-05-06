@@ -4,6 +4,17 @@ function portalModalToBody(modalId) {
   if (el.parentElement !== document.body) document.body.appendChild(el);
 }
 
+function handleBudgetCoaPngExportClick(event) {
+  if (event && typeof event.preventDefault === "function") {
+    event.preventDefault();
+  }
+  exportBudgetCoaAsPng();
+  return false;
+}
+
+window.exportBudgetCoaAsPng = exportBudgetCoaAsPng;
+window.handleBudgetCoaPngExportClick = handleBudgetCoaPngExportClick;
+
 function showModal(modalId) {
   const el = document.getElementById(modalId);
   if (!el) return;
@@ -840,9 +851,14 @@ $(document).ready(function () {
     loadBudgetCoaChart(selectedYear);
   });
 
-  $("#btnExportBudgetCoaPng").on("click", function () {
-    exportBudgetCoaAsPng();
-  });
+  // Bind directly once to avoid duplicate invocation.
+  $("#btnExportBudgetCoaPng")
+    .off("click")
+    .on("click", function (e) {
+      e.preventDefault();
+      setBudgetCoaPngDebugStatus("clicked");
+      exportBudgetCoaAsPng();
+    });
 
   $("#btnExportBudgetCoaCsv").on("click", function () {
     exportBudgetCoaAsCsv();
@@ -1300,6 +1316,7 @@ function loadBudgetCoaChart(year) {
             },
           ],
           chart: {
+            id: "budget-coa-performance-chart",
             type: "bar",
             height: dynamicHeight,
             width: chartWidth,
@@ -1400,20 +1417,153 @@ function loadBudgetCoaChart(year) {
   });
 }
 
-function exportBudgetCoaAsPng() {
-  if (!budgetCoaChart) {
-    alert("Chart belum tersedia untuk di-export.");
+function setBudgetCoaPngDebugStatus(step, isError = false) {
+  const $btn = $("#btnExportBudgetCoaPng");
+  if (!$btn.length) return;
+
+  const baseText = "Export PNG";
+  $btn.text(`${baseText} [${step}]`);
+  $btn.attr("title", `PNG debug: ${step}`);
+  $btn.attr("data-debug-step", step);
+  console.log("[PNG Export]", step);
+
+  if (isError) {
+    $btn.removeClass("btn-outline-primary").addClass("btn-outline-danger");
+  }
+
+  clearTimeout(window._pngExportDebugTimer);
+  window._pngExportDebugTimer = setTimeout(() => {
+    $btn.text(baseText);
+    $btn.removeClass("btn-outline-danger").addClass("btn-outline-primary");
+  }, 4000);
+}
+
+async function exportBudgetCoaAsPng() {
+  setBudgetCoaPngDebugStatus("start");
+
+  if (!budgetCoaRows || budgetCoaRows.length === 0) {
+    alert("Data chart kosong, tidak ada yang bisa di-export.");
     return;
   }
 
-  budgetCoaChart.dataURI().then(({ imgURI }) => {
+  const fileName = `budget-coa-performance-${new Date().toISOString().slice(0, 10)}.png`;
+
+  const downloadUrl = (url) => {
+    setBudgetCoaPngDebugStatus("download-url");
     const a = document.createElement("a");
-    a.href = imgURI;
-    a.download = `budget-coa-performance-${new Date().toISOString().slice(0, 10)}.png`;
+    a.href = url;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  });
+  };
+
+  const downloadBlob = (blob) => {
+    setBudgetCoaPngDebugStatus("download-blob");
+    const url = URL.createObjectURL(blob);
+    downloadUrl(url);
+    // Revoke later so Safari/Chromium has enough time to start navigation/download.
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  const exportSvgAsFallback = () => {
+    setBudgetCoaPngDebugStatus("fallback-svg-file");
+    const chartRoot = document.querySelector("#budget-coa-chart");
+    const svg = chartRoot ? chartRoot.querySelector("svg") : null;
+    if (!svg) {
+      throw new Error("SVG chart element not found");
+    }
+
+    const svgClone = svg.cloneNode(true);
+    if (!svgClone.getAttribute("xmlns")) {
+      svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    }
+
+    const svgString = new XMLSerializer().serializeToString(svgClone);
+    const svgBlob = new Blob([svgString], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const a = document.createElement("a");
+    a.href = svgUrl;
+    a.download = `budget-coa-performance-${new Date().toISOString().slice(0, 10)}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(svgUrl), 2000);
+  };
+
+  const waitWithTimeout = async (promise, timeoutMs, timeoutMessage) => {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error(timeoutMessage)),
+        timeoutMs,
+      );
+    });
+
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  try {
+    const chartRoot = document.querySelector("#budget-coa-chart");
+    const svg = chartRoot ? chartRoot.querySelector("svg") : null;
+    if (!svg) {
+      throw new Error("Chart SVG not found");
+    }
+
+    const svgClone = svg.cloneNode(true);
+    if (!svgClone.getAttribute("xmlns")) {
+      svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    }
+
+    const svgContent = new XMLSerializer().serializeToString(svgClone);
+    setBudgetCoaPngDebugStatus("server-export");
+
+    const response = await waitWithTimeout(
+      authFetch("/api/dashboard/export-budget-coa-png", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({ svgContent }),
+      }),
+      15000,
+      "Server PNG export timeout",
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Server export failed (${response.status}): ${errText}`);
+    }
+
+    const pngBlob = await response.blob();
+    if (!pngBlob || pngBlob.size === 0) {
+      throw new Error("Server returned empty PNG");
+    }
+
+    setBudgetCoaPngDebugStatus("server-blob-ok");
+    downloadBlob(pngBlob);
+    setBudgetCoaPngDebugStatus("done");
+  } catch (err) {
+    console.error("Export PNG failed:", err);
+    try {
+      exportSvgAsFallback();
+      setBudgetCoaPngDebugStatus("done-svg", true);
+      alert(
+        "PNG tidak berhasil di-generate (timeout). File SVG sudah di-download sebagai fallback.",
+      );
+    } catch (fallbackErr) {
+      console.error("Export SVG fallback failed:", fallbackErr);
+      setBudgetCoaPngDebugStatus("error", true);
+      alert("Export PNG gagal total. Coba refresh halaman lalu klik lagi.");
+    }
+  }
 }
 
 function exportBudgetCoaAsCsv() {

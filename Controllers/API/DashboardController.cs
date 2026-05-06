@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonitoringDokumenGS.Interfaces;
+using System.Text;
+using Svg.Skia;
+using SkiaSharp;
 
 [Authorize]
 [ApiController]
@@ -168,4 +171,62 @@ public class DashboardController : ControllerBase
         var data = await _dashboard.GetContractsByStatusAsync(status);
         return Ok(data);
     }
+
+    [HttpPost("export-budget-coa-png")]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public IActionResult ExportBudgetCoaPng([FromBody] ExportBudgetCoaPngRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.SvgContent))
+        {
+            return BadRequest(new { message = "SVG content is required." });
+        }
+
+        try
+        {
+            var svg = new SKSvg();
+            using var svgStream = new MemoryStream(Encoding.UTF8.GetBytes(request.SvgContent));
+            var picture = svg.Load(svgStream);
+            if (picture == null)
+            {
+                return BadRequest(new { message = "Failed to parse SVG." });
+            }
+
+            var bounds = picture.CullRect;
+            var width = Math.Max(1, (int)Math.Ceiling(bounds.Width));
+            var height = Math.Max(1, (int)Math.Ceiling(bounds.Height));
+
+            var info = new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
+            using var surface = SKSurface.Create(info);
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.White);
+
+            if (bounds.Left != 0 || bounds.Top != 0)
+            {
+                canvas.Translate(-bounds.Left, -bounds.Top);
+            }
+
+            canvas.DrawPicture(picture);
+            canvas.Flush();
+
+            using var image = surface.Snapshot();
+            using var pngData = image.Encode(SKEncodedImageFormat.Png, 100);
+            if (pngData == null)
+            {
+                return StatusCode(500, new { message = "Failed to encode PNG." });
+            }
+
+            var fileName = $"budget-coa-performance-{DateTime.Now:yyyy-MM-dd}.png";
+            return File(pngData.ToArray(), "image/png", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to export budget COA PNG");
+            return StatusCode(500, new { message = "Failed to export PNG." });
+        }
+    }
+}
+
+public class ExportBudgetCoaPngRequest
+{
+    public string SvgContent { get; set; } = string.Empty;
 }
