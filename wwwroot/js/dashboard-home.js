@@ -851,6 +851,11 @@ $(document).ready(function () {
     loadBudgetCoaChart(selectedYear);
   });
 
+  $("#budgetCoaDisplayLimit").on("change", function () {
+    const selectedYear = parseInt($("#budgetYearFilter").val());
+    loadBudgetCoaChart(selectedYear);
+  });
+
   // Bind directly once to avoid duplicate invocation.
   $("#btnExportBudgetCoaPng")
     .off("click")
@@ -1269,15 +1274,27 @@ function loadBudgetCoaChart(year) {
     success: function (data) {
       if (data && data.length > 0) {
         budgetCoaRows = data;
+        const totalRows = data.length;
+        const selectedLimit = String($("#budgetCoaDisplayLimit").val() || "15");
+        const numericLimit = Number.parseInt(selectedLimit, 10);
+        const rowsToDisplay =
+          selectedLimit === "all" || !Number.isFinite(numericLimit)
+            ? data
+            : data.slice(0, Math.max(1, numericLimit));
+
+        $("#budgetCoaDisplayInfo").text(
+          `Showing ${rowsToDisplay.length} of ${totalRows} COA items${selectedLimit === "all" ? " (all)" : ""}`,
+        );
+
         // Y-axis: hanya CoaText (KodeAnggaran) — tanpa deskripsi untuk menghindari label terlalu panjang / double dash
-        const coaTextNames = data.map((v) => {
+        const coaTextNames = rowsToDisplay.map((v) => {
           const codeOnly = v.budgetCode
             ? v.budgetCode.split(" - ")[0].trim()
             : "";
           return `${v.coaText}${codeOnly ? " (" + codeOnly + ")" : ""}`;
         });
         // Tooltip: label lengkap dari displayLabel
-        const coaDisplayLabels = data.map(
+        const coaDisplayLabels = rowsToDisplay.map(
           (v) =>
             v.displayLabel ||
             `${v.coaText} (${v.budgetCode || "No Budget Code"})`,
@@ -1285,9 +1302,9 @@ function loadBudgetCoaChart(year) {
         const coaTextNamesWrapped = coaTextNames.map((label) =>
           wrapLabelTwoLines(label, 28),
         );
-        const plans = data.map((v) => Number(v.plan || 0));
-        const actuals = data.map((v) => Number(v.actual || 0));
-        const dynamicHeight = Math.max(420, data.length * 62);
+        const plans = rowsToDisplay.map((v) => Number(v.plan || 0));
+        const actuals = rowsToDisplay.map((v) => Number(v.actual || 0));
+        const dynamicHeight = Math.max(420, rowsToDisplay.length * 62);
         const maxAxisValue = Math.max(0, ...plans, ...actuals);
         const longestAxisLabel = formatRupiah(maxAxisValue).length;
         const chartHost = document.querySelector("#budget-coa-chart");
@@ -1300,7 +1317,13 @@ function loadBudgetCoaChart(year) {
 
         if (chartHost) {
           chartHost.style.overflowX = "auto";
-          chartHost.style.overflowY = "hidden";
+          if (selectedLimit === "all") {
+            chartHost.style.maxHeight = "850px";
+            chartHost.style.overflowY = "auto";
+          } else {
+            chartHost.style.maxHeight = "none";
+            chartHost.style.overflowY = "hidden";
+          }
           chartHost.style.webkitOverflowScrolling = "touch";
         }
 
@@ -1402,6 +1425,7 @@ function loadBudgetCoaChart(year) {
         budgetCoaChart.render();
       } else {
         budgetCoaRows = [];
+        $("#budgetCoaDisplayInfo").text("Showing 0 of 0 COA items");
         $("#budget-coa-chart").html(
           '<div class="text-center py-5 text-muted">No data available for selected filter</div>',
         );

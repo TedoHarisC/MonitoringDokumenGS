@@ -419,7 +419,8 @@
                             <select id="budgetSummaryBudgetCodeFilter" class="form-select form-select-sm" style="width: 180px;">
                                 <option value="">All Budget Code</option>
                             </select>
-                            <select id="budgetSummaryCOAFilter" class="form-select form-select-sm" style="width: 180px;" disabled>
+                            <select id="budgetSummaryCOAFilter" class="form-select form-select-sm" style="width: 180px;"
+                                    disabled>
                                 <option value="">All COA Text</option>
                             </select>
                             <select id="budgetYearFilter" class="form-select form-select-sm" style="width: 120px;">
@@ -512,8 +513,19 @@
                                                             class="btn btn-sm btn-outline-primary">Export PNG</button>
                                                     <button type="button" id="btnExportBudgetCoaCsv"
                                                             class="btn btn-sm btn-outline-success">Export CSV</button>
+                                                    <div class="ms-auto d-flex align-items-center gap-2">
+                                                        <label class="form-label mb-0 small text-muted" for="budgetCoaDisplayLimit">Show</label>
+                                                        <select id="budgetCoaDisplayLimit" class="form-select form-select-sm"
+                                                                style="width: 120px;">
+                                                            <option value="10">Top 10</option>
+                                                            <option value="15" selected>Top 15</option>
+                                                            <option value="25">Top 25</option>
+                                                            <option value="all">All</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div id="budgetCoaDisplayInfo" class="small text-muted mb-2"></div>
                                             <div id="budget-coa-chart"></div>
                                         </div>
                                     </div>
