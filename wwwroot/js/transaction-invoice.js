@@ -587,36 +587,46 @@
       });
   }
 
-  // Populate Vendor
-  function populateVendorDropdown() {
+  // Populate Vendor using local cachedVendors (filter client-side)
+  function initVendorSelect2(selectedId) {
     const $select = $("#vendorIdSelect");
+    // Destroy if already initialized
+    if ($select.hasClass("select2-hidden-accessible"))
+      $select.select2("destroy");
+
+    // Rebuild options from cachedVendors
     $select.empty();
-
-    $select.append('<option value="">-- Select Vendor --</option>');
-
-    cachedVendors.forEach((v) => {
+    $select.append('<option value=""></option>');
+    cachedVendors.forEach(function (v) {
       const id = v.vendorId || v.VendorId;
       const name = v.vendorName || v.VendorName;
-
-      $select.append(`<option value="${id}">${name}</option>`);
+      $select.append(new Option(name, id, false, false));
     });
+
+    $select.select2({
+      theme: "bootstrap-5",
+      placeholder: "-- Search Vendor --",
+      allowClear: true,
+      width: "100%",
+      dropdownParent: getInvoiceSelect2DropdownParent(),
+    });
+
+    if (selectedId) {
+      $select.val(String(selectedId)).trigger("change");
+    }
   }
 
   // Untuk Setup Vendor Field di form (Create/Edit) berdasarkan role user
   function setupVendorField(vendorId, vendorName) {
     if (isCurrentUserAdmin()) {
-      // ADMIN → pakai select
+      // ADMIN → pakai select2
       $("#vendorIdSelect").show();
       $("#vendorName").hide();
-
-      populateVendorDropdown();
-
-      $("#vendorIdSelect").val(String(vendorId || ""));
+      initVendorSelect2(vendorId);
     } else {
       // USER → readonly
       $("#vendorIdSelect").hide();
       $("#vendorName").show();
-
       $("#vendorId").val(String(vendorId || ""));
       $("#vendorName").val(vendorName || "");
     }
@@ -1196,6 +1206,10 @@
         loadAttachmentTypes(),
         loadBudgetCodesForInvoice(),
       ]);
+      // Inisialisasi select2 vendor jika admin (untuk create modal)
+      if (isCurrentUserAdmin()) {
+        initVendorSelect2();
+      }
     } catch (err) {
       console.error("Initialization error:", err);
     }
