@@ -320,6 +320,36 @@
         "<'col-sm-12 col-md-5' i>" +
         "<'col-sm-12 col-md-7 d-flex justify-content-md-end' p>" +
         ">",
+      initComplete: function () {
+        const $target = $("#contractExportActions");
+        if ($target.length) {
+          $target.empty();
+          $(table.buttons().container()).appendTo($target);
+        }
+      },
+      buttons: [
+        {
+          extend: "excelHtml5",
+          text: '<i class="feather-download me-1"></i> Export Excel',
+          className: "btn btn-success btn-sm",
+          title: "Contracts",
+          filename: function () {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            return `rekap-contract-${yyyy}-${mm}-${dd}`;
+          },
+          exportOptions: {
+            columns: [0, 1, 2, 3, 4, 5, 6],
+            format: {
+              body: function (data) {
+                return $("<div>").html(data).text().trim();
+              },
+            },
+          },
+        },
+      ],
       ajax: {
         url: apis.contracts,
         dataSrc: function (json) {
@@ -520,10 +550,7 @@
     $("#approvalStatusSelect").val("6");
 
     // Setup vendor field based on user role
-    setupVendorField(
-      currentUserVendor.vendorId,
-      currentUserVendor.vendorName
-    );
+    setupVendorField(currentUserVendor.vendorId, currentUserVendor.vendorName);
 
     // Show/hide status sections based on user role
     if (isCurrentUserAdmin()) {
@@ -844,8 +871,12 @@
   let cachedAttachmentTypes = [];
 
   async function loadAttachmentTypes() {
-    const result = await fetchJson("/api/attachment-types?page=1&pageSize=2000");
-    cachedAttachmentTypes = normalizeToArray(result).filter(t => t.appliesTo === "CONTRACT");
+    const result = await fetchJson(
+      "/api/attachment-types?page=1&pageSize=2000",
+    );
+    cachedAttachmentTypes = normalizeToArray(result).filter(
+      (t) => t.appliesTo === "CONTRACT",
+    );
     populateAttachmentTypeDropdown();
     return cachedAttachmentTypes;
   }
@@ -855,7 +886,9 @@
     $select.empty();
     $select.append('<option value="">-- Pilih Tipe Attachment --</option>');
     cachedAttachmentTypes.forEach((type) => {
-      $select.append(`<option value="${type.attachmentTypeId}">${type.name}</option>`);
+      $select.append(
+        `<option value="${type.attachmentTypeId}">${type.name}</option>`,
+      );
     });
   }
 
@@ -927,7 +960,9 @@
         return;
       }
       // Find type name
-      const type = cachedAttachmentTypes.find((t) => t.attachmentTypeId == typeId);
+      const type = cachedAttachmentTypes.find(
+        (t) => t.attachmentTypeId == typeId,
+      );
       const typeName = type ? type.name : "Unknown";
       // Add to pending files
       const pendingFile = {
@@ -966,41 +1001,74 @@
   });
 
   // Handler untuk tombol detail contract
-  $(document).on('click', '.btn-detail', function () {
-    portalModalToBody('contractDetailModal');
-    var id = $(this).data('id');
-    $.get('/api/contracts/' + id, function (data) {
-      var html = '';
-      html += '<div class="mb-2"><strong>Contract Number:</strong> ' + (data.contractNumber || '-') + '</div>';
-      html += '<div class="mb-2"><strong>Vendor:</strong> ' + (data.vendorName || '-') + '</div>';
-      html += '<div class="mb-2"><strong>Description:</strong> ' + (data.contractDescription || '-') + '</div>';
-      html += '<div class="mb-2"><strong>Start Date:</strong> ' + (data.startDate ? new Date(data.startDate).toLocaleDateString('id-ID') : '-') + '</div>';
-      html += '<div class="mb-2"><strong>End Date:</strong> ' + (data.endDate ? new Date(data.endDate).toLocaleDateString('id-ID') : '-') + '</div>';
-      html += '<hr/>';
+  $(document).on("click", ".btn-detail", function () {
+    portalModalToBody("contractDetailModal");
+    var id = $(this).data("id");
+    $.get("/api/contracts/" + id, function (data) {
+      var html = "";
+      html +=
+        '<div class="mb-2"><strong>Contract Number:</strong> ' +
+        (data.contractNumber || "-") +
+        "</div>";
+      html +=
+        '<div class="mb-2"><strong>Vendor:</strong> ' +
+        (data.vendorName || "-") +
+        "</div>";
+      html +=
+        '<div class="mb-2"><strong>Description:</strong> ' +
+        (data.contractDescription || "-") +
+        "</div>";
+      html +=
+        '<div class="mb-2"><strong>Start Date:</strong> ' +
+        (data.startDate
+          ? new Date(data.startDate).toLocaleDateString("id-ID")
+          : "-") +
+        "</div>";
+      html +=
+        '<div class="mb-2"><strong>End Date:</strong> ' +
+        (data.endDate
+          ? new Date(data.endDate).toLocaleDateString("id-ID")
+          : "-") +
+        "</div>";
+      html += "<hr/>";
       html += '<div class="mb-2"><strong>Attachments:</strong></div>';
-      $.get('/api/attachments/by-reference/' + id, function (atts) {
+      $.get("/api/attachments/by-reference/" + id, function (atts) {
         if (atts && atts.length > 0) {
           html += '<ul class="list-group mb-2">';
           atts.forEach(function (att) {
-            var size = att.fileSize ? (att.fileSize / 1024).toFixed(1) + ' KB' : '-';
-            html += '<li class="list-group-item d-flex justify-content-between align-items-center">';
-            html += '<span><i class="feather-file me-2"></i>' + att.fileName + ' <span class="text-muted small">(' + size + ')</span></span>';
-            html += '<a href="/api/attachments/download/' + att.attachmentId + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="feather-download"></i> Download</a>';
-            html += '</li>';
+            var size = att.fileSize
+              ? (att.fileSize / 1024).toFixed(1) + " KB"
+              : "-";
+            html +=
+              '<li class="list-group-item d-flex justify-content-between align-items-center">';
+            html +=
+              '<span><i class="feather-file me-2"></i>' +
+              att.fileName +
+              ' <span class="text-muted small">(' +
+              size +
+              ")</span></span>";
+            html +=
+              '<a href="/api/attachments/download/' +
+              att.attachmentId +
+              '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="feather-download"></i> Download</a>';
+            html += "</li>";
           });
-          html += '</ul>';
+          html += "</ul>";
         } else {
           html += '<div class="text-muted">No attachments.</div>';
         }
         // Timeline History Section
-        html += '<div class="mt-5">'
-          + '<h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>'
-          + '<div id="contractHistoryTimeline" class="timeline-container"></div>'
-          + '</div>';
-        $('#contractDetailContent').html(html);
-        showModal('contractDetailModal');
+        html +=
+          '<div class="mt-5">' +
+          '<h6 class="text-primary mb-3"><i class="feather-clock me-1"></i> History Perubahan Status</h6>' +
+          '<div id="contractHistoryTimeline" class="timeline-container"></div>' +
+          "</div>";
+        $("#contractDetailContent").html(html);
+        showModal("contractDetailModal");
         // Load timeline after detail
-        if (id) window.renderContractDetailHistory && window.renderContractDetailHistory(id);
+        if (id)
+          window.renderContractDetailHistory &&
+            window.renderContractDetailHistory(id);
       });
     });
   });
@@ -1012,7 +1080,9 @@
     $.get(`/api/contracts/${contractId}/history`)
       .done(function (data) {
         if (!data || !Array.isArray(data) || data.length === 0) {
-          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+          $timeline.html(
+            '<div class="text-muted">Tidak ada history perubahan.</div>',
+          );
           return;
         }
         // Sort by CreatedAt ascending
@@ -1020,12 +1090,21 @@
         let html = '<div class="timeline">';
         data.forEach(function (item, idx) {
           let status = "";
-          let user = item.userName || (item.userId ? `User: ${item.userId}` : "-");
+          let user =
+            item.userName || (item.userId ? `User: ${item.userId}` : "-");
           let tgl = new Date(item.createdAt).toLocaleString();
           try {
             if (item.newData) {
-              const newData = typeof item.newData === 'string' ? JSON.parse(item.newData) : item.newData;
-              status = newData.status || newData.Status || newData.contractStatusId || newData.ContractStatusId || "-";
+              const newData =
+                typeof item.newData === "string"
+                  ? JSON.parse(item.newData)
+                  : item.newData;
+              status =
+                newData.status ||
+                newData.Status ||
+                newData.contractStatusId ||
+                newData.ContractStatusId ||
+                "-";
             }
           } catch {}
           html += `
@@ -1038,18 +1117,27 @@
               <div class="text-muted">${item.entityName || item.action || ""}</div>
             </div>`;
         });
-        html += '</div>';
+        html += "</div>";
         $timeline.html(html);
       })
-            .fail(function (xhr) {
-        if (xhr.status === 404 && xhr.responseJSON && xhr.responseJSON.message && xhr.responseJSON.message.includes('No history')) {
-          $timeline.html('<div class="text-muted">Tidak ada history perubahan.</div>');
+      .fail(function (xhr) {
+        if (
+          xhr.status === 404 &&
+          xhr.responseJSON &&
+          xhr.responseJSON.message &&
+          xhr.responseJSON.message.includes("No history")
+        ) {
+          $timeline.html(
+            '<div class="text-muted">Tidak ada history perubahan.</div>',
+          );
         } else {
-          $timeline.html('<div class="text-danger">Gagal memuat history perubahan.</div>');
+          $timeline.html(
+            '<div class="text-danger">Gagal memuat history perubahan.</div>',
+          );
         }
       });
-    }
-    window.renderContractDetailHistory = function(contractId) {
-      loadContractHistory(contractId);
-    };
-  })(jQuery);
+  }
+  window.renderContractDetailHistory = function (contractId) {
+    loadContractHistory(contractId);
+  };
+})(jQuery);

@@ -275,6 +275,29 @@
         "<'col-sm-12 col-md-5' i>" +
         "<'col-sm-12 col-md-7 d-flex justify-content-md-end' p>" +
         ">",
+      buttons: [
+        {
+          extend: "excelHtml5",
+          text: '<i class="feather-download me-1"></i> Export Excel',
+          className: "btn btn-success btn-sm",
+          title: "Invoices",
+          filename: function () {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            return `rekap-invoice-${yyyy}-${mm}-${dd}`;
+          },
+          exportOptions: {
+            columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            format: {
+              body: function (data) {
+                return $("<div>").html(data).text().trim();
+              },
+            },
+          },
+        },
+      ],
       ajax: {
         url: apis.invoices,
         dataSrc: function (json) {
@@ -417,6 +440,13 @@
           },
         },
       ],
+      initComplete: function () {
+        const $target = $("#invoiceExportActions");
+        if ($target.length) {
+          $target.empty();
+          $(table.buttons().container()).appendTo($target);
+        }
+      },
     });
   }
 
