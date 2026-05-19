@@ -2395,18 +2395,57 @@ function formatContractCountdown(days) {
   }
 }
 
-function updateContractSummary() {
-  const critical = contractsData.filter(
-    (c) => c.alertLevel === "Critical",
-  ).length;
-  const warning = contractsData.filter(
-    (c) => c.alertLevel === "Warning",
-  ).length;
-  const safe = contractsData.filter((c) => c.alertLevel === "Safe").length;
+function updateContractSummary(sourceContracts) {
+  function renderSummary(list) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  $("#criticalContractsCount").text(critical);
-  $("#warningContractsCount").text(warning);
-  $("#safeContractsCount").text(safe);
+    const result = (Array.isArray(list) ? list : []).reduce(
+      (acc, contract) => {
+        const endDateValue =
+          contract?.endDate || contract?.EndDate || contract?.contractEndDate;
+        if (!endDateValue) return acc;
+
+        const endDate = new Date(endDateValue);
+        if (Number.isNaN(endDate.getTime())) return acc;
+
+        endDate.setHours(0, 0, 0, 0);
+        const daysRemaining = Math.floor(
+          (endDate - today) / (1000 * 60 * 60 * 24),
+        );
+
+        if (daysRemaining < 15) acc.critical += 1;
+        else if (daysRemaining < 30) acc.warning += 1;
+        else acc.safe += 1;
+
+        return acc;
+      },
+      { critical: 0, warning: 0, safe: 0 },
+    );
+
+    $("#criticalContractsCount").text(result.critical);
+    $("#warningContractsCount").text(result.warning);
+    $("#safeContractsCount").text(result.safe);
+  }
+
+  if (Array.isArray(sourceContracts)) {
+    renderSummary(sourceContracts);
+    return;
+  }
+
+  $.ajax({
+    url: "/api/contracts",
+    method: "GET",
+    success: function (rows) {
+      const list = Array.isArray(rows) ? rows : rows?.items || rows?.data || [];
+      renderSummary(list);
+    },
+    error: function () {
+      $("#criticalContractsCount").text("0");
+      $("#warningContractsCount").text("0");
+      $("#safeContractsCount").text("0");
+    },
+  });
 }
 
 // Handler klik summary contract
