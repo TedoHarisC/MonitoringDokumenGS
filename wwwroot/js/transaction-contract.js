@@ -1093,6 +1093,7 @@
           let user =
             item.userName || (item.userId ? `User: ${item.userId}` : "-");
           let tgl = new Date(item.createdAt).toLocaleString();
+          console.log("History item:", item);
           try {
             if (item.newData) {
               const newData =
@@ -1110,11 +1111,10 @@
           html += `
             <div class="timeline-item mb-4">
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary">${status}</span>
-                <span class="fw-bold">${user}</span>
-                <span class="text-muted small">${tgl}</span>
+                <span class="badge bg-primary"></span>
+                <span class="fw-bold"></span>
+                <span class="text-muted small">${item.displayText}</span>
               </div>
-              <div class="text-muted">${item.entityName || item.action || ""}</div>
             </div>`;
         });
         html += "</div>";

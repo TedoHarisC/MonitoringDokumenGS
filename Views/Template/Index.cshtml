@@ -1,5 +1,8 @@
+@using System.Security.Claims
 @{
     Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+    string? userRole = User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    bool isAdmin = userRole == "SUPER_ADMIN" || userRole == "ADMIN";
 }
 
 @section Styles {
@@ -65,6 +68,8 @@
         }
     </style>
 }
+
+<input type="hidden" id="currentUserIsAdmin" value="@isAdmin.ToString().ToLower()" />
 
 <!-- [ page-header ] start -->
 <div class="page-header">

@@ -1498,9 +1498,10 @@ function loadInvoiceHistory(invoiceId) {
       data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       let html = '<div class="timeline">';
       data.forEach(function (item, idx) {
+        //console.log("Processing history item:", item);
         let status = "";
         let user =
-          item.userName || (item.userId ? `User: ${item.userId}` : "-");
+          item.username || (item.userId ? `User: ${item.userId}` : "-");
         let tgl = new Date(item.createdAt).toLocaleString();
         try {
           if (item.newData) {
@@ -1519,11 +1520,9 @@ function loadInvoiceHistory(invoiceId) {
         html += `
             <div class="timeline-item mb-4">
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary">${status}</span>
-                <span class="fw-bold">${user}</span>
-                <span class="text-muted small">${tgl}</span>
+                <span class="badge bg-primary"></span>
+                <span class="text-muted small">${item.displayText}</span>
               </div>
-              <div class="text-muted">${item.entityName || item.action || ""}</div>
             </div>`;
       });
       html += "</div>";
