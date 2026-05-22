@@ -27,9 +27,17 @@ function initUangMukaRelatedSelect(selectedId, selectedText) {
             let budgetCode = item.budgetCode
               ? item.budgetCode
               : "no budget code";
+            let noSAP = item.noSAP ? item.noSAP : "-";
             return {
               id: item.uangMukaId,
-              text: item.atasNama + " - " + item.amount + " - " + budgetCode,
+              text:
+                item.atasNama +
+                " - " +
+                item.amount +
+                " - " +
+                budgetCode +
+                " - No SAP: " +
+                noSAP,
             };
           }),
         };
@@ -717,10 +725,17 @@ $(function () {
               if (!advText && data.uangMukaRelatedId) {
                 $.get(`/api/uang-muka/${data.uangMukaRelatedId}`).done(
                   function (adv) {
+                    // Format amount ke Rupiah
+                    function formatRupiah(angka) {
+                      if (typeof angka === "number") angka = angka.toString();
+                      return (
+                        "Rp " + angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                      );
+                    }
                     advText =
                       adv.atasNama +
                       " - " +
-                      adv.amount +
+                      formatRupiah(adv.amount) +
                       " - " +
                       (adv.budgetCode?.description || "");
                     initUangMukaRelatedSelect(data.uangMukaRelatedId, advText);
