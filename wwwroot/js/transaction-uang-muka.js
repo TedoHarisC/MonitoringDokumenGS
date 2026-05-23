@@ -406,7 +406,7 @@ $(function () {
           return `rekap-uang-muka-${yyyy}-${mm}-${dd}`;
         },
         exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5, 6, 7],
+          columns: [0, 1, 2, 3, 4, 5, 6, 7, 8],
           format: {
             body: function (data) {
               return $("<div>").html(data).text().trim();
@@ -431,6 +431,14 @@ $(function () {
         if (!isAdmin && userId) {
           d.userId = userId;
         }
+
+        // Add custom filters
+        d.jenis = $('#filterJenis').val();
+        d.status = $('#filterStatus').val();
+        d.budgetCode = $('#filterBudgetCode').val();
+        d.coaText = $('#filterCoaText').val();
+        d.startDate = $('#filterStartDate').val();
+        d.endDate = $('#filterEndDate').val();
       },
       dataSrc: function (json) {
         //console.log('DEBUG DataTable AJAX response:', json);
@@ -489,6 +497,7 @@ $(function () {
           return d ? d.split("T")[0] : "-";
         },
       },
+      { data: "noSAP", defaultContent: "-" },
       { data: "status", defaultContent: "-" },
       {
         data: null,
@@ -527,6 +536,85 @@ $(function () {
         next: '<i class="feather-chevron-right"></i>',
       },
     },
+  });
+
+  // ─── INIT CUSTOM FILTERS ──────────────────────────────────────────────────
+  function initFilters() {
+      // 1. Load Status (Collect unique names since controller filters by name substring)
+      $.getJSON("/api/advanced-statuses?page=1&pageSize=2000").then(function (res1) {
+          $.getJSON("/api/biaya-realisasi-statuses?page=1&pageSize=2000").then(function (res2) {
+              const items1 = Array.isArray(res1) ? res1 : res1.items || res1.data || [];
+              const items2 = Array.isArray(res2) ? res2 : res2.items || res2.data || [];
+              const $sel = $('#filterStatus');
+              $sel.empty().append('<option value="">All Status</option>');
+              let names = new Set();
+              items1.forEach(s => names.add(s.name));
+              items2.forEach(s => names.add(s.name));
+              names.forEach(n => {
+                  $sel.append(`<option value="${n}">${n}</option>`);
+              });
+          });
+      });
+
+      // 2. Load Budget Code
+      $.getJSON("/api/budget-codes?page=1&pageSize=2000").then(function (res) {
+          const items = Array.isArray(res) ? res : res.items || res.data || [];
+          const $sel = $('#filterBudgetCode');
+          $sel.empty().append('<option value="">All Budget Code</option>');
+          items.forEach(function (b) {
+              $sel.append(`<option value="${b.budgetCodeId}">${b.code} - ${b.description}</option>`);
+          });
+          $sel.select2({
+              theme: "bootstrap-5",
+              placeholder: "All Budget Code",
+              allowClear: true,
+              width: "100%"
+          });
+      });
+
+      // 3. Load COA Text when Budget Code changes
+      $('#filterBudgetCode').on('change', function() {
+          let bcId = $(this).val();
+          const $sel = $('#filterCoaText');
+          $sel.empty().append('<option value="">All COA Text</option>');
+          
+          if (!bcId) {
+              $sel.prop('disabled', true);
+              $sel.select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+              return;
+          }
+          
+          $sel.prop('disabled', false);
+          $.getJSON(`/api/vendor-categories/by-budget-code/${bcId}`).then(function (res) {
+              const items = Array.isArray(res) ? res : res.items || res.data || [];
+              items.forEach(function (v) {
+                  $sel.append(`<option value="${v.vendorCategoryId}">${v.parentBudgetCodeLabel || "-"} - ${v.name}</option>`);
+              });
+              $sel.select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+          });
+      });
+
+      // Initialize empty COA select2 and Jenis
+      $('#filterCoaText').select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+      $('#filterJenis').select2({ theme: "bootstrap-5", placeholder: "All Jenis", allowClear: true, width: "100%" });
+      $('#filterStatus').select2({ theme: "bootstrap-5", placeholder: "All Status", allowClear: true, width: "100%" });
+  }
+
+  initFilters();
+
+  // ─── Filter Events ────────────────────────────────────────────────────────
+  $('#btnApplyFilter').on('click', function() {
+      reloadTable();
+  });
+
+  $('#btnResetFilter').on('click', function() {
+      $('#filterJenis').val('').trigger('change');
+      $('#filterStatus').val('').trigger('change');
+      $('#filterBudgetCode').val('').trigger('change');
+      $('#filterCoaText').val('').trigger('change');
+      $('#filterStartDate').val('');
+      $('#filterEndDate').val('');
+      reloadTable();
   });
 
   // ─── Event: modal hidden → force cleanup backdrop ─────────────────────────

@@ -138,6 +138,59 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Filter Section -->
+                    <div class="filter-section border rounded-3 p-3 mb-4 bg-light-subtle">
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <i class="feather-filter text-primary fs-5 me-2"></i>
+                            <h6 class="mb-0 fw-semibold">Filter Data</h6>
+                        </div>
+                        <div class="row g-3 align-items-end" id="filterSection">
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">Jenis</label>
+                                <select id="filterJenis" class="form-select form-select-sm">
+                                    <option value="">All Jenis</option>
+                                    <option value="Advanced">Advanced</option>
+                                    <option value="Biaya">Biaya</option>
+                                    <option value="Realisasi">Realisasi</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">Status</label>
+                                <select id="filterStatus" class="form-select form-select-sm">
+                                    <option value="">All Status</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">Budget Code</label>
+                                <select id="filterBudgetCode" class="form-select form-select-sm">
+                                    <option value="">All Budget Code</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">COA Text</label>
+                                <select id="filterCoaText" class="form-select form-select-sm" disabled>
+                                    <option value="">All COA Text</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">Start Date</label>
+                                <input type="date" id="filterStartDate" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-xl-2 col-md-4 col-sm-6">
+                                <label class="form-label fs-12 text-muted mb-1">End Date</label>
+                                <input type="date" id="filterEndDate" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-12 mt-3 pt-3 border-top d-flex justify-content-end gap-2">
+                                <button id="btnResetFilter" class="btn btn-light-secondary btn-sm">
+                                    <i class="feather-refresh-ccw me-1"></i>Reset
+                                </button>
+                                <button id="btnApplyFilter" class="btn btn-primary btn-sm px-4">
+                                    <i class="feather-search me-1"></i>Terapkan Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table id="unagMukasTable"
                                class="table table-striped table-bordered table-hover align-middle w-100">
@@ -150,6 +203,7 @@
                                     <th>COA Text</th>
                                     <th>Start Date</th>
                                     <th>End Date</th>
+                                    <th>No SAP</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Actions</th>
                                 </tr>

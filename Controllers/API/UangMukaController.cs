@@ -27,6 +27,9 @@ namespace MonitoringDokumenGS.Controllers.API
             [FromQuery] string? status,
             [FromQuery] string? atasNama,
             [FromQuery] string? budgetCode,
+            [FromQuery] string? coaText,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
             [FromQuery] string? search
         )
         {
@@ -51,6 +54,12 @@ namespace MonitoringDokumenGS.Controllers.API
             // Filtering by BudgetCodeId (now many-to-many)
             if (!string.IsNullOrEmpty(budgetCode) && Guid.TryParse(budgetCode, out var budgetCodeGuid))
                 query = query.Where(x => (x.UangMukaBudgetCodes ?? new List<Models.Transaction.UangMukaBudgetCode>()).Any(bc => bc.BudgetCodeId == budgetCodeGuid));
+            if (!string.IsNullOrEmpty(coaText) && int.TryParse(coaText, out var coaTextId))
+                query = query.Where(x => (x.UangMukaCoaTexts ?? new List<Models.Transaction.UangMukaCoaText>()).Any(ct => ct.CoaTextId == coaTextId));
+            if (startDate.HasValue)
+                query = query.Where(x => x.StartDate >= startDate.Value);
+            if (endDate.HasValue)
+                query = query.Where(x => x.EndDate <= endDate.Value);
             if (!string.IsNullOrEmpty(search))
                 query = query.Where(x => x.AtasNama.Contains(search));
             var result = query
