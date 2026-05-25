@@ -27,7 +27,13 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int? statusId = null,
+            [FromQuery] Guid? vendorId = null,
+            [FromQuery] Guid? budgetCodeId = null,
+            [FromQuery] int? coaTextId = null,
+            [FromQuery] int? year = null,
+            [FromQuery] int? month = null)
         {
             try
             {
@@ -63,7 +69,28 @@ namespace MonitoringDokumenGS.Controllers.API
                     _logger.LogInformation("User {UserId} with vendor {VendorId} accessed their invoices", userId, user.VendorId);
                 }
 
-                return Ok(result);
+                // Apply filters
+                var query = result.AsQueryable();
+
+                if (statusId.HasValue && statusId.Value > 0)
+                    query = query.Where(x => x.ProgressStatusId == statusId.Value);
+
+                if (vendorId.HasValue && vendorId.Value != Guid.Empty && isSuperAdminOrAdmin)
+                    query = query.Where(x => x.VendorId == vendorId.Value);
+
+                if (budgetCodeId.HasValue && budgetCodeId.Value != Guid.Empty)
+                    query = query.Where(x => x.BudgetCodeId == budgetCodeId.Value);
+
+                if (coaTextId.HasValue && coaTextId.Value > 0)
+                    query = query.Where(x => x.CoaTextId == coaTextId.Value);
+
+                if (year.HasValue && year.Value > 0)
+                    query = query.Where(x => x.InvoiceYear == year.Value);
+
+                if (month.HasValue && month.Value > 0)
+                    query = query.Where(x => x.InvoiceMonth == month.Value);
+
+                return Ok(query.ToList());
             }
             catch (Exception ex)
             {

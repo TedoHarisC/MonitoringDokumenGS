@@ -300,6 +300,14 @@
       ],
       ajax: {
         url: apis.invoices,
+        data: function (d) {
+          d.vendorId = $('#filterVendor').val();
+          d.statusId = $('#filterStatus').val();
+          d.budgetCodeId = $('#filterBudgetCode').val();
+          d.coaTextId = $('#filterCoaText').val();
+          d.year = $('#filterYear').val();
+          d.month = $('#filterMonth').val();
+        },
         dataSrc: function (json) {
           return normalizeToArray(json);
         },
@@ -1480,6 +1488,105 @@
     }
     // ===================== END INVOICE DETAIL HANDLER =====================
   });
+
+  // ─── INIT CUSTOM FILTERS ──────────────────────────────────────────────────
+  function initFilters() {
+      // 1. Initialize simple dropdowns
+      $('#filterYear').select2({ theme: "bootstrap-5", placeholder: "All Year", allowClear: true, width: "100%" });
+      $('#filterMonth').select2({ theme: "bootstrap-5", placeholder: "All Month", allowClear: true, width: "100%" });
+      
+      // 2. Load Statuses
+      $.getJSON("/api/invoice-progress-statuses?page=1&pageSize=2000").then(function (res) {
+          const items = Array.isArray(res) ? res : res.items || res.data || [];
+          const $sel = $('#filterStatus');
+          $sel.empty().append('<option value="">All Status</option>');
+          items.forEach(s => {
+              const id = s.progressStatusId || s.ProgressStatusId;
+              const name = s.name || s.Name || s.code || s.Code;
+              $sel.append(`<option value="${id}">${escapeHtml(name)}</option>`);
+          });
+          $sel.select2({ theme: "bootstrap-5", placeholder: "All Status", allowClear: true, width: "100%" });
+      });
+
+      // 3. Load Budget Code
+      $.getJSON("/api/budget-codes?page=1&pageSize=2000").then(function (res) {
+          const items = Array.isArray(res) ? res : res.items || res.data || [];
+          const $sel = $('#filterBudgetCode');
+          $sel.empty().append('<option value="">All Budget Code</option>');
+          items.forEach(function (b) {
+              const id = b.budgetCodeId || b.BudgetCodeId;
+              const label = (b.code || b.Code || "") + (b.description || b.Description ? " - " + (b.description || b.Description) : "");
+              $sel.append(`<option value="${id}">${escapeHtml(label)}</option>`);
+          });
+          $sel.select2({
+              theme: "bootstrap-5",
+              placeholder: "All Budget Code",
+              allowClear: true,
+              width: "100%"
+          });
+      });
+
+      // 4. Load COA Text when Budget Code changes
+      $('#filterBudgetCode').on('change', function() {
+          let bcId = $(this).val();
+          const $sel = $('#filterCoaText');
+          $sel.empty().append('<option value="">All COA Text</option>');
+          
+          if (!bcId) {
+              $sel.prop('disabled', true);
+              $sel.select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+              return;
+          }
+          
+          $sel.prop('disabled', false);
+          $.getJSON(`/api/vendor-categories/by-budget-code/${bcId}`).then(function (res) {
+              const items = Array.isArray(res) ? res : res.items || res.data || [];
+              items.forEach(function (v) {
+                  const id = v.vendorCategoryId || v.VendorCategoryId;
+                  const name = v.name || v.Name || "";
+                  $sel.append(`<option value="${id}">${escapeHtml(name)}</option>`);
+              });
+              $sel.select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+          });
+      });
+      $('#filterCoaText').select2({ theme: "bootstrap-5", placeholder: "All COA Text", allowClear: true, width: "100%" });
+
+      // 5. Load Vendors if element exists (Admin only)
+      if ($('#filterVendor').length) {
+          $.getJSON("/api/vendors?page=1&pageSize=2000").then(function (res) {
+              const items = Array.isArray(res) ? res : res.items || res.data || [];
+              const $sel = $('#filterVendor');
+              $sel.empty().append('<option value="">All Vendor</option>');
+              items.forEach(function (v) {
+                  const id = v.vendorId || v.VendorId;
+                  const name = v.vendorName || v.VendorName;
+                  $sel.append(new Option(name, id, false, false));
+              });
+              $sel.select2({ theme: "bootstrap-5", placeholder: "All Vendor", allowClear: true, width: "100%" });
+          });
+      }
+  }
+
+  // Initialize filters
+  $(function() {
+      initFilters();
+  });
+
+  // ─── Filter Events ────────────────────────────────────────────────────────
+  $('#btnApplyFilter').on('click', function() {
+      table.ajax.reload();
+  });
+
+  $('#btnResetFilter').on('click', function() {
+      if ($('#filterVendor').length) $('#filterVendor').val('').trigger('change');
+      $('#filterStatus').val('').trigger('change');
+      $('#filterBudgetCode').val('').trigger('change');
+      $('#filterCoaText').val('').trigger('change');
+      $('#filterYear').val('').trigger('change');
+      $('#filterMonth').val('').trigger('change');
+      table.ajax.reload();
+  });
+
 })(jQuery);
 
 // Timeline History Loader for Invoice Detail
