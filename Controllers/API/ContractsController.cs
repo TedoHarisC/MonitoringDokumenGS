@@ -28,7 +28,12 @@ namespace MonitoringDokumenGS.Controllers.API
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] Guid? vendorId = null,
+            [FromQuery] int? contractStatusId = null,
+            [FromQuery] int? approvalStatusId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             try
             {
@@ -64,7 +69,25 @@ namespace MonitoringDokumenGS.Controllers.API
                     _logger.LogInformation("User {UserId} with vendor {VendorId} accessed their contracts", userId, user.VendorId);
                 }
 
-                return Ok(result);
+                // Apply filters
+                var query = result.AsQueryable();
+
+                if (vendorId.HasValue && vendorId.Value != Guid.Empty && isSuperAdminOrAdmin)
+                    query = query.Where(x => x.VendorId == vendorId.Value);
+
+                if (contractStatusId.HasValue && contractStatusId.Value > 0)
+                    query = query.Where(x => x.ContractStatusId == contractStatusId.Value);
+
+                if (approvalStatusId.HasValue && approvalStatusId.Value > 0)
+                    query = query.Where(x => x.ApprovalStatusId == approvalStatusId.Value);
+
+                if (startDate.HasValue)
+                    query = query.Where(x => x.StartDate >= startDate.Value.Date);
+
+                if (endDate.HasValue)
+                    query = query.Where(x => x.EndDate <= endDate.Value.Date);
+
+                return Ok(query.ToList());
             }
             catch (Exception ex)
             {

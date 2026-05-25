@@ -111,8 +111,8 @@
     const el = document.getElementById("currentUserIsAdmin");
     const v = el
       ? String(el.value || "")
-          .trim()
-          .toLowerCase()
+        .trim()
+        .toLowerCase()
       : "false";
     return v === "true";
   }
@@ -135,7 +135,7 @@
     if (
       currentUserVendor &&
       String(currentUserVendor.vendorId).toLowerCase() ===
-        String(gid).toLowerCase().trim()
+      String(gid).toLowerCase().trim()
     ) {
       return currentUserVendor.vendorName;
     }
@@ -352,6 +352,13 @@
       ],
       ajax: {
         url: apis.contracts,
+        data: function (d) {
+          d.vendorId = $('#filterVendor').val();
+          d.contractStatusId = $('#filterContractStatus').val();
+          d.approvalStatusId = $('#filterApprovalStatus').val();
+          d.startDate = $('#filterStartDate').val();
+          d.endDate = $('#filterEndDate').val();
+        },
         dataSrc: function (json) {
           return normalizeToArray(json);
         },
@@ -1107,7 +1114,7 @@
                 newData.ContractStatusId ||
                 "-";
             }
-          } catch {}
+          } catch { }
           html += `
             <div class="timeline-item mb-4">
               <div class="d-flex align-items-center gap-2 mb-1">
@@ -1140,4 +1147,68 @@
   window.renderContractDetailHistory = function (contractId) {
     loadContractHistory(contractId);
   };
+
+  // ─── INIT CUSTOM FILTERS ──────────────────────────────────────────────────
+  function initFilters() {
+    // 1. Load Contract Statuses
+    $.getJSON("/api/contract-statuses?page=1&pageSize=2000").then(function (res) {
+      const items = Array.isArray(res) ? res : res.items || res.data || [];
+      const $sel = $('#filterContractStatus');
+      $sel.empty().append('<option value="">All Status</option>');
+      items.forEach(s => {
+        const id = s.contractStatusId || s.ContractStatusId;
+        const name = s.name || s.Name || s.code || s.Code;
+        $sel.append(`<option value="${id}">${escapeHtml(name)}</option>`);
+      });
+      $sel.select2({ theme: "bootstrap-5", placeholder: "All Status", allowClear: true, width: "100%" });
+    });
+
+    // 2. Load Approval Statuses
+    $.getJSON("/api/approval-statuses?page=1&pageSize=2000").then(function (res) {
+      const items = Array.isArray(res) ? res : res.items || res.data || [];
+      const $sel = $('#filterApprovalStatus');
+      $sel.empty().append('<option value="">All Status</option>');
+      items.forEach(s => {
+        const id = s.approvalStatusId || s.ApprovalStatusId;
+        const name = s.name || s.Name || s.code || s.Code;
+        $sel.append(`<option value="${id}">${escapeHtml(name)}</option>`);
+      });
+      $sel.select2({ theme: "bootstrap-5", placeholder: "All Status", allowClear: true, width: "100%" });
+    });
+
+    // 3. Load Vendors if element exists (Admin only)
+    if ($('#filterVendor').length) {
+      $.getJSON("/api/vendors?page=1&pageSize=2000").then(function (res) {
+        const items = Array.isArray(res) ? res : res.items || res.data || [];
+        const $sel = $('#filterVendor');
+        $sel.empty().append('<option value="">All Vendor</option>');
+        items.forEach(function (v) {
+          const id = v.vendorId || v.VendorId;
+          const name = v.vendorName || v.VendorName;
+          $sel.append(new Option(name, id, false, false));
+        });
+        $sel.select2({ theme: "bootstrap-5", placeholder: "All Vendor", allowClear: true, width: "100%" });
+      });
+    }
+  }
+
+  // Initialize filters
+  $(function () {
+    initFilters();
+  });
+
+  // ─── Filter Events ────────────────────────────────────────────────────────
+  $('#btnApplyFilter').on('click', function () {
+    table.ajax.reload();
+  });
+
+  $('#btnResetFilter').on('click', function () {
+    if ($('#filterVendor').length) $('#filterVendor').val('').trigger('change');
+    $('#filterContractStatus').val('').trigger('change');
+    $('#filterApprovalStatus').val('').trigger('change');
+    $('#filterStartDate').val('');
+    $('#filterEndDate').val('');
+    table.ajax.reload();
+  });
+
 })(jQuery);
